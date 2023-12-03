@@ -1,4 +1,4 @@
-// imports and constants
+// IMPORTS
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt"); 
@@ -7,7 +7,15 @@ const middleware = require("./middleware");
 const ejs = require("ejs")
 const bodyParser = require("body-parser");
 const path = require("path");
+const {Database} = require("./database.js")
 
+//initialising database
+const db = new Database();
+db.connect();
+db.createTables{}
+
+////// NOW COMPARE TO HOW DONE IN FLASHCARDS DECKIFY. ALSO SEE IF ANY POSSSIBLE ERROR CHECKING STUFFFF..
+///// THEN LOOK AT UDEMY VIDEOS AND MOVE ON TO NEXT PART.
 
 // initialising server (mounting middleware)
 const port = 3000;
