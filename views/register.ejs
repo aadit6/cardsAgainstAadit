@@ -3,7 +3,7 @@
 
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="css/account.css">
     <meta charset="utf-8">
     <title>Welcome</title>    
 
@@ -15,7 +15,7 @@
 
     <nav class="navbar navbar-light" style="background-color: #036e03;">
         <a class="navbar-brand" href=# style="color: white;">
-        <img src="/frontend/src/assets/pokergame-icon.png" width="30" height="30" class="d-inline-block align-top" style="margin-left: 10px;">
+        <img src="/images/pokericon.png" width="30" height="30" class="d-inline-block align-top" style="margin-left: 10px;">
         AADIT'S POKER
         </a>
     </nav>
@@ -44,19 +44,18 @@
     <div class="container">
         <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">Register</h1>
         <form onsubmit="return UserValidation()" action="/registersubmit" method="post">
-        <!-- add the onsubmit = function(), method = "post" and action /login stuff there later -->
             <div class="mb-3">
               <label for="UserEmail" class="form-label">Email address</label>
-              <input type="text" class="form-control" id="UserEmail" aria-describedby="emailHelp">
+              <input type="text" class="form-control" id="UserEmail" aria-describedby="emailHelp" name = "email">
               <div class="form-text">Must be a valid Email Address.</div>
             </div>
             <div class="mb-3">
                 <label for="UserUsername" class="form-label">Username</label>
-                <input type="text" class="form-control" id="UserUsername">
+                <input type="text" class="form-control" id="UserUsername" name = "username">
               </div>
             <div class="mb-3">
               <label for="UserPassword" class="form-label">Password</label>
-              <input type="password" class="form-control" id="UserPassword">
+              <input type="password" class="form-control" id="UserPassword" name="pwd">
               <div id="passwordHelpBlock" class="form-text">
                 Your password must be a minimum of 10 characters long and contain at least one capital letter, number and special character
             </div>
@@ -76,7 +75,7 @@
 
     </div>
 
-    <script src="/frontend/src/register.js"></script>
+    <script src="js/register.js"></script>
 </body>
 
 </html>
