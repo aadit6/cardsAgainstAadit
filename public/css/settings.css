@@ -1,16 +1,36 @@
-/* .form-group{
-   margin-bottom: 10px;
-   padding: 22px 25px 
-} */
+.form-group{
+   margin-bottom: 15px;
+   /* padding: 22px 25px  */
+}
+
+.form-control{
+    height: 45px;
+}
 
 .btn-primary{
-    
-    padding: 15px 80px;
+    /* margin-top: 10px; */
+    /* margin-left: 150px; */
+    padding: 6px 75px;
+    margin-left: 50%;
     font-size: 28px;
+
     
-}
-.btn-success{
-    padding: 15px 80px;
-    font-size: 28px;
 }
 
+.btn-success{
+    /* padding: 15px 80px; */
+    font-size: 28px;
+    margin-right: 50%;
+    
+}
+
+.container{
+    margin-top: 5%;
+    width: 70%;
+    padding: 15px;
+    background-color: white;
+}
+
+body{
+   background-color: #E8ECEF; 
+}

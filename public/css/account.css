@@ -6,13 +6,13 @@
 }
 
 .container{
-    /* margin-top: 100px; */
-    /* -ms-grid-column-align: center; */
-    margin: auto;
-    width: 75%;
-    padding: 100px;
-    /* background-color: white; */
+    margin-top: 5%;
+    width: 70%;
+    padding: 15px;
+    background-color: white;
+    height: 50px;
 }
-.body{
-    background-color: rgb(161, 17, 17);
+
+body{
+   background-color: #E8ECEF; 
 }

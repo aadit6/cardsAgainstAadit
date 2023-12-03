@@ -21,7 +21,7 @@ app.set('view engine', 'ejs')
 // add sessions etc. later
 
 app.get('/', (req, res)=>{
-    res.render(__dirname + "/views/login.ejs", {error:"", success:""})
+    res.render(__dirname + "/views/register.ejs", {error:"", success:""})
 })
 
 
