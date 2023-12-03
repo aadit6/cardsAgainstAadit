@@ -12,7 +12,7 @@ const {Database} = require("./database.js")
 //initialising database
 const db = new Database();
 db.connect();
-db.createTables{}
+db.createTables();
 
 ////// NOW COMPARE TO HOW DONE IN FLASHCARDS DECKIFY. ALSO SEE IF ANY POSSSIBLE ERROR CHECKING STUFFFF..
 ///// THEN LOOK AT UDEMY VIDEOS AND MOVE ON TO NEXT PART.

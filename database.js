@@ -1,13 +1,15 @@
 // database.js
 
 const mysql = require('mysql');
-const config = require('./config/')
+const config = require("./config/db_config.json");
+
+
 
 class Database {
   
     //initialising the database and error-handling
     
-    constructor(config) {
+    constructor() {
         this.config = config; //directly assigns configuration
         this.connection = null;
     }
