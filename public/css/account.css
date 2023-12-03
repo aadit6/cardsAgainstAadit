@@ -1,4 +1,18 @@
 .btn-primary{
     margin-top: 10px;
+    padding: 12px 20px;
+    text-align: left;
+    
 }
 
+.container{
+    /* margin-top: 100px; */
+    /* -ms-grid-column-align: center; */
+    margin: auto;
+    width: 75%;
+    padding: 100px;
+    /* background-color: white; */
+}
+.body{
+    background-color: rgb(161, 17, 17);
+}
