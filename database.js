@@ -81,40 +81,48 @@ class Database {
 
 // login-registration based functions
 
-    validateUser(email, username, password, errorMessage, callback) { //should i make it so i can pretty much get rid of the frontend js??
+    validateUser(email, username, password, errorMessage, callback) {
 
-        if (email.trim()==='' || password.trim()==='' || username.trim()==='') {
-            
-            errorMessage("You must not leave any fields blank")
-            return false;
-            
+        // for debugging
+        console.log('Email:', email);
+        console.log('Username:', username);
+        console.log('Password:', password);
+
+        const errors = [];
+
+        if (!email || !password || !username || email.trim() === '' || password.trim() === '' || username.trim() === '') {
+            errors.push("You must not leave any fields blank");
         }
 
         // password validation
         if (password.length < 10 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[!\"£$%&*#@?]/.test(password)) {
-            errorMessage("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed")
-            return false;
+            errors.push("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed");
         }
-    
+
         // email validation
         if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
-            errorMessage("Your email address is invalid")
-            return false;
+            errors.push("Your email address is invalid");
         }
-    
+
         // username validation
         if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
-            errorMessage("your username must not contain any special characters")
+            errors.push("Your username must not contain any special characters");
+        }
+
+        // Check if there are any validation errors
+        if (errors.length > 0) {
+            errorMessage(errors.join(". "));
             return false;
         }
-    
-        errorMessage("none");
-        return true;
-        
 
+        // If there are no errors, callback with 'none'
+        errorMessage("");
+        return true;
     }
 
-    checkUserExists() {
+
+
+    checkUserAvailable() {
         const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"
         const values = [username];
 

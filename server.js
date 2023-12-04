@@ -70,21 +70,40 @@ app.post('/signup', (req, res) => {
         }
         // Hash the password
         const saltRounds = 15;
-        bcrypt.genSalt(saltRounds, function(err, salt) {
-            bcrypt.hash(password, salt, function(err, hash) {
-                // Store hash in sql database
-                if(err) { 
-                    console.log("ERROR: hashing error")
-                    console.log(err)
-                    res.render(__dirname + "/views/register.ejs", {error:"Error while hashing. Please try again.",success:""});
+        bcrypt.genSalt(saltRounds, function (err, salt) {
+            if (err) {
+                console.log("ERROR: generating salt");
+                console.log(err);
+                res.render(__dirname + "/views/register.ejs", { error: "Error while hashing. Please try again.", success: "" });
+                return;
+            }
+        
+            bcrypt.hash(password, salt, function (err, hash) {
+                if (err) {
+                    console.log("ERROR: hashing password");
+                    console.log(err);
+                    res.render(__dirname + "/views/register.ejs", { error: "Error while hashing. Please try again.", success: "" });
                     return;
                 }
+        
+                console.log('Password after hashing:', hash);
+        
+                // Create a new user
+                db.createNewUser(email, hash, username, function (err, result) {
+                    if (err) {
+                        console.error("Error creating new user:", err);
+                        res.render(__dirname + "/views/register.ejs", { error: "Error creating user. Please try again.", success: "" });
+                        return;
+                    }
+        
+                    // Render login page with a success message
+                    res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+                });
             });
-            // Create a new user
-            db.createNewUser(email, hash, username);
-            // Render login page with a success message
-            res.render(__dirname + "/views/register.ejs", { error: "", success: "Successfully created account! You may now login." });
         });
+        
+        
+        
     });
 });
 
