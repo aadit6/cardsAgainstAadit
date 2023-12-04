@@ -40,15 +40,15 @@
 //     return true;
 // }
 
-function ReturnError(errorType) {
-    var div = document.getElementById("errors");
-    var error = document.createElement("div");
+// function ReturnError(errorType) {
+//     var div = document.getElementById("errors");
+//     var error = document.createElement("div");
 
-    div.innerHTML = "";
-    if (errorType === "none") {
-        return;
-    }
-    error.classList.add("alert", "alert-danger");
-    error.innerHTML = "<b>Error: </b>" + errorType;
-    div.appendChild(error);
-}
+//     div.innerHTML = "";
+//     if (errorType === "none") {
+//         return;
+//     }
+//     error.classList.add("alert", "alert-danger");
+//     error.innerHTML = "<b>Error: </b>" + errorType;
+//     div.appendChild(error);
+// }

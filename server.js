@@ -22,19 +22,16 @@ app.use(middleware.logger); //maybe later at some point have this in the middlew
 app.set('view engine', 'ejs')
 
 //initialising database
-
-async function startServer() {
-    const db = new Database();
-
+const db = new Database();
+(async () => {
     try {
-        await db.connect();
-        db.createTables();
+       await db.connect();
+       db.createTables(); 
     } catch (error) {
         console.error("An error occurred:", error);
-        process.exit(1); // non-0 status code to indicate error 
+        process.exit(1);
     }
-}
-startServer();
+})();
 
 
 
@@ -51,27 +48,13 @@ app.get('/signin', (req, res) => {
 app.get('/signup', (req,res) => {
     res.render(__dirname + '/views/register.ejs')
 })
-
-app.post('/signup',(req,res) => { //unfinished: need to finish DB first.
-    
-    var error = "";
-    var validateTest = db.validateUser(email, username, password, error );
-    if (!validateTest) {
-        res.render
-    }
-
-
-    //hashing
-   
-})
-
 // Assuming db is your Database class instance
 app.post('/signup', (req, res) => {
     const {email, username, password} = req.body;
     // Validation function
     const validateTest = db.validateUser(email, username, password, (errMsg) => {
         // Render the login page with an error message if validation fails
-        res.render(__dirname + "/views/login.ejs", { error: errMsg, success: "" });
+        res.render(__dirname + "/views/register.ejs", { error: errMsg, success: "" });
     });
 
     // If validation fails, return
@@ -82,7 +65,7 @@ app.post('/signup', (req, res) => {
     db.checkUserAvailable(username, (isAvailable) => {
         if (!isAvailable) {
             // If username already exists, render login page with an error message
-            res.render(__dirname + "/views/login.ejs", { error: "Username already exists. Please choose another.", success: "" });
+            res.render(__dirname + "/views/register.ejs", { error: "Username already exists. Please choose another.", success: "" });
             return;
         }
         // Hash the password
@@ -100,7 +83,7 @@ app.post('/signup', (req, res) => {
             // Create a new user
             db.createNewUser(email, hash, username);
             // Render login page with a success message
-            res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+            res.render(__dirname + "/views/register.ejs", { error: "", success: "Successfully created account! You may now login." });
         });
     });
 });

@@ -83,7 +83,7 @@ class Database {
 
     validateUser(email, username, password, errorMessage, callback) { //should i make it so i can pretty much get rid of the frontend js??
 
-        if (email.length === 0 || username.length === 0 || pwd.length === 0) {
+        if (email.trim()==='' || password.trim()==='' || username.trim()==='') {
             
             errorMessage("You must not leave any fields blank")
             return false;
