@@ -1,4 +1,5 @@
-// IMPORTS
+// imports
+
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt"); 
@@ -9,53 +10,105 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const {Database} = require("./database.js")
 
-//initialising database
-const db = new Database();
-db.connect();
-db.createTables();
 
-////// NOW COMPARE TO HOW DONE IN FLASHCARDS DECKIFY. ALSO SEE IF ANY POSSSIBLE ERROR CHECKING STUFFFF..
-///// THEN LOOK AT UDEMY VIDEOS AND MOVE ON TO NEXT PART.
 
 // initialising server (mounting middleware)
+
 const port = 3000;
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(middleware.logPaths);
 app.use(bodyParser.urlencoded({extended: true})); //middleware to parse form
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
 app.use(middleware.logger); //maybe later at some point have this in the middleware.js file
 app.set('view engine', 'ejs')
 
-// add sessions etc. later
+//initialising database
 
-app.get('/', (req, res)=>{
+async function startServer() {
+    const db = new Database();
+
+    try {
+        await db.connect();
+        db.createTables();
+    } catch (error) {
+        console.error("An error occurred:", error);
+        process.exit(1); // non-0 status code to indicate error 
+    }
+}
+startServer();
+
+
+
+// login and registration routing => maybe at some point on seperate "routes.js" file for each part of routing (more simplicity)
+
+app.get('/', (req, res) => {
     res.render(__dirname + "/views/register.ejs", {error:"", success:""})
 })
 
-
-
-app.post('/registersubmit',(req,res) => { //unfinished: need to finish DB first.
-    const pwd = req.body.pwd;
-    const username = req.body.username
-    const email = req.body.email
-
-    //hashing
-    const saltRounds = 15;
-    bcrypt.genSalt(saltRounds, function(err, salt) {
-        bcrypt.hash(pwd, salt, function(err, hash) {
-            // Store hash in sql database
-            if(err) { 
-                console.log("ERROR: hashing error")
-                console.log(err)
-                res.render(__dirname + "/views/register.ejs", {errMsg:"Error while hashing. Please try again.",successMsg:""});
-                return;
-            }
-
-        });
-    });
+app.get('/signin', (req, res) => {
+    res.render(__dirname + "/views/login.ejs")
 })
 
-app.post('/loginsubmit',(req,res) =>{
+app.get('/signup', (req,res) => {
+    res.render(__dirname + '/views/register.ejs')
+})
+
+app.post('/signup',(req,res) => { //unfinished: need to finish DB first.
+    
+    var error = "";
+    var validateTest = db.validateUser(email, username, password, error );
+    if (!validateTest) {
+        res.render
+    }
+
+
+    //hashing
+   
+})
+
+// Assuming db is your Database class instance
+app.post('/signup', (req, res) => {
+    const {email, username, password} = req.body;
+    // Validation function
+    const validateTest = db.validateUser(email, username, password, (errMsg) => {
+        // Render the login page with an error message if validation fails
+        res.render(__dirname + "/views/login.ejs", { error: errMsg, success: "" });
+    });
+
+    // If validation fails, return
+    if (!validateTest) {
+        return;
+    }
+    // Check if the username is available
+    db.checkUserAvailable(username, (isAvailable) => {
+        if (!isAvailable) {
+            // If username already exists, render login page with an error message
+            res.render(__dirname + "/views/login.ejs", { error: "Username already exists. Please choose another.", success: "" });
+            return;
+        }
+        // Hash the password
+        const saltRounds = 15;
+        bcrypt.genSalt(saltRounds, function(err, salt) {
+            bcrypt.hash(password, salt, function(err, hash) {
+                // Store hash in sql database
+                if(err) { 
+                    console.log("ERROR: hashing error")
+                    console.log(err)
+                    res.render(__dirname + "/views/register.ejs", {error:"Error while hashing. Please try again.",success:""});
+                    return;
+                }
+            });
+            // Create a new user
+            db.createNewUser(email, hash, username);
+            // Render login page with a success message
+            res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+        });
+    });
+});
+
+
+
+
+app.post('/signin',(req,res) =>{
     
 })
 

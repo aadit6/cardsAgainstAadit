@@ -1,9 +1,23 @@
-// database.js
-
 const mysql = require('mysql');
-const config = require("./config/db_config.json");
+const express = require('express');
+const configPath = './config/db_config.json';
 
+let config;
 
+try {
+  config = require(configPath);
+  console.log("config.json successfully loaded");
+} catch (error) {
+  if (error.code === 'MODULE_NOT_FOUND') {
+    console.error("Error: config.json file not found. Make sure it exists by creating a config.json file in the config folder.");
+  } else if (error instanceof SyntaxError) {
+    console.error("Error: There is a syntax error in the config.json file. Please fix the syntax.");
+  } else {
+    console.error("An unexpected error occurred while reading config.json file:", error.message);
+  }
+
+  process.exit(1);
+}
 
 class Database {
   
@@ -65,7 +79,68 @@ class Database {
     }    
 
 
-// USER table operations
+// login-registration based functions
+
+    validateUser(email, username, password, errorMessage, callback) { //should i make it so i can pretty much get rid of the frontend js??
+
+        if (email.length === 0 || username.length === 0 || pwd.length === 0) {
+            
+            errorMessage("You must not leave any fields blank")
+            return false;
+            
+        }
+
+        // password validation
+        if (password.length < 10 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[!\"£$%&*#@?]/.test(password)) {
+            errorMessage("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed")
+            return false;
+        }
+    
+        // email validation
+        if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
+            errorMessage("Your email address is invalid")
+            return false;
+        }
+    
+        // username validation
+        if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
+            errorMessage("your username must not contain any special characters")
+            return false;
+        }
+    
+        errorMessage("none");
+        return true;
+        
+
+    }
+
+    checkUserExists() {
+        const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"
+        const values = [username];
+
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error checking username existence:", err);
+                return callback(err);
+            }
+            const usernameExists = result[0].count > 0;
+            callback(null, usernameExists)
+        })
+    }
+
+    createNewUser(email, username, hashedPassword, callback) {
+        const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
+        const values = [email, username, hashedPassword];
+
+        this.connection.query(sql, values, (err, result) => {
+            if (queryErr) {
+                console.error("Error inserting users into the database", err);
+                return callback(queryErr);
+            }
+            console.log("User successfuly inserted into the database")
+            callback(null, result);
+        })
+    }
 
 
 

@@ -23,7 +23,7 @@
     </div>
     <div class="container">
         <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">Register</h1>
-        <form onsubmit="return UserValidation()" action="/registersubmit" method="post">
+        <form onsubmit="return UserValidation()" action="/signup" method="post">
             <div class="form-floating mb-3">
               <label for="UserEmail" class="form-label">Email address</label>
               <input type="text" class="form-control" id="UserEmail" aria-describedby="emailHelp" name = "email">
@@ -47,7 +47,7 @@
 
             <div class="col-">
                 <div class="row justify-content-center">
-                    <button type="button" class="btn btn-primary btn-lg" href = "login.ejs">BACK</button>
+                    <button type="button" class="btn btn-primary btn-lg" href = "/signin">BACK</button>
                     
                 </div>
             </div>
