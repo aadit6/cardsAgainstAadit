@@ -131,14 +131,14 @@ class Database {
     this.connection.query(sql, values, (err, result) => {
         if (err) {
             console.error("Error checking username existence:", err);
-            callback(false);
+            callback(false, "Error checking existence of that username");
         } else if (result) {
             const count = result[0].count;
             if (count > 0) {
                 console.log("username already exists") //maybe try and show this message on screen like how i did in validation function
-                callback(false);
+                callback(false, "An account with that username already exists. If you would like you can sign in instead.");
             } else {
-                callback(true);
+                callback(true, "");
                 
             }
             
@@ -150,21 +150,21 @@ class Database {
 
 
 
-    createNewUser(email, username, hashedPassword, callback) {
-        const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
-        const values = [email, username, hashedPassword];
-
-        this.connection.query(sql, values, (err, result) => {
-            if (err) {
-                console.error("Error inserting users into the database", err);
-                callback(false);
-            } else if (result) {
-                console.log("User successfuly inserted into the database")
-                callback(true);
-            }
-            
-        })
-    }
+        createNewUser(email, username, hashedPassword, callback) {
+            const sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
+            const values = [email, username, hashedPassword];
+        
+            this.connection.query(sql, values, (err, result) => {
+                if (err) {
+                    console.error("Error inserting users into the database", err);
+                    callback(false, "Error inserting user into the database");
+                } else {
+                    console.log("User successfully inserted into the database");
+                    callback(true, "");
+                }
+            });
+        }
+    
 
     // createNewUser(email, pass, user) {
     //     var sql = "INSERT INTO users (Email, PasswordHash, Username) VALUES ('" + email + "', '" + pass + "', '" + user + "')"

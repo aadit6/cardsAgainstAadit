@@ -130,8 +130,17 @@ app.post('/signup', (req, res) => {
                 res.render(__dirname + "/views/register.ejs", {error:"Server side hashing error. Please try again.",success:""});
                 return;
             }
-            db.createNewUser(email, hash, username); // create the new user now that all validations are done
-            res.render(__dirname + "/views/login.ejs", {error:"",success:"Successfully created account! You may now login."});
+            
+            var createUserCallback = (success, errorMessage) => {
+                if (!success) {
+                    res.render(__dirname + "/views/register.ejs", { error: errorMessage, success: "" });
+                    return;
+                }
+                res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+            };
+            
+            db.createNewUser(email, username, hash, createUserCallback);
+            
         })
     }
     if(!validateTest) { //if server side validation returns false
