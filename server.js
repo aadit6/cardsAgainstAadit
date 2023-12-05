@@ -109,11 +109,15 @@ app.get('/signup', (req,res) => {
 
 
 app.post('/signup', (req, res) => {
-    const email = req.body.email; // get values from form
-    const username = req.body.username;
-    const password = req.body.password;
+    const {email, username, password} = req.body;
 
-    var validateTest = db.validate(email, username, password); // validates data
+    var validateTest = db.validateUser(email, username, password, (err) => {
+        if (err) {
+            res.render(__dirname + "/views/register.ejs", {error:err, success:""});
+            return;   
+        }
+        
+    }); // validates data
     var handleAccCreation = (valid) => { // this function runs if data is valid
         if(!valid) { // if username already exists
             res.render(__dirname + "/views/register.ejs", {error:"Username already exists. Please choose another.",success:""});
@@ -134,7 +138,7 @@ app.post('/signup', (req, res) => {
         res.render(__dirname + "/views/register.ejs", {error:"Server side validation error. Please try again.",success:""});
         return;
     } else {
-        db.checkUserAvailable(username, handleAccCreation) // checks if username is available
+        db.checkUser(username, handleAccCreation) // checks if username is available
     }
 })
 
