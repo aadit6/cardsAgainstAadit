@@ -81,75 +81,143 @@ class Database {
 
 // login-registration based functions
 
-    validateUser(email, username, password, errorMessage, callback) {
+    // validateUser(email, username, password, errorMessage, callback) {
 
-        // for debugging
-        console.log('Email:', email);
-        console.log('Username:', username);
-        console.log('Password:', password);
+    //     // for debugging
+    //     console.log('Email:', email);
+    //     console.log('Username:', username);
+    //     console.log('Password:', password);
 
-        const errors = [];
+    //     const errors = [];
 
-        if (!email || !password || !username || email.trim() === '' || password.trim() === '' || username.trim() === '') {
-            errors.push("You must not leave any fields blank");
+    //     if (!email || !password || !username || email.trim() === '' || password.trim() === '' || username.trim() === '') {
+    //         errors.push("You must not leave any fields blank");
+    //     }
+
+    //     // password validation
+    //     if (password.length < 10 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[!\"£$%&*#@?]/.test(password)) {
+    //         errors.push("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed");
+    //     }
+
+    //     // email validation
+    //     if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
+    //         errors.push("Your email address is invalid");
+    //     }
+
+    //     // username validation
+    //     if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
+    //         errors.push("Your username must not contain any special characters");
+    //     }
+
+    //     // Check if there are any validation errors
+    //     if (errors.length > 0) {
+    //         errorMessage(errors.join(". "));
+    //         return false;
+    //     }
+
+    //     // If there are no errors, callback with 'none'
+    //     errorMessage("");
+    //     return true;
+    // }
+
+
+
+    // checkUserAvailable(username, callback) {
+    // const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?";
+    // const values = [username];
+
+    // this.connection.query(sql, values, (err, result) => {
+    //     if (err) {
+    //         console.error("Error checking username existence:", err);
+    //         return callback(err);
+    //     }
+    //     const usernameExists = result[0].count > 0;
+    //     callback(null, usernameExists);
+    // });
+    // }
+
+
+
+    // createNewUser(email, username, hashedPassword, callback) {
+    //     const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
+    //     const values = [email, username, hashedPassword];
+
+    //     this.connection.query(sql, values, (err, result) => {
+    //         if (queryErr) {
+    //             console.error("Error inserting users into the database", err);
+    //             return callback(queryErr);
+    //         }
+    //         console.log("User successfuly inserted into the database")
+    //         callback(null, result);
+    //     })
+    // }
+
+    createNewUser(email, pass, user) {
+        var sql = "INSERT INTO users (Email, PasswordHash, Username) VALUES ('" + email + "', '" + pass + "', '" + user + "')"
+        this.connection.query(sql, (err, result) => {
+            if(err) {
+                console.log("Error while inserting user")
+                console.log(err)
+                return false;
+            } else {
+                console.log("Successfully added user!")
+                return true;
+            }
+        })
+    }
+
+    checkUserAvailable(user, callback) {
+        var sql = "SELECT UserID FROM users WHERE username = '" + user + "'"
+        this.connection.query(sql, (err, result) => {
+            if(err) {
+                console.log("Error while checking user availability")
+                console.log(err)
+                callback(false);
+            } else {
+                var found = result.length;
+                if(found > 0) {
+                    console.log("User already exists")
+                    callback(false);
+                } else {
+                    console.log("User doesn't exists")
+                    callback(true);
+                }
+            }
+        })
+    }
+
+    validate(email, username, password, callback) {
+        // Blank field test
+        if(email.length === 0 || username.length === 0 || password.length === 0) {
+            return false;
         }
-
-        // password validation
-        if (password.length < 10 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[!\"£$%&*#@?]/.test(password)) {
-            errors.push("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed");
+        //Email validation
+        else if(email.indexOf("@") == -1 || email.indexOf(".") == -1) {
+            return false; 
         }
-
-        // email validation
-        if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
-            errors.push("Your email address is invalid");
+        // Password validation
+        else if(password.length < 8) { // checks if it's under 8 characters 
+            return false;
         }
-
-        // username validation
-        if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
-            errors.push("Your username must not contain any special characters");
+        else if(password.search(/\d/) == -1) { //checks if no numbers
+            return false;
         }
-
-        // Check if there are any validation errors
-        if (errors.length > 0) {
-            errorMessage(errors.join(". "));
+        else if(password.search(/[a-z]/) == -1) { //checks if no lower case
+            return false;
+        }
+        else if(password.search(/[A-Z]/) == -1) { //checks if no upper case
+            return false;
+        }
+        else if(password.search(/[^A-Za-z0-9]/) == -1) { //checks if no special characters
+            return false;
+        }
+        // Username validation
+        if(username.search(/[^A-Za-z0-9]/) != -1) { //checks if special characters
             return false;
         }
 
-        // If there are no errors, callback with 'none'
-        errorMessage("");
         return true;
     }
-
-
-
-    checkUserAvailable() {
-        const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"
-        const values = [username];
-
-        this.connection.query(sql, values, (err, result) => {
-            if (err) {
-                console.error("Error checking username existence:", err);
-                return callback(err);
-            }
-            const usernameExists = result[0].count > 0;
-            callback(null, usernameExists)
-        })
-    }
-
-    createNewUser(email, username, hashedPassword, callback) {
-        const sql = "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
-        const values = [email, username, hashedPassword];
-
-        this.connection.query(sql, values, (err, result) => {
-            if (queryErr) {
-                console.error("Error inserting users into the database", err);
-                return callback(queryErr);
-            }
-            console.log("User successfuly inserted into the database")
-            callback(null, result);
-        })
-    }
-
 
 
 
