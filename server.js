@@ -43,77 +43,20 @@ const db = new Database();
 // login and registration routing => maybe at some point on seperate "routes.js" file for each part of routing (more simplicity)
 
 app.get('/', (req, res) => {
-    res.render(__dirname + "/views/register.ejs", {error:"", success:""})
+    res.render(__dirname + "/views/login.ejs", {error:"", success:""});
+    
 })
 
 app.get('/signin', (req, res) => {
-    res.render(__dirname + "/views/login.ejs")
+    res.render(__dirname + "/views/login.ejs", {error:"", success:""});
 })
 
 app.get('/signup', (req,res) => {
-    res.render(__dirname + '/views/register.ejs')
+    res.render(__dirname + '/views/register.ejs', {error:"", success:""});
 })
 
-// ... (other imports)
-
-
-
-    // Validation function
-
-
-    // app.post('/signup', (req, res) => {
-    //     const { email, username, password } = req.body;
-    //     // Validate user input
-    //     const validateTest = db.validateUser(email, username, password, (errMsg) => {
-    //         // Render the login page with an error message if validation fails
-    //         res.render(__dirname + "/views/register.ejs", { error: errMsg, success: "" });
-    //     });
-    
-    //     if (!validateTest) {
-    //         // Render the login page with an error message if validation fails
-    //         res.render(__dirname + "/pages/login.ejs", {errMsg:"Server side validation error. Please try again.", successMsg:""});
-    //         return;
-    //     }
-    
-    //     // Check if the username is available
-    //     db.checkUserAvailable(username, (isAvailable) => {
-    //         if (!isAvailable) {
-    //             // If username already exists, render login page with an error message
-    //             res.render(__dirname + "/pages/login.ejs", {errMsg:"Username already exists. Please choose another.", successMsg:""});
-    //             return;
-    //         }
-    
-    //         // Hash the password
-    //         bcrypt.hash(password, 10, function (err, hash) {
-    //             if (err) {
-    //                 console.log("Error while hashing password");
-    //                 console.log(err);
-    //                 res.render(__dirname + "/pages/login.ejs", {errMsg:"Server side hashing error. Please try again.", successMsg:""});
-    //                 return;
-    //             }
-    
-    //             // Create the new user now that all validations are done
-    //             const success = db.createNewUser(email, hash, username);
-    
-    //             if (success) {
-    //                 // Render login page with a success message
-    //                 res.render(__dirname + "/pages/login.ejs", {errMsg:"", successMsg:"Successfully created account! You may now login."});
-    //             } else {
-    //                 // Render login page with an error message
-    //                 res.render(__dirname + "/pages/login.ejs", {errMsg:"Error creating user. Please try again.", successMsg:""});
-    //             }
-    //         });
-    //     });
-    // });
-    
-
-
-
-
-// ... (other routes and server setup)
-
 const hashAuth = new HashingUtil();
-app.post('/signup', (req, res) => {
+app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR WHEN SUCCESSFUL => (but doesnt affect anything rn so hey-ho)
     const { email, username, password } = req.body;
 
     // Validate user input
@@ -171,18 +114,6 @@ app.post('/signup', (req, res) => {
         db.checkUser(username, handleAccCreation);
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 app.post('/signin',(req,res) =>{
     

@@ -143,20 +143,21 @@ class Database {
         });
     }
 
-    createNewUser(email, username, hashedPassword, salt, callback) {
+    createNewUser(email, username, hashedPassword, callback) {
         const sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
         const values = [email, username, hashedPassword];
     
         this.connection.query(sql, values, (err, result) => {
             if (err) {
-                console.error("Error inserting users into the database", err);
+                console.error("Error inserting user into the database", err);
                 callback(false, "Error inserting user into the database");
-            } else if (result) {
+            } else {
                 console.log("User successfully inserted into the database");
-                callback(true, "");
+                callback(true, null);
             }
         });
     }
+    
 }
 
 module.exports = { Database };

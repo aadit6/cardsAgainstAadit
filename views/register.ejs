@@ -22,41 +22,40 @@
 
     </div>
     <div class="container">
+        
         <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">Register</h1>
-        <form onsubmit="return UserValidation()" action="/signup" method="post">
-            <div class="form-floating mb-3">
+        <form action="/signup" method="post">
+        
+          <div class="form-floating mb-3">
               <label for="UserEmail" class="form-label">Email address</label>
               <input type="text" class="form-control" id="UserEmail" aria-describedby="emailHelp" name = "email">
               <div class="form-text">Must be a valid Email Address.</div>
-            </div>
-            <div class="form-floating mb-3">
+          </div>
+          <div class="form-floating mb-3">
                 <label for="UserUsername" class="form-label">Username</label>
                 <input type="text" class="form-control" id="UserUsername" name = "username">
                 <div class="form-text">Username must not contain any special characters</div>              
-              </div>
-            <div class="form-floating">
+          </div>
+          <div class="form-floating">
               <label for="UserPassword" class="form-label">Password</label>
               <input type="password" class="form-control" id="UserPassword" name="password">
-              <div id="passwordHelpBlock" class="form-text">
+          <div id="passwordHelpBlock" class="form-text">
                 Your password must be a minimum of 10 characters long and contain at least one capital letter, number and special character
-            </div>
-            <input class="btn btn-primary" type="submit" value="Register"> </input>
+          </div>
+          <input class="btn btn-primary" type="submit" value="Register"> </input>
             
-          </form>
-        <div style = "margin-top: 10px;">
-
-            <div class="col-">
-                <div class="row justify-content-center">
-                    <button type="button" class="btn btn-primary btn-lg" href = "/signin">BACK</button>
-                    
-                </div>
-            </div>
-        </div>
         </form>
+        
+        <div class="col-">
+          <div class="row justify-content-center">
+              <a href="/signin" role = "button" class = "btn btn-primary btn-lg" >BACK</a>
+          </div>
+        </div>
+        
 
     </div>
 
-    <script src="js/register.js"></script>
+
   </body>
   <head>
     <link rel="stylesheet" href="css/account.css"></link>
