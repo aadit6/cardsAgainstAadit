@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 const express = require('express');
-const configPath = './config/db_config.json';
+const configPath = '../config/db_config.json';
 
 let config;
 
@@ -81,7 +81,7 @@ class Database {
 
 // login-registration based functions
 
-    validateUser(email, username, password, errorMessage, callback) {
+    validateUser(email, username, password, errorMessage) {
 
         // for debugging
         console.log('Email:', email);
@@ -122,68 +122,41 @@ class Database {
         return true;
     }
 
-
-
     checkUser(username, callback) {
-    const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"; //aggregate sql function, parameterised sql
-    const values = [username];
+        const sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"; //aggregate sql function, parameterised sql
+        const values = [username];
 
-    this.connection.query(sql, values, (err, result) => {
-        if (err) {
-            console.error("Error checking username existence:", err);
-            callback(false, "Error checking existence of that username");
-        } else if (result) {
-            const count = result[0].count;
-            if (count > 0) {
-                console.log("username already exists") //maybe try and show this message on screen like how i did in validation function
-                callback(false, "An account with that username already exists. If you would like you can sign in instead.");
-            } else {
-                callback(true, "");
-                
-            }
-            
-        }
-       
-        
-    });
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error checking username existence:", err);
+                callback(false, "Server error checking existence of that username");
+            } else if (result) {
+                const count = result[0].count;
+                if (count > 0) {
+                    console.log("username already exists") //maybe try and show this message on screen like how i did in validation function
+                    callback(false, "An account with that username already exists. If you would like you can sign in instead.");
+                } else {
+                    callback(true, "");
+                    
+                }   
+            }  
+        });
     }
 
-
-
-        createNewUser(email, username, hashedPassword, callback) {
-            const sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
-            const values = [email, username, hashedPassword];
-        
-            this.connection.query(sql, values, (err, result) => {
-                if (err) {
-                    console.error("Error inserting users into the database", err);
-                    callback(false, "Error inserting user into the database");
-                } else {
-                    console.log("User successfully inserted into the database");
-                    callback(true, "");
-                }
-            });
-        }
+    createNewUser(email, username, hashedPassword, salt, callback) {
+        const sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
+        const values = [email, username, hashedPassword];
     
-
-    // createNewUser(email, pass, user) {
-    //     var sql = "INSERT INTO users (Email, PasswordHash, Username) VALUES ('" + email + "', '" + pass + "', '" + user + "')"
-    //     this.connection.query(sql, (err, result) => {
-    //         if(err) {
-    //             console.log("Error while inserting user")
-    //             console.log(err)
-    //             return false;
-    //         } else {
-    //             console.log("Successfully added user!")
-    //             return true;
-    //         }
-    //     })
-    // }
-
-
-   
-
-
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error inserting users into the database", err);
+                callback(false, "Error inserting user into the database");
+            } else if (result) {
+                console.log("User successfully inserted into the database");
+                callback(true, "");
+            }
+        });
+    }
 }
 
 module.exports = { Database };

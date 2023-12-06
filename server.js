@@ -3,12 +3,17 @@
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt"); 
-const database = require("./database");
 const middleware = require("./middleware");
 const ejs = require("ejs")
 const bodyParser = require("body-parser");
 const path = require("path");
-const {Database} = require("./database.js")
+
+const database = require("./utils/database.js");
+const {Database} = require("./utils/database.js")
+
+const authutils = require("./utils/authutils.js");
+const {HashingUtil} = require("./utils/authutils.js");
+
 
 
 
@@ -107,49 +112,67 @@ app.get('/signup', (req,res) => {
 
 // ... (other routes and server setup)
 
-
+const hashAuth = new HashingUtil();
 app.post('/signup', (req, res) => {
-    const {email, username, password} = req.body;
+    const { email, username, password } = req.body;
 
+    // Validate user input
     var validateTest = db.validateUser(email, username, password, (err) => {
         if (err) {
-            res.render(__dirname + "/views/register.ejs", {error:err, success:""});
-            return;   
-        }
-        
-    }); // validates data
-    var handleAccCreation = (valid) => { // this function runs if data is valid
-        if(!valid) { // if username already exists
-            res.render(__dirname + "/views/register.ejs", {error:"Username already exists. Please choose another.",success:""});
+            res.render(__dirname + "/views/register.ejs", { error: err, success: "" });
             return;
         }
-        bcrypt.hash(password, 10, function (err,hash) {
-            if(err) { // if hash for whatever reason doesn't work
-                console.log("Error while hashing password")
-                console.log(err)
-                res.render(__dirname + "/views/register.ejs", {error:"Server side hashing error. Please try again.",success:""});
+    });
+
+    // Callback function for handling user creation
+    var handleAccCreation = (usernameAvailable, errorMessage) => {
+        if (!usernameAvailable) {
+            res.render(__dirname + "/views/register.ejs", { error: errorMessage, success: "" });
+            return;
+        }
+
+        // Generate salt
+        hashAuth.generateSalt(64, (saltErr, salt) => {
+            if (saltErr) {
+                console.error('Salt generation failed:', saltErr);
+                res.render(__dirname + "/views/register.ejs", { error: saltErr, success: "" });
                 return;
             }
-            
-            var createUserCallback = (success, errorMessage) => {
-                if (!success) {
-                    res.render(__dirname + "/views/register.ejs", { error: errorMessage, success: "" });
+
+            // Hash the password using the generated salt
+            hashAuth.hashPassword(password, salt, 10000, (hashErr, hashedPassword) => {
+                if (hashErr) {
+                    console.error('Password hashing failed:', hashErr);
+                    res.render(__dirname + "/views/register.ejs", { error: hashErr, success: "" });
                     return;
                 }
-                res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
-            };
-            
-            db.createNewUser(email, username, hash, createUserCallback);
-            
-        })
-    }
-    if(!validateTest) { //if server side validation returns false
-        res.render(__dirname + "/views/register.ejs", {error:"Server side validation error. Please try again.",success:""});
+
+                // Callback function for creating a new user
+                var createUserCallback = (userCreated, creationError) => {
+                    if (!userCreated) {
+                        res.render(__dirname + "/views/register.ejs", { error: creationError, success: "" });
+                        return;
+                    }
+                    res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+                };
+
+                // Create a new user
+                db.createNewUser(email, username, hashedPassword, createUserCallback);
+            });
+        });
+    };
+
+    // If validation fails, render the registration page with an error message
+    if (!validateTest) {
+        res.render(__dirname + "/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
         return;
     } else {
-        db.checkUser(username, handleAccCreation) // checks if username is available
+        // Check if the username is available
+        db.checkUser(username, handleAccCreation);
     }
-})
+});
+
+
 
 
 
