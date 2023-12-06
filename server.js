@@ -1,5 +1,5 @@
 // imports
-
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt"); 
@@ -7,15 +7,17 @@ const middleware = require("./middleware");
 const ejs = require("ejs")
 const bodyParser = require("body-parser");
 const path = require("path");
+const session = require("express-session");
+const mySqlStore = require("express-mysql-session")(session);
+const passport = require("passport");
+const passportLocal = require("passport-local");
 
+//utils
 const database = require("./utils/database.js");
 const {Database} = require("./utils/database.js")
 
 const authutils = require("./utils/authutils.js");
 const {HashingUtil} = require("./utils/authutils.js");
-
-
-
 
 // initialising server (mounting middleware)
 
@@ -37,6 +39,21 @@ const db = new Database();
         process.exit(1);
     }
 })();
+
+//initialise session
+const sessionStore = new mySqlStore() //INCOMPLETE => FINISH SETTING UP DB FOR SESSION
+
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        store: sessionStore
+    })
+)
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 
