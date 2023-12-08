@@ -29,9 +29,26 @@
             <!-- error/success message if registration was success / failure to login -->
     </div>
          
-    <div class="container">
-        
+    <div class="container mt-5">
         <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">LOGIN</h1>
+        <div class = "row">
+        
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <a class="btn btn-block btn-social btn-google custom-google-btn" href="/auth/google" role="button">
+                            <i class="fab fa-google"></i> Sign In with Google
+                        </a>
+                    </div>
+                </div>
+                
+                
+            </div>
+
+        <div class="col-sm-8">
+        <div class="card">
+        <div class="card-body">
+        
         <form action="/signin" method="post">
            
             <div class="form-floating mb-3">
@@ -47,18 +64,31 @@
             
 
         </form>
-        <div style = "margin-top: 10px;">
+
+            
+
+        </div>
+    </div>
+    </div>
+        </div> 
+        <div class="text-center mt-3">
             <div class="row justify-content-center" style="font-size: 25pt;">
                 Don't Have An Account?
             </div>
-            <div class="col-">
-                <div class="row justify-content-center">
-                    <a href="/signup"><button class="btn btn-primary" style="width:100px; ">Register</button></a>
-                </div>
+            <div class="row justify-content-center">
+                <a href="/signup">
+                    <button class="btn btn-primary btn-lg">Register</button>
+                </a>
             </div>
         </div>
-        
+
     </div>
 </body>
-<head><link rel="stylesheet" href="css/account.css"></link></head>
+<head>
+    <link rel="stylesheet" href="css/account.css"></link>
+    <link rel="stylesheet" href="css/bootstrap-social.css"></link>
+
+
+
+</head>
 </html>

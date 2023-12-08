@@ -2,15 +2,13 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const bcrypt = require("bcrypt"); 
-const middleware = require("./middleware");
+const path = require("path");
+const fs = require("fs")
 const ejs = require("ejs")
 const bodyParser = require("body-parser");
-const path = require("path");
 const session = require("express-session");
-const mySqlStore = require("express-mysql-session")(session);
-const passport = require("passport");
-const passportLocal = require("passport-local");
+const passport = require("passport")
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 //utils
 const database = require("./utils/database.js");
@@ -19,13 +17,15 @@ const {Database} = require("./utils/database.js")
 const authutils = require("./utils/authutils.js");
 const {HashingUtil} = require("./utils/authutils.js");
 
+const middleware = require("./middleware");
+
 // initialising server (mounting middleware)
 
 const port = 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({extended: true})); //middleware to parse form
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
-app.use(middleware.logger); //maybe later at some point have this in the middleware.js file
+app.use(middleware.logger);
 app.set('view engine', 'ejs')
 
 //initialising database
@@ -40,27 +40,86 @@ const db = new Database();
     }
 })();
 
-//initialise session
-const sessionStore = new mySqlStore() //INCOMPLETE => FINISH SETTING UP DB FOR SESSION
+const sessionStore = db.getSessionStore();
 
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
-        store: sessionStore
+        store: sessionStore,
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
+        }
     })
 )
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Serialize user for session
 
+
+passport.use(new GoogleStrategy(
+    {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: '/auth/google/pokergame', // Update this based on your route
+    },
+    (accessToken, refreshToken, profile, done) => {
+        // Check if the user already exists in your database using Google ID
+        db.checkUser(null, profile.id, (existingUserCheck, errorMessage) => {
+            if (existingUserCheck) {
+                // If user exists, log in
+                return done(null, existingUserCheck);
+            } else {
+                // If user doesn't exist, create a new account
+                db.createNewUser(null, null, null, profile, (newUserCheck, newErrorMessage) => {
+                    if (newUserCheck) {
+                        // User created successfully, retrieve the newly created user
+                        const newUser = db.getUserByGoogleId(profile.id);
+                        return done(null, newUser);
+                    } else {
+                        // Handle error during user creation
+                        return done(newErrorMessage, null);
+                    }
+                });
+            }
+        });
+    }
+));
+
+passport.serializeUser((user, done) => {
+    if (user && user.Google_id) {
+        done(null, user.Google_id); // Use Google ID as the identifier
+    } else {
+        done(new Error('Invalid user object during serialization'), null);
+    }
+});
+
+// Deserialize user from session
+passport.deserializeUser((username, done) => {
+    // Use the checkUser method to retrieve the user by their username
+    db.checkUser(username, null, (success, errorOrUser) => {
+        if (success) {
+            // Adjust the following line based on your actual user object structure
+            const user = {
+                username: errorOrUser.username, // Replace with the actual property name
+                email: errorOrUser.email, // Replace with the actual property name
+                Google_id: errorOrUser.Google_id, // Replace with the actual property name
+                // Add other properties as needed
+            };
+            done(null, user);
+        } else {
+            done(errorOrUser, null);
+        }
+    });
+});
 
 // login and registration routing => maybe at some point on seperate "routes.js" file for each part of routing (more simplicity)
 
 app.get('/', (req, res) => {
-    res.render(__dirname + "/views/login.ejs", {error:"", success:""});
+    res.render(__dirname + "/views/register.ejs", {error:"", success:""});
     
 })
 
@@ -135,6 +194,24 @@ app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR W
 app.post('/signin',(req,res) =>{
     
 })
+
+app.get("/auth/google",
+  passport.authenticate('google', { scope: ["profile"] })
+);
+
+app.get('/auth/google/pokergame',
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        // Successful authentication, redirect to the home page
+        res.redirect('/menu');
+    }
+);
+
+app.get('/menu', (req, res) => {
+    res.render(__dirname + "/views/menu.ejs", {error:"", success:""});
+    
+});
+
 
 app.listen(port, () => {
     console.log(`server running on port ${port} and path ${__dirname}.`);

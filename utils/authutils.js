@@ -30,14 +30,6 @@ class HashingUtil {
         });
     }
 
-    
-    
-
-    
-
-
-
-
 }
 
 module.exports = {HashingUtil};
