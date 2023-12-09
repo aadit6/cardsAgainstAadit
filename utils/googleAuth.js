@@ -15,7 +15,7 @@ class GoogleAuth {
         let authUrl;
         authUrl = this.client.generateAuthUrl({
             access_type: "offline",
-            scope: ["profile"],
+            scope: ["profile", "email"],
 
         })
         return authUrl;
@@ -57,14 +57,15 @@ class GoogleAuth {
                 const googleUserId = payload.sub;
         
                 // Check if the user already exists in your database using Google ID
-                this.db.checkUser(null, googleUserId, (existingUser, errorMessage) => {
-                    if (existingUser) {
+                this.db.checkUser(null, googleUserId, (errormessage, usernameAvailable) => {
+                    if (!usernameAvailable) {
                         // If user exists, return user data
-                        callback(null, existingUser);
+                        callback(new Error("User already exists"), null);
                     } else {
                         // If user doesn't exist, create a new account
-                        this.createNewUser(payload, (newUser, creationError) => {
+                        this.createNewUser(payload, (creationError, newUser) => {
                             if (newUser) {
+                                console.log("user successfully cread")
                                 callback(null, newUser);
                             } else {
                                 callback(new Error(creationError), null);
@@ -81,7 +82,7 @@ class GoogleAuth {
     createNewUser(googlePayload, callback) {
       // Extract relevant information from the Google payload
       const { sub, email, given_name, family_name } = googlePayload;
-      const randNum = Math.floor(Math.random() * 1000);
+      const randNum = Math.floor(Math.random() * 10000000);
       const username = `${given_name.toLowerCase()}${family_name.toLowerCase()}${randNum}`;
       
       const newUser = {
@@ -89,13 +90,14 @@ class GoogleAuth {
         email: email,
         username: username,
       };
+      console.log(newUser);
 
-      this.db.createNewUser(null, null, null, newUser, (createdUser, error) => {
-        if (createdUser) {
+      this.db.createNewUser(null, null, null, newUser, (error, createdUser) => { //error always first
+        if (!error) {
             console.log(createdUser, "successfully entered into database")
             callback(null, createdUser);
-        } else {
-            console.log("fucks sake cant enter into database")
+        } else if (error) {
+            console.log("cant enter into database")
             callback(new Error(error), null);
         }
       });

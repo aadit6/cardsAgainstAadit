@@ -47,19 +47,19 @@ const db = require("./utils/database.js");
     }
 })();
 
-// const sessionStore = db.getSessionStore();
+const sessionStore = db.getSessionStore();
 
-// app.use(
-//     session({
-//         secret: process.env.SESSION_SECRET,
-//         resave: false,
-//         saveUninitialized: false,
-//         store: sessionStore,
-//         cookie: {
-//             maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
-//         }
-//     })
-// )
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        store: sessionStore,
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
+        }
+    })
+)
 
 
 
@@ -79,7 +79,7 @@ app.get('/signup', (req,res) => {
 })
 
 const hashAuth = new HashingUtil();
-app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR WHEN SUCCESSFUL => (but doesnt affect anything rn so hey-ho)
+app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR WHEN SUCCESSFUL => (but doesnt affect anything rn so hey-ho)
     const { email, username, password } = req.body;
 
     // Validate user input
@@ -91,7 +91,7 @@ app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR W
     });
 
     // Callback function for handling user creation
-    var handleAccCreation = (usernameAvailable, errorMessage) => {
+    var handleAccCreation = (errorMessage, usernameAvailable) => { //callback correct way round
         if (!usernameAvailable) {
             res.render(__dirname + "/views/register.ejs", { error: errorMessage, success: "" });
             return;
@@ -114,7 +114,7 @@ app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR W
                 }
 
                 // Callback function for creating a new user
-                var createUserCallback = (userCreated, creationError) => {
+                var createUserCallback = (creationError, userCreated) => {
                     if (!userCreated) {
                         res.render(__dirname + "/views/register.ejs", { error: creationError, success: "" });
                         return;
@@ -123,7 +123,7 @@ app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR W
                 };
 
                 // Create a new user
-                db.createNewUser(email, username, hashedPassword, createUserCallback);
+                db.createNewUser(email, username, hashedPassword, null, createUserCallback);
             });
         });
     };
@@ -134,7 +134,7 @@ app.post('/signup', (req, res) => { //NOTE: GETTING "CANNOT SET HEADERS" ERROR W
         return;
     } else {
         // Check if the username is available
-        db.checkUser(username, handleAccCreation);
+        db.checkUser(username, null, handleAccCreation);
     }
 });
 

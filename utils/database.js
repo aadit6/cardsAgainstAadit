@@ -67,10 +67,10 @@ class Database {
     }
 
 //for sessions
-    getSessionStore() {
+    getSessionStore() { //wellll technically its creating a database so belongs here
         const sessionStore = new MySQLStore({
             expiration: 86400000,
-            createDatabaseTable: true,
+            createDatabaseTable: true, //creates "sessions" database
             schema: {
                 tableName: 'sessions',
                 columnNames: {
@@ -92,6 +92,7 @@ class Database {
                 UserID INT AUTO_INCREMENT PRIMARY KEY,
                 Username VARCHAR(255) NOT NULL,
                 Email VARCHAR(255) NOT NULL,
+                PasswordHash VARCHAR(255),
                 Google_id VARCHAR(255)
 
             );
@@ -111,7 +112,7 @@ class Database {
 
 // login-registration based functions
 
-    validateUser(email, username, password, errorMessage) {
+    validateUser(email, username, password, errorMessage) { ///MAYBE: move this to authutils since doesnt require any database operations
 
         // for debugging
         console.log('Email:', email);
@@ -163,19 +164,20 @@ class Database {
             values = [username];
         } else if (googleid) {
             sql = "SELECT COUNT(*) AS count FROM users WHERE Google_id = ?";
-            values = [googleid]    
+            values = [googleid];    
         }
         this.connection.query(sql, values, (err, result) => {
             if (err) {
                 console.error("Error checking user existence:", err);
-                callback(false, "Server error checking existence of that user");
+                callback("Server error: error checking user existence", false);
             } else if (result) {
                 const count = result[0].count;
                 if (count > 0) {
-                    console.log("user already exists") //maybe try and show this message on screen like how i did in validation function
-                    callback(false, "An account with that information already exists. If you would like you can sign in instead.");
+                    console.log("user already exists") 
+                    callback("an account with those details already exists", false);
                 } else {
-                    callback(true, "");
+                    console.log("user doesnt already exist!");
+                    callback(null, true); //need to check if the null value still works in regular register form
                     
                 }   
             }  
@@ -187,7 +189,7 @@ class Database {
 
         if (profile) {
             sql = "INSERT INTO users (email, username, Google_id) VALUES (?, ?, ?)";
-            values = [profile.emails[0].value, profile.displayName, profile.id];
+            values = [profile.email, profile.username, profile.googleId];
         } else {
             sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
             values = [email, username, hashedPassword];
@@ -196,10 +198,11 @@ class Database {
         this.connection.query(sql, values, (err, result) => {
             if (err) {
                 console.error("Error inserting user into the database", err);
-                callback(false, "Error inserting user into the database");
+                callback("Error inserting user into the database", false);
             } else {
+                console.log(result);
                 console.log("User successfully inserted into the database");
-                callback(true, null);
+                callback(null, true);
             }
         });
     }
