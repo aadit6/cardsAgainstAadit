@@ -101,9 +101,9 @@ class Database {
 
         this.connection.query(userSql, (err, result) => {
             if (err) {
-                console.error('Error creating user table', err);
+                console.error('Error creating tables', err);
             } else {
-                console.log('user table created successfully!');
+                console.log('tables created successfully!');
             }
         });
     }
