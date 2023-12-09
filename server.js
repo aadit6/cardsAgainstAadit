@@ -1,6 +1,6 @@
 // imports
-require("dotenv").config();
 const express = require("express");
+require("dotenv").config();
 const app = express();
 const path = require("path");
 const fs = require("fs");
@@ -19,8 +19,6 @@ const {HashingUtil} = require("./utils/authutils.js");
 const googleauth = require("./utils/googleAuth.js");
 const {GoogleAuth} = require("./utils/googleAuth.js"); // Corrected import
 
-const database = require("./utils/database.js");
-const {Database} = require("./utils/database.js");
 
 
 const middleware = require("./middleware");
@@ -37,7 +35,8 @@ app.set('view engine', 'ejs')
 
 //initialising database
 
-const db = new Database();
+const db = require("./utils/database.js");
+
 
 (async () => {
     try {
@@ -49,19 +48,19 @@ const db = new Database();
     }
 })();
 
-const sessionStore = db.getSessionStore();
+// const sessionStore = db.getSessionStore();
 
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: false,
-        store: sessionStore,
-        cookie: {
-            maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
-        }
-    })
-)
+// app.use(
+//     session({
+//         secret: process.env.SESSION_SECRET,
+//         resave: false,
+//         saveUninitialized: false,
+//         store: sessionStore,
+//         cookie: {
+//             maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
+//         }
+//     })
+// )
 
 
 
