@@ -1,6 +1,6 @@
 // imports
-const express = require("express");
 require("dotenv").config();
+const express = require("express");
 const app = express();
 const path = require("path");
 const fs = require("fs");
@@ -36,7 +36,6 @@ app.set('view engine', 'ejs')
 //initialising database
 
 const db = require("./utils/database.js");
-
 
 (async () => {
     try {
