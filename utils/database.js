@@ -27,10 +27,16 @@ class Database {
     //initialising the database and error-handling
     
     constructor() {
-        this.config = config; //directly assigns configuration
-        this.connection = null;
-    }
+        if (!Database.instance) {
+          this.config = config;
+          this.connection = null;
+          Database.instance = this;
+        }
+    
+        return Database.instance;
+      }
 
+    
     connect() {
         this.connection = mysql.createConnection(this.config);
 
@@ -138,6 +144,7 @@ class Database {
         // Check if there are any validation errors
         if (errors.length > 0) {
             errorMessage(errors.join(". "));
+            console.log(errorMessage);
             return false;
         }
 
@@ -152,7 +159,7 @@ class Database {
         let values;
 
         if (!googleid) {
-            sql = "SELECT COUNT(*) AS count FROM users WHERE username = ?"; //aggregate sql function, parameterised sql
+            sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"; //aggregate sql function, parameterised sql
             values = [username];
         } else if (googleid) {
             sql = "SELECT COUNT(*) AS count FROM users WHERE Google_id = ?";
@@ -199,4 +206,4 @@ class Database {
     
 }
 
-module.exports = { Database };
+module.exports = {Database};
