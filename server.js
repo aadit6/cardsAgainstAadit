@@ -37,7 +37,7 @@ app.set('view engine', 'ejs')
 
 const db = require("./utils/database.js");
 
-(async () => {
+(async () => { //alternative method of async
     try {
        await db.connect();
        db.createTables(); 
@@ -51,8 +51,6 @@ const sessionStore = db.getSessionStore((error, sessionStore) => {
     if (error) {
         console.error('Error getting session store:', error);
         // Handle the error case here
-    } else {
-        // Use sessionStore as needed
     }
 });
 
@@ -89,20 +87,19 @@ app.get('/signup', (req,res) => {
 })
 
 const hashAuth = new HashingUtil();
-app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR WHEN SUCCESSFUL => (but doesnt affect anything rn so hey-ho)
+app.post('/signup', (req, res) => { 
     const { email, username, password } = req.body;
 
     // Validate user input
-    var validateTest = db.validateUser(email, username, password, (err) => { //DEV NOTE: this does not currently work due to sessions. (works when removed)
+    var validateTest = db.validateUser(email, username, password, (err) => {
         if (err) {
             res.render(__dirname + "/views/register.ejs", { error: err, success: "" });
-            console.log("res.render - validation error")
             return;
         }
     });
 
     // Callback function for handling user creation
-    var handleAccCreation = (errorMessage, usernameAvailable) => { //callback correct way round
+    var handleAccCreation = (errorMessage, usernameAvailable) => {
         if (!usernameAvailable) {
             res.render(__dirname + "/views/register.ejs", { error: errorMessage, success: "" });
             return;
@@ -150,9 +147,44 @@ app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR 
 });
 
 
-app.post('/signin',(req,res) =>{
+app.post('/signin', (req, res) => { //error: when enter in correct details, get "an account with those details already exists"
+    const { username, password } = req.body;
     
-})
+    //for development/debugging purposes
+    console.log("Username: ",req.body.username);
+    console.log("Password: ", req.body.password);
+
+    // Check if the username exists
+    db.checkUser(username, null, (errorMessage, userDoesntExist) => {
+        if (userDoesntExist) {
+            res.render(__dirname + "/views/login.ejs", { error: "The username doesn't exist. Please try again.", success: "" }); //is this neccessary => security risk ???
+            return
+        } else {
+            // Retrieve the stored password hash
+            db.getPass(username, (getPassError, storedPasswordHash) => {
+                if (getPassError) {
+                    res.render(__dirname + "/views/login.ejs", { error: getPassError, success: "" });
+                    return;
+                }
+                console.log(storedPasswordHash);
+                // Compare the provided password with the stored hash
+                hashAuth.comparePassword(password, storedPasswordHash, (err, isPasswordValid) => {
+                    if (isPasswordValid) {
+                        // Password is correct, set the session
+                        req.session.user = username;
+
+                        // Redirect to the menu
+                        res.redirect("/menu");
+                       
+                    } else {
+                       res.render(__dirname + "/views/login.ejs", {error:err, success:""});  
+
+                    }
+                });
+            });
+        }
+    });
+});
 
 const ggl = new GoogleAuth();
 app.get("/auth/google", (req, res) => {

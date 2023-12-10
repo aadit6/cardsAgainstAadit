@@ -22,7 +22,7 @@
 </div>
 
 <div class="container">
-    <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">Register</h1>
+    <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;"><b>Register</b></h1>
 
     <div class="row">
         <div class="col-md-4">
@@ -36,26 +36,30 @@
         </div>
 
         <div class="col-md-8">
-            <form action="/signup" method="post">
-                <div class="form-floating mb-3">
-                    <label for="UserEmail" class="form-label">Email address</label>
-                    <input type="text" class="form-control" id="UserEmail" aria-describedby="emailHelp" name="email">
-                    <div class="form-text">Must be a valid Email Address.</div>
+            <div class="card">
+                <div class = "card-body">
+                    <form action="/signup" method="post">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="UserEmail" name="email" placeholder="Email">
+                            <label for="UserEmail" class="form-label">Email address</label>
+                            <div class="form-text">Must be a valid Email Address.</div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="UserUsername" name="username" placeholder="Username">
+                            <label for="UserUsername" class="form-label">Username</label>
+                            <div class="form-text">Username must not contain any special characters</div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="UserPassword" name="password" placeholder="Password">
+                            <label for="UserPassword" class="form-label">Password</label>
+                            <div class="form-text">
+                            Your password must be a minimum of 10 characters long and contain at least one capital letter, number and special character
+                            </div>
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Register">
+                    </form>
                 </div>
-                <div class="form-floating mb-3">
-                    <label for="UserUsername" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="UserUsername" name="username">
-                    <div class="form-text">Username must not contain any special characters</div>
-                </div>
-                <div class="form-floating">
-                    <label for="UserPassword" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="UserPassword" name="password">
-                    <div id="passwordHelpBlock" class="form-text">
-                        Your password must be a minimum of 10 characters long and contain at least one capital letter, number and special character
-                    </div>
-                </div>
-                <input class="btn btn-primary" type="submit" value="Register">
-            </form>
+            </div>
         </div>
     </div>
 

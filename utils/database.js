@@ -118,7 +118,7 @@ getSessionStore(callback) {
 
 // login-registration based functions
 
-    validateUser(email, username, password, errorMessage) { ///MAYBE: move this to authutils since doesnt require any database operations
+    validateUser(email, username, password, callback) { ///MAYBE: move this to authutils since doesnt require any database operations
 
         // for debugging
         console.log('Email:', email);
@@ -150,13 +150,12 @@ getSessionStore(callback) {
 
         // Check if there are any validation errors
         if (errors.length > 0) {
-            errorMessage(errors.join(". "));
-            console.log(errorMessage);
+            callback(errors.join(". "));
             return false;
         }
 
         // If there are no errors, callback with 'none'
-        errorMessage("");
+        callback("");
         return true;
     }
 
@@ -215,6 +214,28 @@ getSessionStore(callback) {
             }
         });
     }
+
+    getPass(username, callback) {
+        const sql = "SELECT passwordHash FROM users WHERE username = ?";
+        const values = [username];
+    
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error checking username:", err);
+                return callback("server error checking username", null);
+            }
+            const passHash = result[0].passwordHash;
+            
+            if (passHash === null) {
+                return callback("username does not exist", null); 
+                //this callback occurs when you enter in a username associated with a google account. Would not
+                // work since you need to login via google for that
+            }
+            
+            callback(null, passHash);
+        });
+    }
+    
     
 }
 
