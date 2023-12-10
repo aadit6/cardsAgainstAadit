@@ -66,15 +66,13 @@ class Database {
         });
     }
 
-    returnDatabase() {
-
-    }
 
 //for sessions
-    getSessionStore() { //wellll technically its creating a database so belongs here
+getSessionStore(callback) {
+    try {
         const sessionStore = new MySQLStore({
             expiration: 86400000,
-            createDatabaseTable: true, //creates "sessions" database
+            createDatabaseTable: true,
             schema: {
                 tableName: 'sessions',
                 columnNames: {
@@ -85,8 +83,12 @@ class Database {
             }
         }, this.connection);
 
-        return sessionStore
+        callback(null, sessionStore);
+    } catch (error) {
+        callback(error, null);
     }
+}
+
 
 // creating database tables
 

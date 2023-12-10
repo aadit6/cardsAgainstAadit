@@ -47,7 +47,14 @@ const db = require("./utils/database.js");
     }
 })();
 
-const sessionStore = db.getSessionStore();
+const sessionStore = db.getSessionStore((error, sessionStore) => {
+    if (error) {
+        console.error('Error getting session store:', error);
+        // Handle the error case here
+    } else {
+        // Use sessionStore as needed
+    }
+});
 
 app.use(
     session({
@@ -66,8 +73,11 @@ app.use(
 // login and registration routing => maybe at some point on seperate "routes.js" file for each part of routing (more simplicity/seperation of concerns)
 
 app.get('/', (req, res) => {
-    res.render(__dirname + "/views/login.ejs", {error:"", success:""});
-    
+    if (req.session.user) {
+        res.redirect("/menu")
+    } else {
+        res.render(__dirname + "/views/login.ejs", {error:"", success:""});        
+    }    
 })
 
 app.get('/signin', (req, res) => {
@@ -83,9 +93,10 @@ app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR 
     const { email, username, password } = req.body;
 
     // Validate user input
-    var validateTest = db.validateUser(email, username, password, (err) => {
+    var validateTest = db.validateUser(email, username, password, (err) => { //DEV NOTE: this does not currently work due to sessions. (works when removed)
         if (err) {
             res.render(__dirname + "/views/register.ejs", { error: err, success: "" });
+            console.log("res.render - validation error")
             return;
         }
     });
@@ -130,7 +141,7 @@ app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR 
 
     // If validation fails, render the registration page with an error message
     if (!validateTest) {
-        res.render("/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
+        // res.render(__dirname +"/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
         return;
     } else {
         // Check if the username is available
