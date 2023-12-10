@@ -66,6 +66,10 @@ class Database {
         });
     }
 
+    returnDatabase() {
+
+    }
+
 //for sessions
     getSessionStore() { //wellll technically its creating a database so belongs here
         const sessionStore = new MySQLStore({
@@ -160,7 +164,7 @@ class Database {
         let values;
 
         if (!googleid) {
-            sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"; //aggregate sql function, parameterised sql
+            sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"; //counts the number of rows where the username is already in the table
             values = [username];
         } else if (googleid) {
             sql = "SELECT COUNT(*) AS count FROM users WHERE Google_id = ?";
@@ -185,24 +189,27 @@ class Database {
     }
 
     createNewUser(email, username, hashedPassword, profile, callback) {
-        let values, sql;
+        let values, sql, callbackUsername;
 
         if (profile) {
             sql = "INSERT INTO users (email, username, Google_id) VALUES (?, ?, ?)";
             values = [profile.email, profile.username, profile.googleId];
+            callbackUsername = profile.username;
         } else {
             sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
             values = [email, username, hashedPassword];
+            callbackUsername = username;
         }
         
         this.connection.query(sql, values, (err, result) => {
             if (err) {
                 console.error("Error inserting user into the database", err);
-                callback("Error inserting user into the database", false);
+                callback("Error inserting user into the database", false, null);
             } else {
-                console.log(result);
+                // console.log(result);
+                
                 console.log("User successfully inserted into the database");
-                callback(null, true);
+                callback(null, true, callbackUsername);
             }
         });
     }

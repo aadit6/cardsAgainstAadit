@@ -36,7 +36,7 @@ class GoogleAuth {
     authenticateGoogleUser(code, callback) {
         this.exchangeCodeForTokens(code, (exchangeError, tokens) => {
             if(exchangeError) {
-                return callback(exchangeError, null)
+                return callback(exchangeError, null, null)
             }
             const idToken = tokens.id_token;
             console.log("Received ID Token:", idToken);
@@ -44,31 +44,31 @@ class GoogleAuth {
             this.client.verifyIdToken({
                 idToken: idToken,
                 audience: process.env.GOOGLE_CLIENT_ID,
-            }, (error, ticket) => { // Use an arrow function here
+            }, (error, ticket) => {
                 if (error) {
                     console.error("Google authentication error:", error);
-                    console.log("Token details:", this.client.verifyIdTokenAsync(token).then(console.log)); // Add this line
+                    console.log("Token details:", this.client.verifyIdTokenAsync(token).then(console.log)); 
                     return callback(new Error("Google authentication failed"));
                 }
         
                 const payload = ticket.getPayload();
-                console.log("Decoded Code Payload:", payload); // Add this line
+                console.log("Decoded Code Payload:", payload);
         
                 const googleUserId = payload.sub;
         
                 // Check if the user already exists in your database using Google ID
                 this.db.checkUser(null, googleUserId, (errormessage, usernameAvailable) => {
                     if (!usernameAvailable) {
-                        // If user exists, return user data
-                        callback(new Error("User already exists"), null);
+                        console.log("Username Available:", usernameAvailable)
+                        // If user exists, return error
+                        callback(null, null, usernameAvailable);
                     } else {
                         // If user doesn't exist, create a new account
-                        this.createNewUser(payload, (creationError, newUser) => {
-                            if (newUser) {
-                                console.log("user successfully cread")
-                                callback(null, newUser);
+                        this.createNewUser(payload, (creationError, newUser, isUserCreated) => {
+                            if (isUserCreated) {
+                                callback(null, newUser, true);
                             } else {
-                                callback(new Error(creationError), null);
+                                callback(new Error(creationError), null, null);
                         
                             }
                         });
@@ -82,7 +82,7 @@ class GoogleAuth {
     createNewUser(googlePayload, callback) {
       // Extract relevant information from the Google payload
       const { sub, email, given_name, family_name } = googlePayload;
-      const randNum = Math.floor(Math.random() * 10000000);
+      const randNum = Math.floor(Math.random() * 100000);
       const username = `${given_name.toLowerCase()}${family_name.toLowerCase()}${randNum}`;
       
       const newUser = {
@@ -92,13 +92,13 @@ class GoogleAuth {
       };
       console.log(newUser);
 
-      this.db.createNewUser(null, null, null, newUser, (error, createdUser) => { //error always first
+      this.db.createNewUser(null, null, null, newUser, (error, isUserCreated, createdUser) => {
         if (!error) {
             console.log(createdUser, "successfully entered into database")
-            callback(null, createdUser);
+            callback(null, createdUser, true);
         } else if (error) {
             console.log("cant enter into database")
-            callback(new Error(error), null);
+            callback(new Error(error), null, false);
         }
       });
     }

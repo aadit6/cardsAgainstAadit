@@ -66,7 +66,7 @@ app.use(
 // login and registration routing => maybe at some point on seperate "routes.js" file for each part of routing (more simplicity/seperation of concerns)
 
 app.get('/', (req, res) => {
-    res.render(__dirname + "/views/register.ejs", {error:"", success:""});
+    res.render(__dirname + "/views/login.ejs", {error:"", success:""});
     
 })
 
@@ -114,8 +114,8 @@ app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR 
                 }
 
                 // Callback function for creating a new user
-                var createUserCallback = (creationError, userCreated) => {
-                    if (!userCreated) {
+                var createUserCallback = (creationError, isUserCreated, user) => {
+                    if (!isUserCreated) {
                         res.render(__dirname + "/views/register.ejs", { error: creationError, success: "" });
                         return;
                     }
@@ -130,7 +130,7 @@ app.post('/signup', (req, res) => { //NOTE : GETTING "CANNOT SET HEADERS" ERROR 
 
     // If validation fails, render the registration page with an error message
     if (!validateTest) {
-        res.render(__dirname + "/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
+        res.render("/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
         return;
     } else {
         // Check if the username is available
@@ -151,11 +151,17 @@ app.get("/auth/google", (req, res) => {
 
 app.get("/auth/google/pokergame", (req, res) => {
     const {code} = req.query;
-    console.log("Recived code:", code);
-    ggl.authenticateGoogleUser(code, (error, user) => {
-        if (error) {
-            console.error("Error during Google authentication:", error);
+    console.log("Received code:", code);
+    ggl.authenticateGoogleUser(code, (err, user, usernameAvailable) => {
+        if (err) {
+            // Handle the error case
+            res.render(__dirname + "/views/login.ejs", { error: err, success: "" });
+        } else if (!usernameAvailable) {
+            // Handle the case where the user already exists
+            res.render(__dirname + "/views/login.ejs", { error: "A user with that email already exists.", success: "" }); /// HOWEVER: THIS IS NOT NEEDED SINCE CAN JUST LOGIN INTO THAT ACCOUNT
         } else {
+            // Handle the case where the user is authenticated successfully
+            console.log("User:", user);
             req.session.user = user;
             res.redirect("/menu");
         }
@@ -163,7 +169,8 @@ app.get("/auth/google/pokergame", (req, res) => {
 })
 
 app.get('/menu', (req, res) => {
-    res.render(__dirname + "/views/menu.ejs", {Username: "bleh"});
+    const username = req.session.user;
+    res.render(__dirname + "/views/menu.ejs", {Username: username});
     
 });
 
