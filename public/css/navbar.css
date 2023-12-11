@@ -1,0 +1,41 @@
+/* Updated CSS for Navbar */
+.navbar {
+    background-color: #89c789;
+    padding: 20px;
+}
+
+.navbar-brand {
+    color: #fff;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.navbar-toggler-icon {
+    background-color: #fff;
+}
+
+.navbar-toggler {
+    border-color: #fff;
+}
+
+.navbar-nav .nav-item {
+    margin-right: 15px;
+}
+
+.navbar-nav .nav-link {
+    color: #fff;
+    font-size: 18px;
+}
+
+.navbar-nav .btn-primary,
+.navbar-nav .btn-danger {
+    font-size: 18px;
+}
+
+.navbar-nav .btn-primary:hover {
+    background-color: #1d3a6d;
+}
+
+.navbar-nav .btn-danger:hover {
+    background-color: #a00;
+}

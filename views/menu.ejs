@@ -1,43 +1,22 @@
-<%- include("partials/header") %>    
-        <div class="container">
-            <h1 class="display-1" style="margin: 10px; text-align: center; color: #3455AA;">WELCOME, <%- Username %> <!-- sort this out later --></h1>
-            <div class="d-flex justify-content-center">
-                <div class="col">
-                    <div class="row" style="justify-content: center; margin: 10px;">
-                        <button class="btn btn-primary btn-lg" id="epic" style="background-color: #3455AA; width: 100%;" type="button">JOIN</button>
-                    </div>
-                    <div class="row" style="justify-content: center; margin: 10px;">
-                        <button class="btn btn-primary btn-lg" id="epic" style="background-color: #3455AA; width: 100%;" type="button">Leaderboard</button>
-                    </div>
-                    <div class="row" style="justify-content: center; margin: 10px;">
-                        <button id="Rules" type="button" class="btn btn-primary btn-lg" style="background-color: #3455AA; width: 100%;" data-bs-toggle ="modal" data-bs-target="#rulesModal">
-                            Rules
-                        </button>
-                        <div class="modal fade" id="rulesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-scrollable">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <h1 class="modal-title fs-5" id="rulesLabel">Rules of Texas Hold'Em Poker</h1>
-                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+<%- include("partials/header") %>
 
-                        
-                        
+<div class="container">
+    <div class="welcome-text">
+        <!-- Assuming the variable that contains the username is `Username` -->
+        <h1 class="display-3 username">Welcome, <%= Username %></h1>
+    </div>
 
-                        
-                    </div>
-                    <div class="row" style="justify-content: center; margin: 10px;">
-                        <button id="logout" type="button" class=" btn btn-primary" style="background-color: #cc1717; width: 30%;">Logout</button>
-                    </div>
-                    
-                </div>
-            </div>
-            
-        </div>
+    <div class="menu-options">
+        <button class="btn btn-lg btn-primary">Join the Game</button>
+        <button class="btn btn-lg btn-primary">Leaderboard</button>
+        <a href="/rules" class="btn btn-lg btn-primary">Game Rules</a>
+        <a href="/settings" class="btn btn-settings"><i class="fas fa-cog"></i> Settings</a>
+        <button id="logout" class="btn btn-lg btn-danger">Logout</button>
+    </div>
+</div>
+
 </body>
+<head>
+    <link rel="stylesheet" href="/css/menu.css"></link>
+</head>
 </html>

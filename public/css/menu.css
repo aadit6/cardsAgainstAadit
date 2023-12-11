@@ -1,0 +1,81 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    color: black;
+}
+
+.header {
+    background-color: #3455AA;
+    padding: 10px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-text {
+    margin-bottom: 30px;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ... Rest of your CSS ... */
+
+
+.btn {
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #3455AA;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #1d3a6d;
+}
+
+.btn-danger {
+    background-color: #cc1717;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #a00;
+}
+
+.btn-settings {
+    background-color: grey; /* Change to your preferred grey color */
+    color: #fff;
+}
+
+.btn-settings:hover {
+    background-color: #404040; /* Change to a slightly darker shade of grey */
+}
+
+.fa-cog {
+    margin-right: 5px;
+}
+
+/* Style for the user's name */
+/* Style for the user's name */
+.username {
+    font-weight: bold;
+    color: #000000; /* You can adjust the color as needed */
+}
+
+
+
