@@ -73,9 +73,11 @@ body {
 /* Style for the user's name */
 /* Style for the user's name */
 .username {
-    font-weight: bold;
-    color: #000000; /* You can adjust the color as needed */
+    font-weight:normal;
+    color: #000000;
 }
 
-
-
+.user{
+    font-weight: bold;
+    color:rgb(0, 0, 0)
+}

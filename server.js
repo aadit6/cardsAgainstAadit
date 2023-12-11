@@ -166,7 +166,6 @@ app.post('/signin', (req, res) => { //error: when enter in correct details, get 
                     res.render(__dirname + "/views/login.ejs", { error: getPassError, success: "" });
                     return;
                 }
-                console.log(storedPasswordHash);
                 // Compare the provided password with the stored hash
                 hashAuth.comparePassword(password, storedPasswordHash, (err, isPasswordValid) => {
                     if (isPasswordValid) {
@@ -212,9 +211,13 @@ app.get("/auth/google/pokergame", (req, res) => {
 })
 
 app.get('/menu', (req, res) => {
-    const username = req.session.user;
-    res.render(__dirname + "/views/menu.ejs", {Username: username});
-    
+    if(!req.session.userid) {
+        res.redirect("/")
+        return;
+    } else {
+        const username = req.session.user;
+        res.render(__dirname + "/views/menu.ejs", {Username: username});
+    }
 });
 
 
