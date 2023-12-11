@@ -210,8 +210,9 @@ app.get("/auth/google/pokergame", (req, res) => {
     })
 })
 
+//app.gets after login successful (eg menu, items on navbar, logout)
 app.get('/menu', (req, res) => {
-    if(!req.session.userid) {
+    if(!req.session.user) {
         res.redirect("/")
         return;
     } else {
@@ -219,6 +220,52 @@ app.get('/menu', (req, res) => {
         res.render(__dirname + "/views/menu.ejs", {Username: username});
     }
 });
+
+app.get('/rules', (req, res) => {
+    if(!req.session.user) {
+        res.redirect('/');
+        return;
+    } else {
+        res.render(__dirname + "/views/rules.ejs");
+    }
+})
+
+app.get('/settings', (req, res) => {
+    if (!req.session.user) {
+        res.redirect('/');
+        return;
+    } else {
+        res.render(__dirname + '/views/settings.ejs', {error:"", success:""} );
+    }
+})
+
+app.get('/leaderboard', (req, res) => { //NOT IN USE YET
+    if (!req.session.user) {
+        res.redirect('/');
+        return;
+    } else{
+        res.render(__dirname + "/views/leaderboard.ejs")
+    }
+})
+
+app.get('/play', (req, res) => { //NOT IN USE YET
+    if (!req.session.user) {
+        res.redirect('/');
+        return;
+    } else{
+        res.render(__dirname + "/views/play.ejs")
+    }
+})
+
+app.get('/logout', (req, res) => {
+    if(!req.session.user) {
+        res.redirect('/')
+        return
+    } else {
+        req.session.destroy();
+        res.render(__dirname + "/views/login.ejs", { error:"", success: "Successfully logged out." });
+    }
+})
 
 
 app.listen(port, () => {

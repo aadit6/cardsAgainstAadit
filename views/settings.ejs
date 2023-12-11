@@ -32,9 +32,14 @@
          
     <div class="container">
         
-        <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">SETTINGS</h1>
-        <form action="/loginsubmit" method="post">
+        <h1 class="display-1" style="margin: 10px; text-align: center; color: #000000;">Settings</h1>
+        <form action="/settingsupdate" method="post">
            
+            <div class="form-group">
+              <label><b>Old Username</b></label>
+              <input type="text" class="form-control" id="floatingInput" placeholder="oldUsername123">
+            </div>
+          
             <div class="form-group">
                 <label><b>New Username</b></label>
                 <input type="text" class="form-control" id="floatingInput" placeholder="newUsername123">
@@ -51,21 +56,11 @@
             
             </div>
             <div class = "row mx-2">
-                <div class="col"><div class = "btn-1"><input class="btn btn-primary" type="button" value="Back" href="login.ejs" ></div> </input></div>
+                <div class="col"><div class = "btn-1"><a href="/menu" role="button" class="btn btn-primary">Back</a></div> </div>
             <div class="col"><div class = "btn-2"></div><input class="btn btn-success" type="submit" value="Save Changes"></div> </input></div>
             </div>
-            
-
         </form>
-        
-
-            
-
-
-
         </form>
-
-        
     </div>
   </body>
   <head>

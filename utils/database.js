@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const express = require('express');
 const configPath = '../config/db_config.json';
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session); //maybe hardcode manually???
+const MySQLStore = require("express-mysql-session")(session); 
 
 
 let config;
@@ -98,7 +98,7 @@ getSessionStore(callback) {
                 UserID INT AUTO_INCREMENT PRIMARY KEY,
                 Username VARCHAR(255) NOT NULL,
                 Email VARCHAR(255) NOT NULL,
-                PasswordHash VARCHAR(255),
+                PasswordHash VARCHAR(512),
                 Google_id VARCHAR(255)
 
             );
@@ -178,7 +178,7 @@ getSessionStore(callback) {
             } else if (result) {
                 const count = result[0].count;
                 if (count > 0) {
-                    console.log("user already exists") 
+                    // console.log("user already exists") 
                     callback("an account with those details already exists", false);
                 } else {
                     console.log("user doesnt already exist!");
@@ -226,8 +226,8 @@ getSessionStore(callback) {
             }
             const passHash = result[0].passwordHash;
             
-            if (passHash === null) {
-                return callback("username does not exist", null); 
+            if (passHash === null) { //is this neccessary, could be security risk => do we want to be giving user information about this sort of stuff??? 
+                return callback("username does not exist", null);  
                 //this callback occurs when you enter in a username associated with a google account. Would not
                 // work since you need to login via google for that
             }

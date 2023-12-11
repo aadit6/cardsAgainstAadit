@@ -82,7 +82,7 @@ class GoogleAuth {
     createNewUser(googlePayload, callback) {
       // Extract relevant information from the Google payload
       const { sub, email, given_name, family_name } = googlePayload;
-      const randNum = Math.floor(Math.random() * 100000);
+      const randNum = Math.floor(Math.random() * 10000);
       const username = `${given_name.toLowerCase()}${family_name.toLowerCase()}${randNum}`;
       
       const newUser = {
