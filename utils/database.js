@@ -235,6 +235,42 @@ getSessionStore(callback) {
             callback(null, passHash);
         });
     }
+
+    //for use in \settingsUpdate
+
+    updatePass(username, password, callback) {
+        const sql = "UPDATE users SET PasswordHash = ? WHERE Username = ?";
+        const values = [password, username];
+        
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                return callback (err, null) //change this if want a more custom error message (eg insead of err could have "error updating password")
+            }
+            if (result.affectedRows === 1) {
+                return callback (null, true); //again change this depending on /SETTINGSUPDATE route
+            } else {
+                return callback(null, false) //success callback => might change??
+            }
+        })
+
+    }
+
+    updateUsername(oldUsername, newUsername, callback) { //error checking (e.g console.logs)???
+        const sql = "UPDATE users SET Username = ? WHERE Username = ?";
+        const values = [oldUsername, newUsername];
+
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                return callback (err, null) //change?
+            }
+            if (result.affectedRows === 1) {
+                return callback(null, true) //change?
+            } else {
+                return callback (null, false) //change?
+            }
+        })
+
+    }
     
     
 }

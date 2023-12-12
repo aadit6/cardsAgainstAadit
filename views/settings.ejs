@@ -1,7 +1,5 @@
 <%- include("partials/header") %>    
 
-<!-- NOTE: no "name" attributes for email, password, username so will not work yet   -->
-    
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
           <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
@@ -37,22 +35,29 @@
            
             <div class="form-group">
               <label><b>Old Username</b></label>
-              <input type="text" class="form-control" id="floatingInput" placeholder="oldUsername123">
+              <input type="text" class="form-control" id="floatingInput" placeholder="oldUsername123" name="oldUsername">
             </div>
           
             <div class="form-group">
                 <label><b>New Username</b></label>
-                <input type="text" class="form-control" id="floatingInput" placeholder="newUsername123">
+                <input type="text" class="form-control" id="floatingInput" placeholder="newUsername123" name="newUsername">
+                <div class="form-text">
+                  Your new username must still obey the same rules as before so therefore must NOT contain any special characters.
+                </div>
                 
             </div>
             <div class="form-group">
                 <label><b>Old Password</b></label>
-                <input type="password" class="form-control" id="floatingPassword" placeholder="oldPassword123">
+                <input type="password" class="form-control" id="floatingPassword" placeholder="oldPassword123" name="oldPassword">
             
             </div>
             <div class="form-group">
                 <label><b>New Password</b></label>
-                <input type="password" class="form-control" id="floatingPassword" placeholder="newPassword123">
+                <input type="password" class="form-control" id="floatingPassword" placeholder="newPassword123" name="newPassword">
+                <div class="form-text">
+                  Your new password must still obey the same rules. Therefore must still have 10+ characters and contain a minimum of one 
+                  capital letter, special character and number. 
+                </div>
             
             </div>
             <div class = "row mx-2">

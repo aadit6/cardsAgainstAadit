@@ -1,6 +1,6 @@
 /* Updated CSS for Navbar */
 .navbar {
-    background-color: #89c789;
+    background-color: #036e03;
     padding: 20px;
 }
 
@@ -8,6 +8,8 @@
     color: #fff;
     font-size: 30px;
     font-weight: bold;
+    text-align: center;
+    padding-right: 30%;
 }
 
 .navbar-toggler-icon {
@@ -38,4 +40,11 @@
 
 .navbar-nav .btn-danger:hover {
     background-color: #a00;
+}
+
+.navbar-text {
+   font-weight: bold;
+   color: black;
+   font-size: larger;
+
 }

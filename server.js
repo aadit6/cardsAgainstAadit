@@ -216,8 +216,7 @@ app.get('/menu', (req, res) => {
         res.redirect("/")
         return;
     } else {
-        const username = req.session.user;
-        res.render(__dirname + "/views/menu.ejs", {Username: username});
+        res.render(__dirname + "/views/menu.ejs", {Username: req.session.user});
     }
 });
 
@@ -226,7 +225,7 @@ app.get('/rules', (req, res) => {
         res.redirect('/');
         return;
     } else {
-        res.render(__dirname + "/views/rules.ejs");
+        res.render(__dirname + "/views/rules.ejs", {Username: req.session.user});
     }
 })
 
@@ -235,7 +234,7 @@ app.get('/settings', (req, res) => {
         res.redirect('/');
         return;
     } else {
-        res.render(__dirname + '/views/settings.ejs', {error:"", success:""} );
+        res.render(__dirname + '/views/settings.ejs', {error:"", success:"", Username: req.session.user} );
     }
 })
 
@@ -265,6 +264,12 @@ app.get('/logout', (req, res) => {
         req.session.destroy();
         res.render(__dirname + "/views/login.ejs", { error:"", success: "Successfully logged out." });
     }
+})
+
+//app.post for settings => to alter account details 
+app.post('/settingsupdate', (req, res) => {
+    const {oldUsername, newUsername, oldPassword, newPassword} = req.body;
+
 })
 
 
