@@ -36,6 +36,7 @@ app.set('view engine', 'ejs')
 //initialising database
 
 const db = require("./utils/database.js");
+const { hash } = require("bcrypt");
 
 (async () => { //alternative method of async
     try {
@@ -269,6 +270,51 @@ app.get('/logout', (req, res) => {
 //app.post for settings => to alter account details 
 app.post('/settingsupdate', (req, res) => {
     const {oldUsername, newUsername, oldPassword, newPassword} = req.body;
+
+    if (newUsername === "" && newPassword === "") {
+        res.render(__dirname + "/views/settings.ejs", {error:"One of the username or password must be changed", success:""})
+        return;
+    } 
+    //validates either user/password/both depending on which values in form are filled
+    if(newUsername != ""){ 
+        db.validateUser(null, newUsername, null, (err) => {
+            if(err) {
+                res.render(__dirname + "/views/settings.ejs", {error:err, success:""})
+                return;
+            }
+        })
+    } 
+    if(newPassword != ""){
+        db.validateUser(null, null, newPassword, (err) => {
+            if(err) {
+                res.render(__dirname + "/views/settings.ejs", {error:err, success:""})
+                return;
+            }
+        })
+    }
+    db.getPass(req.session.user, (err, passHash) => {
+        if(err) {
+            res.render(__dirname + "/views/settings.ejs", {error:err, success:""});
+            return;
+        } else {
+            hashAuth.comparePassword(oldPassword, passHash, (err, isValid) => {
+                if(err) {
+                    console.log("Error: error while comparing hashes ", err)
+                    res.render(__dirname + "/views/settings.ejs", {error:err, success:""});
+                } else if (!isValid) {
+                    res.render(__dirname + "/views/settings.ejs", {error: err, success:""});
+                }
+            })
+        }
+
+        //checks if new password field has a value
+
+        if(newPassword != "") {
+            hashAuth.generateSalt() //continue from HERE....
+        }
+    })
+
+    
 
 })
 
