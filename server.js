@@ -60,7 +60,7 @@ app.use(
 
 //ROUTES
 app.use('/', authRoute);
-// app.use('/', googleAuthRoute);
+app.use('/', googleAuthRoute);
 app.use('/', indexRoute);
 app.use('/', settingsRoute);
 

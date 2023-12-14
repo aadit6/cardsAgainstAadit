@@ -2,14 +2,21 @@ const {OAuth2Client} = require("google-auth-library");
 const db = require("./database");
 
 class GoogleAuth {
+
     constructor() {
-      this.client = new OAuth2Client(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        "http://localhost:3000/auth/google/pokergame"
-        );
-      this.db = db;
+        if (!GoogleAuth.instance) {
+            this.client = new OAuth2Client(
+                process.env.GOOGLE_CLIENT_ID,
+                process.env.GOOGLE_CLIENT_SECRET,
+                "http://localhost:3000/auth/google/pokergame");
+            this.db = db;
+        }
+      
+        return GoogleAuth.instance;
+        
     }
+
+
   
     getAuthUrl() {
         let authUrl;
@@ -110,4 +117,4 @@ class GoogleAuth {
     }
 }
   
-module.exports = {GoogleAuth};
+module.exports = new GoogleAuth();

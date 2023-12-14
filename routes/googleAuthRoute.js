@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const session = require("express-session");
 const db = require("./../utils/database.js")
-const googleauth = require("./../utils/googleAuth.js");
-const {GoogleAuth} = require("./../utils/googleAuth.js"); // Corrected import
+const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA`;
 
-const ggl = new GoogleAuth();
+const ggl = require("./../utils/googleAuth.js");
 router.get("/auth/google", (req, res) => {
     const authUrl = ggl.getAuthUrl();
     res.redirect(authUrl);
@@ -17,7 +16,7 @@ router.get("/auth/google/pokergame", (req, res) => {
     ggl.authenticateGoogleUser(code, (err, user) => {
         if (err) {
             // Handle the error case
-            res.render(__dirname + "/views/login.ejs", { error: err, success: "" });
+            res.render(_dir + "/views/login.ejs", { error: err, success: "" });
             return;
         } else {
             // Handle the case where the user is authenticated successfully
@@ -27,3 +26,5 @@ router.get("/auth/google/pokergame", (req, res) => {
         }
     })
 })
+
+module.exports = router;
