@@ -90,7 +90,7 @@ getSessionStore(callback) {
 }
 
 
-// creating database tables
+// DDL SCRIPT 
 
     createTables() { //only for dev => might need to remove the create tables function in the future.
         const userSql = `
@@ -226,16 +226,32 @@ getSessionStore(callback) {
             }
             const passHash = result[0].passwordHash;
             
-            if (passHash === null) { //is this neccessary, could be security risk => do we want to be giving user information about this sort of stuff??? 
-                return callback("username does not exist", null);  
-                //this callback occurs when you enter in a username associated with a google account. Would not
-                // work since you need to login via google for that
-            }
+            // if (passHash === null) { //is this neccessary, could be security risk => do we want to be giving user information about this sort of stuff??? 
+            //     return callback("username does not exist", null);  
+            //     //this callback occurs when you enter in a username associated with a google account. Would not
+            //     // work since you need to login via google for that
+            // }
             
             callback(null, passHash);
         });
     }
 
+    getUserfromID(googleid, callback) {
+        const sql = "SELECT username FROM users WHERE Google_id = ?";
+        const values = [googleid];
+
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error retrieving username:", err);
+                return callback("Error retrieving username", null);
+            }
+            
+            console.log("Result: ", result);
+            const username = result[0].username;
+            callback(null, username);
+        })
+        
+    }
     //for use in \settingsUpdate
 
     updatePass(username, password, callback) {
@@ -244,12 +260,7 @@ getSessionStore(callback) {
         
         this.connection.query(sql, values, (err, result) => {
             if (err) {
-                return callback (err, null) //change this if want a more custom error message (eg insead of err could have "error updating password")
-            }
-            if (result.affectedRows === 1) {
-                return callback (null, true); //again change this depending on /SETTINGSUPDATE route
-            } else {
-                return callback(null, false) //success callback => might change??
+                return callback (err) //change this if want a more custom error message (eg insead of err could have "error updating password")
             }
         })
 
@@ -257,17 +268,16 @@ getSessionStore(callback) {
 
     updateUsername(oldUsername, newUsername, callback) { //error checking (e.g console.logs)???
         const sql = "UPDATE users SET Username = ? WHERE Username = ?";
-        const values = [oldUsername, newUsername];
+        const values = [newUsername, oldUsername];
 
         this.connection.query(sql, values, (err, result) => {
             if (err) {
-                return callback (err, null) //change?
+                return callback ("Error inserting into database", null) //change?
             }
-            if (result.affectedRows === 1) {
-                return callback(null, true) //change?
-            } else {
-                return callback (null, false) //change?
-            }
+            console.log(result);
+            return callback(null, "Successfully updated account details!");
+                
+            
         })
 
     }

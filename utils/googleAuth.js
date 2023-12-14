@@ -25,7 +25,7 @@ class GoogleAuth {
         this.client.getToken(code, (error, tokens) => {
             if (error) {
                 console.error("Error exchanging code for tokens:", error);
-                return callback(new Error("Failed to exchange authorization code for tokens"));
+                return callback(new Error("Failed to exchange authorization code for tokens"), null);
             }
 
             callback(null, tokens);
@@ -36,7 +36,7 @@ class GoogleAuth {
     authenticateGoogleUser(code, callback) {
         this.exchangeCodeForTokens(code, (exchangeError, tokens) => {
             if(exchangeError) {
-                return callback(exchangeError, null, null)
+                return callback(exchangeError, null)
             }
             const idToken = tokens.id_token;
             console.log("Received ID Token:", idToken);
@@ -48,7 +48,7 @@ class GoogleAuth {
                 if (error) {
                     console.error("Google authentication error:", error);
                     console.log("Token details:", this.client.verifyIdTokenAsync(token).then(console.log)); 
-                    return callback(new Error("Google authentication failed"));
+                    return callback(new Error("Google authentication failed"), null);
                 }
         
                 const payload = ticket.getPayload();
@@ -61,14 +61,20 @@ class GoogleAuth {
                     if (!usernameAvailable) {
                         console.log("Username Available:", usernameAvailable)
                         // If user exists, return error
-                        callback(null, null, usernameAvailable);
+                        this.db.getUserfromID(googleUserId, (err, username) => {
+                            if(err) {
+                                return callback(new Error(err), null)
+                            } else {
+                                callback (null, username);
+                            }
+                        })               
                     } else {
                         // If user doesn't exist, create a new account
                         this.createNewUser(payload, (creationError, newUser, isUserCreated) => {
                             if (isUserCreated) {
-                                callback(null, newUser, true);
+                                callback(null, newUser);
                             } else {
-                                callback(new Error(creationError), null, null);
+                                callback(new Error(creationError), null);
                         
                             }
                         });

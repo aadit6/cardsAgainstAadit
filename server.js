@@ -195,13 +195,11 @@ app.get("/auth/google", (req, res) => {
 app.get("/auth/google/pokergame", (req, res) => {
     const {code} = req.query;
     console.log("Received code:", code);
-    ggl.authenticateGoogleUser(code, (err, user, usernameAvailable) => {
+    ggl.authenticateGoogleUser(code, (err, user) => {
         if (err) {
             // Handle the error case
             res.render(__dirname + "/views/login.ejs", { error: err, success: "" });
-        } else if (!usernameAvailable) {
-            // Handle the case where the user already exists
-            res.render(__dirname + "/views/login.ejs", { error: "A user with that email already exists.", success: "" }); /// HOWEVER: THIS IS NOT NEEDED SINCE CAN JUST LOGIN INTO THAT ACCOUNT
+            return;
         } else {
             // Handle the case where the user is authenticated successfully
             console.log("User:", user);
@@ -217,7 +215,7 @@ app.get('/menu', (req, res) => {
         res.redirect("/")
         return;
     } else {
-        res.render(__dirname + "/views/menu.ejs", {Username: req.session.user});
+        res.render(__dirname + "/views/menu.ejs", {username: req.session.user});
     }
 });
 
@@ -226,7 +224,7 @@ app.get('/rules', (req, res) => {
         res.redirect('/');
         return;
     } else {
-        res.render(__dirname + "/views/rules.ejs", {Username: req.session.user});
+        res.render(__dirname + "/views/rules.ejs", {username: req.session.user});
     }
 })
 
@@ -235,7 +233,7 @@ app.get('/settings', (req, res) => {
         res.redirect('/');
         return;
     } else {
-        res.render(__dirname + '/views/settings.ejs', {error:"", success:"", Username: req.session.user} );
+        res.render(__dirname + '/views/settings.ejs', {error:"", success:"", username: req.session.user} );
     }
 })
 
@@ -244,7 +242,7 @@ app.get('/leaderboard', (req, res) => { //NOT IN USE YET
         res.redirect('/');
         return;
     } else{
-        res.render(__dirname + "/views/leaderboard.ejs")
+        res.render(__dirname + "/views/leaderboard.ejs", {username:req.session.user})
     }
 })
 
@@ -253,7 +251,7 @@ app.get('/play', (req, res) => { //NOT IN USE YET
         res.redirect('/');
         return;
     } else{
-        res.render(__dirname + "/views/play.ejs")
+        res.render(__dirname + "/views/play.ejs", {username:req.session.user})
     }
 })
 
@@ -269,53 +267,74 @@ app.get('/logout', (req, res) => {
 
 //app.post for settings => to alter account details 
 app.post('/settingsupdate', (req, res) => {
-    const {oldUsername, newUsername, oldPassword, newPassword} = req.body;
-
+    const {newUsername, oldPassword, newPassword} = req.body;
     if (newUsername === "" && newPassword === "") {
-        res.render(__dirname + "/views/settings.ejs", {error:"One of the username or password must be changed", success:""})
+        res.render(__dirname + "/views/settings.ejs", {error:"One of the username or password must be changed", success:"", username:req.session.user})
         return;
-    } 
-    //validates either user/password/both depending on which values in form are filled
-    if(newUsername != ""){ 
-        db.validateUser(null, newUsername, null, (err) => {
+    } else {     //validates either user/password/both depending on which values in form are filled
+        db.validateUser("placeholder@placeholder.com", newUsername, newPassword, (err) => {
             if(err) {
-                res.render(__dirname + "/views/settings.ejs", {error:err, success:""})
+                res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user})
                 return;
             }
         })
     } 
-    if(newPassword != ""){
-        db.validateUser(null, null, newPassword, (err) => {
-            if(err) {
-                res.render(__dirname + "/views/settings.ejs", {error:err, success:""})
-                return;
-            }
-        })
-    }
     db.getPass(req.session.user, (err, passHash) => {
         if(err) {
-            res.render(__dirname + "/views/settings.ejs", {error:err, success:""});
+            res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
             return;
         } else {
             hashAuth.comparePassword(oldPassword, passHash, (err, isValid) => {
                 if(err) {
-                    console.log("Error: error while comparing hashes ", err)
-                    res.render(__dirname + "/views/settings.ejs", {error:err, success:""});
+                    res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
                 } else if (!isValid) {
-                    res.render(__dirname + "/views/settings.ejs", {error: err, success:""});
+                    res.render(__dirname + "/views/settings.ejs", {error: err, success:"", username:req.session.user});
                 }
             })
         }
-
-        //checks if new password field has a value
-
-        if(newPassword != "") {
-            hashAuth.generateSalt() //continue from HERE....
+        if(newPassword != oldPassword) {
+            hashAuth.generateSalt(64, (err, salt) => {
+                if(err) {
+                    res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
+                    return;
+                } else {
+                    hashAuth.hashPassword(newPassword, salt, 10000, (err, passwordHash) => {
+                        if(err) {
+                            res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
+                            return;
+                        } else {
+                            db.updatePass(req.session.user, passwordHash, (error) => {
+                                if(error) {
+                                    res.render(__dirname + "/views/settings.ejs", {error:error, success:"", username:req.session.user});
+                                    return;
+                                }
+                            }  )
+                        }
+                    })
+                }
+            } ) 
+        }
+        if(newUsername != req.session.user) {
+            db.checkUser(newUsername, null, (err, userAvailable) => {
+                if(err) {
+                    res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
+                    return;
+                } else if (userAvailable) {
+                    db.updateUsername(req.session.user, newUsername, (err, result) => {
+                        if(err) {
+                            res.render(__dirname + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
+                        } else{
+                            console.log("username updated");
+                            req.session.user = newUsername;
+                            res.render(__dirname + "/views/settings.ejs", {error:"", success:result, username:req.session.user});
+                        }
+                    })
+                }
+            } )
+        } else {
+            res.render(__dirname + "/views/settings.ejs", {error:"",success:"Successfully updated info!", username:req.session.user});
         }
     })
-
-    
-
 })
 
 
