@@ -3,9 +3,14 @@ const crypto = require('crypto');
 class HashingUtil {
 
     constructor() {
+        if (!HashingUtil.instance) { //properly comment on this later or remove(??)
+          HashingUtil.instance = this;
+        }
+    
+        return HashingUtil.instance;
+      }
 
-    }
-
+    
     generateSalt(sizeInBytes, callback) { //salt helps to protect against attacks such as rainbow table attacks
         crypto.randomBytes(sizeInBytes, (err, salt) => {
             if (err) {
@@ -25,16 +30,17 @@ class HashingUtil {
                 callback('Server side hashing error. Please try again', null);
             } else {
                 const hashedPassword = `${iterations}.${salt.toString('hex')}.${derivedKey.toString('hex')}`;
-                console.log("Length of hashed password: ", hashedPassword.length);
                 callback(null, hashedPassword);
             }
         });
     }
 
     comparePassword(plaintextPassword, hashedPassword, callback) {
-        console.log(hashedPassword);
         const [storedIterations, storedSalt, storedDerivedKey] = hashedPassword.split('.');
         const iterations = parseInt(storedIterations, 10);
+        
+        //for development purposes
+        console.log(hashedPassword);
         console.log("Iterations: ", iterations);
         console.log("Stored Salt: ",Buffer.from(storedSalt, 'hex'));
         console.log("Stored derivedKey: ", Buffer.from(storedDerivedKey, 'hex'));
@@ -65,4 +71,4 @@ class HashingUtil {
     
 }
 
-module.exports = {HashingUtil};
+module.exports = new HashingUtil();
