@@ -3,8 +3,7 @@ const router = express.Router();
 const session = require("express-session");
 const db = require("./../utils/database.js")
 const hashAuth = require("./../utils/authutils.js");
-const dir = __dirname + "/routes";
-console.log(dir);
+const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA`;
 
 router.post('/signin', (req, res) => { 
     const { username, password } = req.body;
@@ -81,10 +80,10 @@ router.post('/signup', (req, res) => {
                 // Callback function for creating a new user
                 var createUserCallback = (creationError, isUserCreated, user) => {
                     if (!isUserCreated) {
-                        res.render(__dirname + "/views/register.ejs", { error: creationError, success: "" });
+                        res.render(dir + "/views/register.ejs", { error: creationError, success: "" });
                         return;
                     }
-                    res.render(__dirname + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+                    res.render(dir + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
                 };
 
                 // Create a new user
@@ -95,7 +94,7 @@ router.post('/signup', (req, res) => {
 
     // If validation fails, render the registration page with an error message
     if (!validateTest) {
-        // res.render(__dirname +"/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
+        // res.render(dir +"/views/register.ejs", { error: "Server side validation error. Please try again.", success: "" });
         return;
     } else {
         // Check if the username is available

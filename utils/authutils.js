@@ -8,7 +8,7 @@ class HashingUtil {
         }
     
         return HashingUtil.instance;
-      }
+    }
 
     
     generateSalt(sizeInBytes, callback) { //salt helps to protect against attacks such as rainbow table attacks
