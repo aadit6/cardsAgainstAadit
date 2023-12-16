@@ -1,4 +1,5 @@
 const express = require("express");
+
 const router = express.Router();
 const session = require("express-session");
 const db = require("../utils/database.js")
@@ -7,6 +8,9 @@ const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\p
 const ggl = require("../utils/googleAuth.js");
 router.get("/auth/google", (req, res) => {
     const authUrl = ggl.getAuthUrl();
+    console.log("authURL: ", authUrl);
+    console.log("PORT:", process.env.PORT);
+
     res.redirect(authUrl);
 });
 

@@ -1,4 +1,5 @@
 const {OAuth2Client} = require("google-auth-library");
+require("dotenv").config();
 const db = require("./database");
 
 class GoogleAuth {
@@ -8,9 +9,10 @@ class GoogleAuth {
             this.client = new OAuth2Client(
                 process.env.GOOGLE_CLIENT_ID,
                 process.env.GOOGLE_CLIENT_SECRET,
-                "http://localhost:3000/auth/google/cardsagainstaadit");
+                `http://localhost:3001/auth/google/cardsagainstaadit`);
             this.db = db;
         }
+    
       
         return GoogleAuth.instance;
         

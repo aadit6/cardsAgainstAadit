@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("fs");
 const router = express.Router();
 const session = require("express-session");
 const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
@@ -64,11 +65,7 @@ router.get('/play', (req, res) => { //NOT IN USE YET
         res.redirect('/');
         return;
     } else{
-        // res.sendFile(path.join(dir, '../client'));
-        res.render(dir + "/views/leaderboard.ejs", {username:req.session.user})
-
-        
-
+        res.sendFile(dir + '/../client/public/index.html');
         return;
 
     }

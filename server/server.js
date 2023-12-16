@@ -24,10 +24,11 @@ const apiRoutes = require("./routes/apiRoutes.js");
 
 // initialising server (mounting middleware)
 
-const port = 3000;
+const port = 3001;
 app.use(bodyParser.urlencoded({extended: true})); //middleware to parse form
 app.use(express.static(path.join(__dirname, '../client/public/images')));    
 app.use(express.static(path.join(__dirname, '../client/public/css')));
+
 
 
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
