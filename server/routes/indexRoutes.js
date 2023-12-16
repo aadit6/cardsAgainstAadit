@@ -3,6 +3,9 @@ const fs = require("fs");
 const router = express.Router();
 const session = require("express-session");
 const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
+const path = require("path");
+const {createProxyMiddleware} = require("http-proxy-middleware");
+
 
 console.log("dirname", __dirname);
 console.log("dir", dir);
@@ -60,12 +63,13 @@ router.get('/leaderboard', (req, res) => { //NOT IN USE YET
     }
 })
 
-router.get('/play', (req, res) => { //NOT IN USE YET
+router.get('/play', (req, res) => { 
     if (!req.session.user) {
         res.redirect('/');
         return;
     } else{
-        res.sendFile(dir + '/../client/public/index.html');
+        res.redirect("http://localhost:3000");
+
         return;
 
     }

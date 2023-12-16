@@ -12,9 +12,8 @@ const http = require("http");
 const socketio = require("socket.io");
 const server = http.createServer(app);
 const io = socketio(server)
+const {createProxyMiddleware} = require("http-proxy-middleware");
 
-// const middleware = require("./middleware.js");
-// const { decode } = require("punycode");
 
 const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
@@ -28,8 +27,14 @@ const port = 3001;
 app.use(bodyParser.urlencoded({extended: true})); //middleware to parse form
 app.use(express.static(path.join(__dirname, '../client/public/images')));    
 app.use(express.static(path.join(__dirname, '../client/public/css')));
+//serving react
+app.use(express.static(path.join(__dirname, '../client/src')));
+app.use(express.static(path.join(__dirname, '../client/public/others')));
 
-
+// app.use("/play", createProxyMiddleware({
+//     target: "http://localhost:3000",
+//     changeOrigin: true
+// }))
 
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
 function logger(req, res, next) { //to log requests in console
@@ -41,8 +46,7 @@ function logger(req, res, next) { //to log requests in console
 app.use(logger);
 app.set('view engine', 'ejs')
 
-//serving react
-app.use(express.static(path.join(__dirname, '../client')));
+
 
 
 //initialising database
