@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const session = require("express-session");
-const db = require("./../utils/database.js")
-const dir= `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA`;
+const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
+
 console.log("dirname", __dirname);
 console.log("dir", dir);
 //basic "GET" routes
@@ -64,7 +64,13 @@ router.get('/play', (req, res) => { //NOT IN USE YET
         res.redirect('/');
         return;
     } else{
-        res.render(dir + "/views/play.ejs", {username:req.session.user})
+        // res.sendFile(path.join(dir, '../client'));
+        res.render(dir + "/views/leaderboard.ejs", {username:req.session.user})
+
+        
+
+        return;
+
     }
 })
 
@@ -77,5 +83,7 @@ router.get('/logout', (req, res) => {
         res.render(dir + "/views/login.ejs", { error:"", success: "Successfully logged out." });
     }
 })
+
+
 
 module.exports = router;

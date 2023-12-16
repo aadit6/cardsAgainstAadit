@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 const express = require('express');
-const configPath = '../config/db_config.json';
+const configPath = '../../config/db_config.json';
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session); 
 

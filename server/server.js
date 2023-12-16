@@ -8,23 +8,41 @@ const ejs = require("ejs")
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const {OAuth2Client} = require("google-auth-library");
+const http = require("http");
+const socketio = require("socket.io");
+const server = http.createServer(app);
+const io = socketio(server)
 
-const middleware = require("./middleware");
+// const middleware = require("./middleware.js");
 // const { decode } = require("punycode");
 
 const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
 const indexRoute = require("./routes/indexRoutes.js")
 const settingsRoute = require("./routes/settingsRoute.js")
+const apiRoutes = require("./routes/apiRoutes.js");
 
 // initialising server (mounting middleware)
 
 const port = 3000;
 app.use(bodyParser.urlencoded({extended: true})); //middleware to parse form
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../client/public/images')));    
+app.use(express.static(path.join(__dirname, '../client/public/css')));
+
+
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
-app.use(middleware.logger);
+function logger(req, res, next) { //to log requests in console
+    console.log("Request Method:", req.method)
+    console.log("Request URL:", req.urlencoded)
+    console.log('Request:', req.url);
+    next()
+}
+app.use(logger);
 app.set('view engine', 'ejs')
+
+//serving react
+app.use(express.static(path.join(__dirname, '../client')));
+
 
 //initialising database
 
@@ -64,12 +82,14 @@ app.use('/', googleAuthRoute);
 app.use('/', indexRoute);
 app.use('/', settingsRoute);
 
+// app.use('/api', apiRoutes);
 
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`server running on port ${port} and path ${__dirname}.`);
     
 })
+
 
 
 
