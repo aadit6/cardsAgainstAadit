@@ -1,24 +1,17 @@
-// App.js
-
-import React, { useState } from 'react';
-import JoinGame from './joinGame';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import JoinGame from './JoinGame';
 
 const App = () => {
-  const [currentRoom, setCurrentRoom] = useState(null);
-
-  const handleJoin = (room) => {
-    setCurrentRoom(room);
-  };
-
   return (
-    <div>
-      {currentRoom ? (
-        <p>You are in Room: {currentRoom}</p>
-      ) : (
-        <JoinGame onJoin={handleJoin} />
-      )}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<JoinGame />} />
+        {/* Add more routes as needed */}
+      </Routes>
+    </Router>
   );
 };
 
 export default App;
+
