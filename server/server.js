@@ -9,17 +9,19 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const {OAuth2Client} = require("google-auth-library");
 const http = require("http");
-const socketio = require("socket.io");
 const server = http.createServer(app);
-const io = socketio(server)
+const socketio = require("socket.io");
+const io = socketio(server);
 const {createProxyMiddleware} = require("http-proxy-middleware");
+const cors = require("cors");
+app.use(cors());
 
 
+const apiRoutes = require("./routes/apiRoutes.js")
 const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
 const indexRoute = require("./routes/indexRoutes.js")
 const settingsRoute = require("./routes/settingsRoute.js")
-const apiRoutes = require("./routes/apiRoutes.js");
 
 // initialising server (mounting middleware)
 
@@ -31,10 +33,7 @@ app.use(express.static(path.join(__dirname, '../client/public/css')));
 app.use(express.static(path.join(__dirname, '../client/src')));
 app.use(express.static(path.join(__dirname, '../client/public/others')));
 
-// app.use("/play", createProxyMiddleware({
-//     target: "http://localhost:3000",
-//     changeOrigin: true
-// }))
+
 
 app.use(express.json()); //allows to use json format => maybe hardcode ourselves for +complexity though?
 function logger(req, res, next) { //to log requests in console
@@ -86,8 +85,19 @@ app.use('/', authRoute);
 app.use('/', googleAuthRoute);
 app.use('/', indexRoute);
 app.use('/', settingsRoute);
+app.use('/', apiRoutes);
 
-// app.use('/api', apiRoutes);
+//SOCKET.IO STUFF
+io.on("connection", (socket) => {
+    socket.on("joinRoom", (roomCode) => {
+        socket.join(roomCode);
+        console.log(`User ${socket.id} joined room ${roomCode}`)
+    })
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected: ", socket.id)
+    })
+})
 
 
 server.listen(port, () => {

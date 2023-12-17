@@ -93,8 +93,9 @@ getSessionStore(callback) {
 // DDL SCRIPT 
 
     createTables() { //only for dev => might need to remove the create tables function in the future.
+        //users table
         const userSql = `
-            CREATE TABLE IF NOT EXISTS Users (
+            CREATE TABLE IF NOT EXISTS Users ( 
                 UserID INT AUTO_INCREMENT PRIMARY KEY,
                 Username VARCHAR(255) NOT NULL,
                 Email VARCHAR(255) NOT NULL,
@@ -102,14 +103,60 @@ getSessionStore(callback) {
                 Google_id VARCHAR(255)
 
             );
+
         `;
 
 
         this.connection.query(userSql, (err, result) => {
             if (err) {
-                console.error('Error creating tables', err);
+                console.error('Error creating user table', err);
             } else {
-                console.log('tables created successfully!');
+                console.log('user table created successfully!');
+            }
+        });
+
+        //rooms table
+        const roomSql = `
+            CREATE TABLE IF NOT EXISTS Rooms ( 
+                RoomID INT AUTO_INCREMENT PRIMARY KEY,
+                RoomName VARCHAR(255) NOT NULL,
+                CreatorID INT,
+                FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
+
+            );
+
+        `;
+
+
+        this.connection.query(roomSql, (err, result) => {
+            if (err) {
+                console.error('Error creating room table', err);
+            } else {
+                console.log('rooms table created successfully!');
+            }
+        });
+
+        //to store room members in normalised format => not sure if even needed ngl
+        const roomMembersSql = `
+        CREATE TABLE IF NOT EXISTS RoomMembers ( 
+            userID INT,
+            roomID INT,
+            PRIMARY KEY (userID, roomID),
+            FOREIGN KEY (userID) REFERENCES Users(UserID),
+            FOREIGN KEY (roomID) REFERENCES Rooms(RoomID)
+
+        );
+        
+
+    `;
+    //uses COMPOSITE primary key
+
+
+        this.connection.query(roomMembersSql, (err, result) => {
+            if (err) {
+                console.error('Error creating roomMembers table', err);
+            } else {
+                console.log('roomMembers table created successfully!');
             }
         });
     }
@@ -281,6 +328,29 @@ getSessionStore(callback) {
         })
 
     }
+
+    //onto queries related with the rooms
+    checkRoomExists(roomName, callback) {
+        const sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"
+        const values = [roomName];
+
+        this.connection.query(sql, values, (err, result) => {
+            if(err) {
+                console.error("Error checking room existence");
+                callback("Internal server error", null);
+            } else {
+                const count = result[0].count;
+                if (count > 0) {
+                    callback("Room exists", true);
+                } else {
+                    callback ("Room does not exist", false)
+                }
+            }
+        })
+
+
+    }
+
     
     
 }
