@@ -42,7 +42,7 @@ const JoinGame = ({ onJoin }) => {
         />
         <button type="submit" disabled={loading}>
           Join Game
-        </button>
+        </button >
       </form>
       {errorMsg && <p>{errorMsg}</p>}
     </div>
