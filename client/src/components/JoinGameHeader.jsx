@@ -27,7 +27,7 @@ const JoinGameHeader = () => {
   return (
     <HeaderContainer>
       <GameTitle>Cards against Aadit</GameTitle>
-      <GameSubtitle>Join the game and have a blast!</GameSubtitle>
+      <GameSubtitle>Join the game!</GameSubtitle>
     </HeaderContainer>
   );
 };

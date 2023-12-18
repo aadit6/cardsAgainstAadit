@@ -70,16 +70,17 @@ const JoinGameButton = styled.button`
 const BackButton = styled(Link)`
   color: #fff;
   text-decoration: none;
-  font-size: 35px;
+  font-size: 40px;
   position: absolute;
   top: 20px;
-  left: 40px;
+  left: 25px;
   cursor: pointer;
 `;
 
 const ErrorMessage = styled.p`
   color: red;
   margin-top: 10px;
+  font-size: 20px;
 `
 
 // JoinGame component
