@@ -1,25 +1,37 @@
-import React, { useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
-import { SERVER_URL } from '../constants';
+import {SERVER_URL} from './../constants.js';
 
 
 const maxAttempts = 20;
 
 
-
-async function createRandomRoom(navigate, setErrorMsg, setLoading, attempts = 0) {
+async function createRandomRoom(navigate, setErrorMsg, setLoading, attempts = 0) { //recursive method
     const generateRandomString = (length) => {
         let randomString = '';
       
         for (let i = 0; i < length; i++) {
-          const randomCharCode = Math.floor(Math.random() * (126 - 33 + 1) + 33); // ASCII values between 33 and 126
-          randomString += String.fromCharCode(randomCharCode);
+          const randomCharCode = Math.floor(Math.random() * 62);
+          if (i % 3 === 0) {
+            // Uppercase letters (A-Z)
+            randomString += String.fromCharCode(randomCharCode % 26 + 65);
+          } else if (i % 3 === 1) {
+            // Lowercase letters (a-z)
+            randomString += String.fromCharCode(randomCharCode % 26 + 97);
+          } else {
+            // Numbers (0-9)
+            randomString += String.fromCharCode(randomCharCode % 10 + 48);
+          }
         }
       
         return randomString;
     };
+      
+      
+      
+      
       
       
     const random = generateRandomString(10);
@@ -27,9 +39,12 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, attempts = 0)
     
     try {
         setLoading(true);
-        const response = await axios.post(`${SERVER_URL}/api/checkRoom`);
+        const response = await axios.post(`${SERVER_URL}/api/checkRoom`, {
+            roomCode: random,
+        });
+        console.log("response data: ",response.data);
 
-        if (response.data.success) {
+        if (!response.data.success) { // used "!" as we want room to not already exist
             navigate(`/game/${random}`);
             return; // breaks out of recursion
         } else if (attempts < maxAttempts) {
@@ -50,16 +65,28 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, attempts = 0)
 
 
 
-const CreateGame = ({ onClick, disabled }) => {
+const CreateGame = () => {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+  
+    const handleCreateGame = async () => {
+      try {
+        await createRandomRoom(navigate, setErrorMsg, setLoading);
+      } catch (error) {
+        console.error('Error creating game:', error);
+      }
+    };
+  
     return (
-        <StyledCreateGameButton onClick={onClick} disabled={disabled}>
-        Create Game
+      <>
+        <StyledCreateGameButton onClick={() => handleCreateGame()} disabled={loading}>
+          Create Game
         </StyledCreateGameButton>
+        {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
+      </>
     );
-};
+  };
 
 const StyledCreateGameButton = styled.button`
   width: 70%;
@@ -79,6 +106,12 @@ const StyledCreateGameButton = styled.button`
     opacity: 0.8;
     outline: 0;
   }
+`;
+
+const ErrorMessage = styled.p`
+  color: red;
+  margin-top: 10px;
+  font-size: 20px;
 `;
 
 export default CreateGame;

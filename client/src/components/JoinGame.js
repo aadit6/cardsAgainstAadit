@@ -5,13 +5,17 @@ import axios from 'axios';
 import JoinGameHeader from './JoinGameHeader';
 import JoinGameInstructions from './JoinGameInstructions';
 import CreateGame from './CreateGame';
+import {SERVER_URL} from './../constants.js';
+
+console.log("SERVER URL 2: ",SERVER_URL);
+
 
 const MAX_ROOM_CHARS = 15;
 const MIN_ROOM_CHARS = 4;
 
 async function checkRoomAvailability(roomCode) {
   try {
-    const response = await axios.post(`http://localhost:3001/api/checkRoom`, {
+    const response = await axios.post(`${SERVER_URL}/api/checkRoom`, {
       roomCode: roomCode,
     });
     return response.data;
@@ -50,22 +54,22 @@ const JoinGame = () => {
     e.preventDefault();
     const joinGameInputValue = joinGameInputRef.current.value.trim();
 
-    if (joinGameInputValue.length < MIN_ROOM_CHARS) {
-      console.error(`room code below ${MIN_ROOM_CHARS}  chars`);
-      setErrorMsg(`Room code must not be below ${MIN_ROOM_CHARS} characters`);
-      return;
-    } else if (joinGameInputValue.length > MAX_ROOM_CHARS) {
-      console.error(`room code above ${MAX_ROOM_CHARS}  chars`);
-      setErrorMsg(`Room code must not be above ${MAX_ROOM_CHARS} characters`);
-      return;
-    }
+    // if (joinGameInputValue.length < MIN_ROOM_CHARS) {
+    //   console.error(`room code below ${MIN_ROOM_CHARS}  chars`);
+    //   setErrorMsg(`Room code must not be below ${MIN_ROOM_CHARS} characters`);
+    //   return;
+    // } else if (joinGameInputValue.length > MAX_ROOM_CHARS) {
+    //   console.error(`room code above ${MAX_ROOM_CHARS}  chars`);
+    //   setErrorMsg(`Room code must not be above ${MAX_ROOM_CHARS} characters`);
+    //   return;
+    // }
 
     await handleJoinGame(joinGameInputValue, setErrorMsg, setLoading, navigate);
   }
 
   return (
     <JoinGameWrapper>
-      <BackButton to={`http://localhost:3001/menu`}>Back to Menu</BackButton>
+      <BackButton to={`${SERVER_URL}/menu`}>Back to Menu</BackButton>
       <JoinGameHeader />
       <JoinGameInstructions />
       <JoinGameForm onSubmit={handleSubmit}>
@@ -77,6 +81,9 @@ const JoinGame = () => {
               ref={joinGameInputRef}
               disabled={loading}
               placeholder="Enter Room Code"
+              required
+              minLength={MIN_ROOM_CHARS}
+              maxLength={MAX_ROOM_CHARS}
             />
           </InputContainer>
           <ButtonContainer>
@@ -85,10 +92,11 @@ const JoinGame = () => {
             </JoinGameButton>
           </ButtonContainer>
         </RowContainer>
+        </JoinGameForm>
+      {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
         <OrText>OR</OrText>
         <CreateGame />
-      </JoinGameForm>
-      {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
+      
     </JoinGameWrapper>
   );
 };
