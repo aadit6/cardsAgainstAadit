@@ -1,12 +1,78 @@
-// Import necessary libraries
 import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import axios from "axios";
+import axios from 'axios';
 import JoinGameHeader from './JoinGameHeader';
 import JoinGameInstructions from './JoinGameInstructions';
 
-// Styled components for styling
+// import { io } from 'socket.io-client';
+// const socket = io('http://localhost:3000', {
+//   withCredentials: true,
+// });
+
+function checkRoomAvailability(roomCode) {
+  return axios.post(`http://localhost:3001/api/checkRoom`, {
+    roomCode: roomCode,
+  });
+}
+
+async function handleJoinGame(e, joinGameInputRef, onJoin, setErrorMsg, setLoading) {
+  e.preventDefault();
+
+  if (joinGameInputRef.current.value.length < 1) {
+    console.error("room code is empty");
+    setErrorMsg("Room code must not be left blank");
+    return;
+  } else if (joinGameInputRef.current.value.length > 12) {
+    console.error("room code > 12 chars")
+    setErrorMsg("Room code must not be above 12 characters");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    const response = await checkRoomAvailability(joinGameInputRef.current.value);
+
+    if (response.data.success) {
+      onJoin(response.data.room);
+    } else {
+      setErrorMsg(response.data.message || 'Error joining the game.');
+    }
+  } catch (error) {
+    console.error('Error joining game:', error);
+    setErrorMsg('An unexpected error occurred.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function JoinGame({ onJoin }) {
+  const joinGameInputRef = useRef(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <JoinGameWrapper>
+      <BackButton to={`http://localhost:3001/menu`}>Back to Menu</BackButton>
+      <JoinGameHeader />
+      <JoinGameInstructions />
+      <JoinGameForm onSubmit={(e) => handleJoinGame(e, joinGameInputRef, onJoin, setErrorMsg, setLoading)}>
+        <JoinGameInput
+          type="text"
+          id="roomCode"
+          ref={joinGameInputRef}
+          disabled={loading}
+          placeholder="Enter Room Code"
+        />
+        <JoinGameButton type="submit" disabled={loading}>
+          Join Game
+        </JoinGameButton>
+      </JoinGameForm>
+      {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
+    </JoinGameWrapper>
+  );
+}
+
 const JoinGameWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -20,16 +86,10 @@ const JoinGameForm = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%; /* Increase the width */
-  max-width: 1000px; /* Set a maximum width */
-  margin: 0 auto; /* Center the form horizontally */
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 `;
-
-// const JoinGameLabel = styled.label`
-//   color: #fff;
-//   font-size: 18px;
-//   margin-bottom: 10px;
-// `;
 
 const JoinGameInput = styled.input`
   appearance: none;
@@ -81,56 +141,6 @@ const ErrorMessage = styled.p`
   color: red;
   margin-top: 10px;
   font-size: 20px;
-`
+`;
 
-// JoinGame component
-const JoinGame = ({ onJoin }) => {
-    const joinGameInputRef = useRef(null);
-    const [errorMsg, setErrorMsg] = useState('');
-    const [loading, setLoading] = useState(false);
-  
-    const handleJoinGame = async (e) => {
-      e.preventDefault();
-  
-      try {
-        setLoading(true);
-        const response = await axios.post(`http://localhost:3001/api/checkRoom`, {
-          roomCode: joinGameInputRef.current.value,
-        });
-  
-        if (response.data.success) {
-          onJoin(response.data.room);
-        } else {
-          setErrorMsg(response.data.message || 'Error joining the game.');
-        }
-      } catch (error) {
-        console.error('Error joining game:', error);
-        setErrorMsg('An unexpected error occurred.');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    return (
-      <JoinGameWrapper>
-        <BackButton to={`http://localhost:3001/menu`}>Back to Menu</BackButton>
-        <JoinGameHeader />
-        <JoinGameInstructions />
-        <JoinGameForm onSubmit={handleJoinGame}>
-          <JoinGameInput
-            type="text"
-            id="roomCode"
-            ref={joinGameInputRef}
-            disabled={loading}
-            placeholder="Enter Room Code"
-          />
-          <JoinGameButton type="submit" disabled={loading}>
-            Join Game
-          </JoinGameButton>
-        </JoinGameForm>
-        {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
-      </JoinGameWrapper>
-    );
-  };
-  
-  export default JoinGame;
+export default JoinGame;
