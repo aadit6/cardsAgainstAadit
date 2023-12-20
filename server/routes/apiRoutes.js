@@ -1,3 +1,5 @@
+//creating backend API to be used in react
+
 const express = require("express");
 const router = express.Router();
 const db = require("../utils/database.js")

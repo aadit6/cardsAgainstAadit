@@ -88,6 +88,7 @@
     "has-symbols": "^1.0.3",
     "has-unicode": "^2.0.1",
     "hasown": "^2.0.0",
+    "html-entities": "^2.4.0",
     "http-errors": "^2.0.0",
     "http-proxy-middleware": "^2.0.6",
     "https-proxy-agent": "^5.0.1",

@@ -118,15 +118,12 @@ getSessionStore(callback) {
         //rooms table
         const roomSql = `
             CREATE TABLE IF NOT EXISTS Rooms ( 
-                RoomID INT AUTO_INCREMENT PRIMARY KEY,
-                RoomName VARCHAR(255) NOT NULL,
+                RoomID VARCHAR(255) PRIMARY KEY,
                 CreatorID INT,
                 FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
-
             );
 
         `;
-
 
         this.connection.query(roomSql, (err, result) => {
             if (err) {
@@ -329,7 +326,7 @@ getSessionStore(callback) {
 
     }
 
-    //onto queries related with the rooms
+    //room-based queries
     checkRoomExists(roomName, callback) {
         const sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"
         const values = [roomName];
@@ -347,7 +344,32 @@ getSessionStore(callback) {
                 }
             }
         })
+    }
 
+    createRoom(username, roomName, roomId, callback) {
+        const sql = 'INSERT INTO Rooms (roomCreator, RoomName, RoomID) VALUES (?, ?, ?)';
+        const values = [username, roomName, roomId];
+    
+        this.connection.query(sql, values, (err, result) => {
+          if (err) {
+            console.error('Error creating room in the database', err);
+            callback('Error creating room in the database', false);
+          } else {
+            console.log('Room successfully created in the database');
+            callback(null, true);
+          }
+        });
+    }
+
+    addUsertoRoom() {
+
+    }
+
+    removeUserfromRoom() {
+
+    }
+
+    deleteRoom() {
 
     }
 

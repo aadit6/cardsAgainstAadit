@@ -10,18 +10,28 @@ const session = require("express-session");
 const {OAuth2Client} = require("google-auth-library");
 const http = require("http");
 const server = http.createServer(app);
+
 const socketio = require("socket.io");
 const io = socketio(server);
+
 const {createProxyMiddleware} = require("http-proxy-middleware");
 const cors = require("cors");
-app.use(cors());
+
+const corsOptions = {
+    origin: "http://localhost:3000", //set to URL of client application
+    credentials: true
+}
+
+app.use(cors(corsOptions));
 
 
 const apiRoutes = require("./routes/apiRoutes.js")
 const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
 const indexRoute = require("./routes/indexRoutes.js")
-const settingsRoute = require("./routes/settingsRoute.js")
+const settingsRoute = require("./routes/settingsRoute.js");
+const roomOperations = require("./utils/roomOperations.js");
+const Game = require("./game.js");
 
 // initialising server (mounting middleware)
 
@@ -68,8 +78,7 @@ const sessionStore = db.getSessionStore((error, sessionStore) => {
     }
 });
 
-app.use(
-    session({
+const sessionMiddleware = session({
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
@@ -78,7 +87,21 @@ app.use(
             maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
         }
     })
-)
+
+app.use(sessionMiddleware);
+
+
+// io.use((socket, next) => {
+//     sessionMiddleware(socket.request, socket.request.res, next)
+// });
+
+io.engine.use(sessionMiddleware);
+
+io.on("connection", (socket) => {
+    const session = socket.request.session;
+
+
+})
 
 //ROUTES
 app.use('/', authRoute);
@@ -87,17 +110,21 @@ app.use('/', indexRoute);
 app.use('/', settingsRoute);
 app.use('/', apiRoutes);
 
-//SOCKET.IO STUFF
-io.on("connection", (socket) => {
-    socket.on("joinRoom", (roomCode) => {
-        socket.join(roomCode);
-        console.log(`User ${socket.id} joined room ${roomCode}`)
-    })
+const game = new Game(io, 123 );
+game.addCards(true, true);
 
-    socket.on("disconnect", () => {
-        console.log("User disconnected: ", socket.id)
-    })
-})
+
+//SOCKET.IO STUFF
+// io.on("connection", (socket) => {
+//     socket.on("joinRoom", (roomCode) => {
+//         socket.join(roomCode);
+//         console.log(`User ${socket.id} joined room ${roomCode}`)
+//     })
+
+//     socket.on("disconnect", () => {
+//         console.log("User disconnected: ", socket.id)
+//     })
+// })
 
 
 server.listen(port, () => {
