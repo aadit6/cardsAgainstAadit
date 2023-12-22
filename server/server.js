@@ -89,16 +89,11 @@ const sessionMiddleware = session({
     })
 
 app.use(sessionMiddleware);
-
-
-// io.use((socket, next) => {
-//     sessionMiddleware(socket.request, socket.request.res, next)
-// });
-
 io.engine.use(sessionMiddleware);
 
 io.on("connection", (socket) => {
     const session = socket.request.session;
+    
 
 
 })
@@ -110,21 +105,7 @@ app.use('/', indexRoute);
 app.use('/', settingsRoute);
 app.use('/', apiRoutes);
 
-const game = new Game(io, 123 );
-game.addCards(true, true);
 
-
-//SOCKET.IO STUFF
-// io.on("connection", (socket) => {
-//     socket.on("joinRoom", (roomCode) => {
-//         socket.join(roomCode);
-//         console.log(`User ${socket.id} joined room ${roomCode}`)
-//     })
-
-//     socket.on("disconnect", () => {
-//         console.log("User disconnected: ", socket.id)
-//     })
-// })
 
 
 server.listen(port, () => {

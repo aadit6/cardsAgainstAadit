@@ -13,6 +13,7 @@ class Game {
     this.io = io;
     this.players = [];
     this.board = {
+      roomId, //figure out how to link this with the actual room id --- (?)
       whiteDeck: [],
       blackDeck: [],
       playedBlackCard: {},
@@ -22,11 +23,61 @@ class Game {
       picking: false,
     };
     this.started = false;
-    this.log = [];
+    this.log = []; //sort this out later with log.push. Maybe later turn this into a stack???
     this.decks = [];
 
     this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
+    this.updateBoard = this.updateBoard.bind(this);
+    this.updateHand = this.updateHand.bind(this);
+    this.updateLeaderboard = this.updateLeaderboard.bind(this);
+    this.playTurn = this.playTurn.bind(this);
+    this.handlePlay = this.handlePlay.bind(this);
   }
+
+  join(socket, session) {
+    const { players, io, updateRoster, updateBoard, updateHand, runTurn } = this;
+    let existingPlayer;
+
+    for (let i = 0; i < players.length; i++) { //checking if already player with this name in room
+      const player = players[i];
+      if (player.name === session.user) {
+        existingPlayer = player;
+        break;
+      }
+    }
+
+    if(existingPlayer && existingPlayer.connected) {
+      console.log("join attempt refused")
+      return socket.emit("refuse join") //how to tell player user already in room (some some way of having popup??)
+    } else if (existingPlayer && !existingPlayer.connected) {
+      //reconnect the player
+      socket.id = existingPlayer.id;
+      existingPlayer.socket = socket;
+      existingPlayer.status = "played" //cant play till next round (fix later if needed)
+    } else if (!existingPlayer) {
+      const newPlayer = {
+        name: session.user,
+        score: 0,
+        hand: [],
+        status: "played",
+        socket: socket,
+      };
+      players.push(newPlayer)
+    }
+
+    socket.emit("join_ack", {id: socket.id, name: session.user});
+    updateLeaderboard();
+    updateBoard(socket);
+    updateHand(socket);
+
+    //handle disconnect stuff later
+
+
+
+    
+  }
+
+
 
   addCards(addWhite, addBlack) {
     const { board } = this;
@@ -78,21 +129,31 @@ class Game {
 
   }
 
+  playTurn() { //FINISH LATER
+    const {players, board, updateBoard, updateHand, updateLeaderboard} = this;
+    console.log(`advancing turn in room ${board.roomId}`);
+
+
+
+
+  }
+
   updateLeaderboard() {
     const { players, io } = this;
     const leaderboard = [];
   
-    for (const p of players) {
-      leaderboard.push({
-        name: p.name,
-        score: p.score,
-        id: p.id,
-        status: p.status,
-        readyState: p.readyState,
-      });
-      io.to(p.id).emit('leaderboard', leaderboard.slice());
+    for (const player of players) {
+      names.push({
+        name: player.name,
+        score: player.score,
+        hand: player.hand,
+        status: player.status,
+        socket: player.socket,
+      })
     }
+      io.to(player.name).emit('leaderboard', leaderboard.slice()); //is it definitely player.name??
   }
+  
   
 
   updateHand(socket) {
@@ -109,26 +170,59 @@ class Game {
   }
   
 
-  updateBoard() {
-    const {players, io} = this;
-    const names = [];
-
-    for (const player of players) {
-      names.push({
-        name: player.name,
-        score: player.score,
-        id: player.id,
-        status: player.status,
-        readyState: player.readyState
-
-        ///make sure all these values (name, score, id, status, readyState) are properly init/used
-
-      })
+  updateBoard(socket) { //fuck knows what im even doing here....
+    const {players, board} = this;
+    let newBoard = {
+      roomId: board.roomId,
+      whiteDeck: board.whiteDeck,
+      blackDeck: board.blackDeck,
+      playedBlackCard: board.playedBlackCard,
+      playedWhiteCards: board.playedWhiteCards,
+      czar: board.czar,
+      selected: board.selected,
+      picking: board.picking,
     }
 
-    io.emit("leaderboard", names);
+    if(board.selected) {
+      //do nothing
+    } else if (checkAllPlayersReady(players)) {
+      if(!board.picking) {
+        board.picking = true;
+        shuffle(board.playedWhiteCards);
+
+        board.playedWhiteCards.forEach((w, i) => {
+          board._whiteMappings[i] = w.playerIndex; //does this even belong here ??? - idk
+        })
+
+        
+      }
+
+      newBoard.playedWhiteCards = [];
+      for (const w of board.playedWhiteCards) {
+        newBoard.playedWhiteCards.push({ cards: w.cards });
+      }
+    } else {
+      //hide cards but show identities so we know who moves
+      newBoard.playedWhiteCards = [];
+      for (const w of board.playedWhiteCards) {
+        newBoard.playedWhiteCards.push({ playerIndex: w.playerIndex });
+      }
+    }
+
+    const boardMsg = { type: 'board', data: newBoard };
+
+    if (socket) {
+      // Send to just this player
+      io.to(socket.id).emit('board', boardMsg);
+    } else {
+      // Broadcast to all players
+      players.forEach(player => {
+        io.to(player.socket.id).emit('board', boardMsg);
+      });
+    }
   }
 
+  
 
 
 
@@ -149,6 +243,15 @@ function shuffle(deck) { //complex user-defined algorithm: Fisher-Yates shuffle.
     }
   
     return deck;
+}
+
+function checkAllPlayersReady(players) { //fix this and make it proper => with chatgpt
+  for (let i = 0; i < players.length; i++) {
+    if (players[i].status !== 'played' && players[i].readyState === WebSocket.OPEN) {
+      return false;
+    }
   }
+  return true;
+}
 
   module.exports = Game;

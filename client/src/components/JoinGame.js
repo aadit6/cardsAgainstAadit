@@ -7,8 +7,6 @@ import JoinGameInstructions from './JoinGameInstructions';
 import CreateGame from './CreateGame';
 import {SERVER_URL} from './../constants.js';
 
-console.log("SERVER URL 2: ",SERVER_URL);
-
 
 const MAX_ROOM_CHARS = 15;
 const MIN_ROOM_CHARS = 4;

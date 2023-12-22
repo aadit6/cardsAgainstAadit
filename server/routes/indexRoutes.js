@@ -12,8 +12,6 @@ console.log("dir", dir);
 
 //basic "GET" routes
 router.get('/', (req, res) => {
-    console.log("req.session:", req.session);
-    console.log("req.session.user: ", req.session.user);
     if (req.session.user) {
         res.redirect("/menu")
     } else {
