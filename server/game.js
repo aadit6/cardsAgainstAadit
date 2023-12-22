@@ -1,10 +1,12 @@
+//TODO: update the cards.json file to include more cards -- ensure same format
+
 const express = require("express");
 const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const socketio = require("socket.io");
 const fs = require("fs");
-const entities = require("html-entities");
+const entities = require("entities");
 
 class Game {
   constructor(io, gameid) {
@@ -22,6 +24,8 @@ class Game {
     this.started = false;
     this.log = [];
     this.decks = [];
+
+    this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
   }
 
   addCards(addWhite, addBlack) {
@@ -54,17 +58,83 @@ class Game {
         jsonContent.board.whiteDeck.push(entities.decodeHTML(whiteCard));
       }
     }
-    console.log(jsonContent.board.whiteDeck);
-    console.log(jsonContent.board.blackDeck);
+    // console.log("white deck: ", jsonContent.board.whiteDeck);
+    // console.log("black deck: ", jsonContent.board.blackDeck);
 
-    // Optionally, you might want to update the original board as well
-    board.whiteDeck = jsonContent.board.whiteDeck;
-    board.blackDeck = jsonContent.board.blackDeck;
+    board.whiteDeck = shuffle(jsonContent.board.whiteDeck);
+    board.blackDeck = shuffle(jsonContent.board.blackDeck);
+    // console.log("board: ", board);
   }
+
+  handleSelect() {
+
+  }
+
+  handlePlay() {
+
+  }
+
+  handleAdvance() {
+
+  }
+
+  updateLeaderboard() {
+    const { players, io } = this;
+    const leaderboard = [];
+  
+    for (const p of players) {
+      leaderboard.push({
+        name: p.name,
+        score: p.score,
+        id: p.id,
+        status: p.status,
+        readyState: p.readyState,
+      });
+      io.to(p.id).emit('leaderboard', leaderboard.slice());
+    }
+  }
+  
+
+  updateHand(socket) {
+    const { players, io } = this;
+  
+    if (socket) {
+      io.to(socket.id).emit('hand', socket.hand);
+    } else {
+      for (const player of players) {
+        // Notify each player of their hand
+        io.to(player.id).emit('hand', player.hand);
+      }
+    }
+  }
+  
+
+  updateBoard() {
+    const {players, io} = this;
+    const names = [];
+
+    for (const player of players) {
+      names.push({
+        name: player.name,
+        score: player.score,
+        id: player.id,
+        status: player.status,
+        readyState: player.readyState
+
+        ///make sure all these values (name, score, id, status, readyState) are properly init/used
+
+      })
+    }
+
+    io.emit("leaderboard", names);
+  }
+
+
+
+
 }
 
 function shuffle(deck) { //complex user-defined algorithm: Fisher-Yates shuffle. Maybe alter to have better implementation(?????)
-    //deck is an array
     var currentIndex = deck.length,
       temp,
       randomIndex;
@@ -78,7 +148,7 @@ function shuffle(deck) { //complex user-defined algorithm: Fisher-Yates shuffle.
       deck[randomIndex] = temp;
     }
   
-    return array;
+    return deck;
   }
 
   module.exports = Game;
