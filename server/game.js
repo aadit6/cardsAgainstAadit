@@ -32,6 +32,8 @@ class Game {
     this.updateLeaderboard = this.updateLeaderboard.bind(this);
     this.playTurn = this.playTurn.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
+
+    this.addCards(true, true);
   }
 
   join(socket, session) {
@@ -185,7 +187,7 @@ class Game {
 
     if(board.selected) {
       //do nothing
-    } else if (checkAllPlayersReady(players)) {
+    } else if (checkReady(players)) {
       if(!board.picking) {
         board.picking = true;
         shuffle(board.playedWhiteCards);
@@ -245,13 +247,14 @@ function shuffle(deck) { //complex user-defined algorithm: Fisher-Yates shuffle.
     return deck;
 }
 
-function checkAllPlayersReady(players) { //fix this and make it proper => with chatgpt
+function checkReady(players) { //goes through each player + checks if connected
   for (let i = 0; i < players.length; i++) {
-    if (players[i].status !== 'played' && players[i].readyState === WebSocket.OPEN) {
+    if (players[i].status !== 'played' && players[i].socket.connected) { 
       return false;
     }
   }
   return true;
 }
+
 
   module.exports = Game;

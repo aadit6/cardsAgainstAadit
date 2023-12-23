@@ -11,16 +11,17 @@ const {OAuth2Client} = require("google-auth-library");
 const http = require("http");
 const server = http.createServer(app);
 
-const socketio = require("socket.io");
-const io = socketio(server);
+const { Server: SocketIo } = require("socket.io");
+
 
 const {createProxyMiddleware} = require("http-proxy-middleware");
 const cors = require("cors");
 
 const corsOptions = {
-    origin: "http://localhost:3000", //set to URL of client application
+    origin: ["http://localhost:3000"], //set to URL of client application
     credentials: true
 }
+
 
 app.use(cors(corsOptions));
 
@@ -28,8 +29,8 @@ app.use(cors(corsOptions));
 const apiRoutes = require("./routes/apiRoutes.js")
 const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
-const indexRoute = require("./routes/indexRoutes.js")
-const settingsRoute = require("./routes/settingsRoute.js");
+const indexRoute = require("./routes/indexRoutes.js") //NOTE: rules page still not updated for cards against humanity
+const settingsRoute = require("./routes/settingsRoute.js"); //NOTE: can sometimes cause crashes if updating when signed in with google
 const roomOperations = require("./utils/roomOperations.js");
 const Game = require("./game.js");
 
@@ -89,11 +90,32 @@ const sessionMiddleware = session({
     })
 
 app.use(sessionMiddleware);
-io.engine.use(sessionMiddleware);
 
-io.on("connection", (socket) => {
+const io = new SocketIo (server, {
+    cors: corsOptions
+})
+
+io.engine.use(sessionMiddleware); //should i use this or socket.io-session "sharedSession"
+
+const rooms = {};
+
+io.on("connection", (socket) => { //what should correct order be => socket/io or routes??
     const session = socket.request.session;
-    
+
+    socket.on("joinRoom", (roomId) => {
+        console.log("joinRoom socket connection")
+        const user = session.user;
+        if(!rooms[roomId]) {
+            
+            rooms[roomId] = new Game(io, roomId);
+        }
+
+        rooms[roomId].join(socket, session);
+
+
+    })
+
+
 
 
 })
@@ -104,6 +126,8 @@ app.use('/', googleAuthRoute);
 app.use('/', indexRoute);
 app.use('/', settingsRoute);
 app.use('/', apiRoutes);
+
+
 
 
 
