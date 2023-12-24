@@ -64,7 +64,7 @@ const db = require("./utils/database.js");
 (async () => { //alternative method of asynchronous
     try {
        await db.connect();
-       db.createTables(); 
+       db.initTables(); 
     } catch (error) {
         console.error("An error occurred:", error);
         process.exit(1);
@@ -94,7 +94,7 @@ const io = new SocketIo (server, {
     cors: corsOptions
 })
 
-io.engine.use(sessionMiddleware); //should i use this or socket.io-session "sharedSession"
+io.engine.use(sessionMiddleware);
 
 const rooms = {};
 

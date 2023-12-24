@@ -18,7 +18,7 @@ const JoinGameInstructions = () => {
   return (
     <InstructionsWrapper>
       <Instruction>
-        1. Enter the room code provided by the game host. Or create a new one to start a new game.
+        1. Enter the room code provided by the game host
       </Instruction>
       <Instruction>
         2. Click the "Join Game" button

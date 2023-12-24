@@ -46,6 +46,11 @@ class Game extends Component {
     socket.emit('joinRoom', roomId);
   }
 
+
+  getRoomNameFromURL() {
+    const pathArray = window.location.pathname.split('/');
+    return pathArray[pathArray.length - 1];
+  }
   // Add other functions based on your game logic
 
   render() {
@@ -65,7 +70,7 @@ class Game extends Component {
         </Leaderboard>
 
         <GameContent>
-          <button onClick={() => this.joinRoom('Hy2Yv')}>
+          <button onClick={() => this.joinRoom(this.getRoomNameFromURL())}>
             Join Room
           </button>
         </GameContent>

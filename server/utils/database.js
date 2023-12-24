@@ -92,15 +92,16 @@ getSessionStore(callback) {
 
 // DDL SCRIPT 
 
-    createTables() { //only for dev => might need to remove the create tables function in the future.
-        //users table
+    initTables() { 
+        //NOTE: LOOK AT ALL THIS FOREIGN KEY/ UNIQUE/ PRIMARY KEY STUFF WHEN LOOKING AT DESIGN AT END 
         const userSql = `
             CREATE TABLE IF NOT EXISTS Users ( 
                 UserID INT AUTO_INCREMENT PRIMARY KEY,
-                Username VARCHAR(255) NOT NULL,
+                Username VARCHAR(255) NOT NULL UNIQUE,
                 Email VARCHAR(255) NOT NULL,
                 PasswordHash VARCHAR(512),
-                Google_id VARCHAR(255)
+                Google_id VARCHAR(255),
+                INDEX (Username)
 
             );
 
@@ -116,16 +117,15 @@ getSessionStore(callback) {
         });
 
         //rooms table
+        const initRoomSql = `DROP TABLE IF EXISTS Rooms;`;
         const roomSql = `
             CREATE TABLE IF NOT EXISTS Rooms ( 
                 RoomID VARCHAR(255) PRIMARY KEY,
-                CreatorID VARCHAR(255),
-                FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
+                CreatorName VARCHAR(255),
+                FOREIGN KEY (CreatorName) REFERENCES Users(Username)
             );
-
         `;
-        //WORK OUT THE PRIMARY KEY / FOREIGN KEY SITUATION
-
+        this.connection.query(initRoomSql, (err, result) => {})
         this.connection.query(roomSql, (err, result) => {
             if (err) {
                 console.error('Error creating room table', err);
@@ -309,7 +309,7 @@ getSessionStore(callback) {
 
     //room-based queries
     checkRoomExists(roomName, callback) {
-        const sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"
+        const sql = "SELECT COUNT(*) AS count FROM rooms WHERE RoomID = ?"
         const values = [roomName];
 
         this.connection.query(sql, values, (err, result) => {
@@ -328,7 +328,7 @@ getSessionStore(callback) {
     }
 
     createRoom(username, roomId, callback) {
-        const sql = 'INSERT INTO Rooms (RoomID, CreatorID) VALUES (?, ?)';
+        const sql = 'INSERT INTO Rooms (RoomID, CreatorName) VALUES (?, ?)';
         const values = [roomId, username];
     
         this.connection.query(sql, values, (err, result) => {
