@@ -119,11 +119,12 @@ getSessionStore(callback) {
         const roomSql = `
             CREATE TABLE IF NOT EXISTS Rooms ( 
                 RoomID VARCHAR(255) PRIMARY KEY,
-                CreatorID INT,
+                CreatorID VARCHAR(255),
                 FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
             );
 
         `;
+        //WORK OUT THE PRIMARY KEY / FOREIGN KEY SITUATION
 
         this.connection.query(roomSql, (err, result) => {
             if (err) {
@@ -134,28 +135,8 @@ getSessionStore(callback) {
         });
 
         //to store room members in normalised format => not sure if even needed ngl
-        const roomMembersSql = `
-        CREATE TABLE IF NOT EXISTS RoomMembers ( 
-            userID INT,
-            roomID INT,
-            PRIMARY KEY (userID, roomID),
-            FOREIGN KEY (userID) REFERENCES Users(UserID),
-            FOREIGN KEY (roomID) REFERENCES Rooms(RoomID)
-
-        );
-        
-
-    `;
-    //uses COMPOSITE primary key
-
-
-        this.connection.query(roomMembersSql, (err, result) => {
-            if (err) {
-                console.error('Error creating roomMembers table', err);
-            } else {
-                console.log('roomMembers table created successfully!');
-            }
-        });
+ 
+    
     }
     
 
@@ -346,17 +327,15 @@ getSessionStore(callback) {
         })
     }
 
-    createRoom(username, roomName, roomId, callback) {
-        const sql = 'INSERT INTO Rooms (roomCreator, RoomName, RoomID) VALUES (?, ?, ?)';
-        const values = [username, roomName, roomId];
+    createRoom(username, roomId, callback) {
+        const sql = 'INSERT INTO Rooms (RoomID, CreatorID) VALUES (?, ?)';
+        const values = [roomId, username];
     
         this.connection.query(sql, values, (err, result) => {
           if (err) {
-            console.error('Error creating room in the database', err);
-            callback('Error creating room in the database', false);
+            callback(err, null);
           } else {
-            console.log('Room successfully created in the database');
-            callback(null, true);
+            console.log('Room successfully created in the database', null);
           }
         });
     }

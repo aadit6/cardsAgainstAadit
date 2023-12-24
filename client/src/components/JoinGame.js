@@ -78,7 +78,7 @@ const JoinGame = () => {
               id="roomCode"
               ref={joinGameInputRef}
               disabled={loading}
-              placeholder="Enter Room Code"
+              placeholder="Room Code"
               required
               minLength={MIN_ROOM_CHARS}
               maxLength={MAX_ROOM_CHARS}
@@ -131,7 +131,7 @@ const JoinGameInput = styled.input`
   width: 80%;
   padding: 20px;
   border-radius: 8px;
-  font-size: 17px;
+  font-size: 20px;
   border: 2px solid transparent;
   text-align: center;
   transition: border-color 0.25s;

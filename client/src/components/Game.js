@@ -15,7 +15,7 @@ class Game extends Component {
 
     this.state = {
       leaderboard: [],
-      hand: [],
+      // hand: [],
       board: {},
     };
   }
@@ -25,9 +25,9 @@ class Game extends Component {
       this.setState({ leaderboard });
     });
 
-    socket.on('hand', (hand) => {
-      this.setState({ hand });
-    });
+    // socket.on('hand', (hand) => {
+    //   this.setState({ hand });
+    // });
 
     socket.on('board', (board) => {
       this.setState({ board });
@@ -35,7 +35,7 @@ class Game extends Component {
 
     // Add event listener for joining a room
     socket.on('join_ack', ({ id, name }) => {
-      console.log(`Joined room with ID: ${id} and username: ${name}`);
+      console.log(`Joined room with ID: ${id} and username: ${name}`); //why is the id not the game id here???
     });
 
     // Add more socket event listeners if needed
@@ -49,7 +49,7 @@ class Game extends Component {
   // Add other functions based on your game logic
 
   render() {
-    const { leaderboard, hand} = this.state; // ,board
+    const { leaderboard} = this.state; // ,board, hand
 
     return (
       <GameWrapper>
@@ -63,19 +63,11 @@ class Game extends Component {
             ))}
           </ul>
         </Leaderboard>
-        <Hand>
-          <h2>Your Hand</h2>
-          <ul>
-            {hand.map((card, index) => (
-              <li key={index}>{card}</li>
-            ))}
-          </ul>
-        </Hand>
+
         <GameContent>
-          <button onClick={() => this.joinRoom('yourRoomId')}>
+          <button onClick={() => this.joinRoom('Hy2Yv')}>
             Join Room
           </button>
-          {/* ... Add your main game components and logic here */}
         </GameContent>
       </GameWrapper>
     );
@@ -90,9 +82,9 @@ const Leaderboard = styled.div`
   /* Add your styling for the leaderboard */
 `;
 
-const Hand = styled.div`
-  /* Add your styling for the player's hand */
-`;
+// const Hand = styled.div`
+//   /* Add your styling for the player's hand */
+// `;
 
 const GameContent = styled.div`
   /* Add your styling for the main game content */

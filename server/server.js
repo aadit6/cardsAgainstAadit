@@ -31,7 +31,6 @@ const authRoute = require("./routes/authRoute.js")
 const googleAuthRoute = require("./routes/googleAuthRoute.js")
 const indexRoute = require("./routes/indexRoutes.js") //NOTE: rules page still not updated for cards against humanity
 const settingsRoute = require("./routes/settingsRoute.js"); //NOTE: can sometimes cause crashes if updating when signed in with google
-const roomOperations = require("./utils/roomOperations.js");
 const Game = require("./game.js");
 
 // initialising server (mounting middleware)
@@ -61,7 +60,7 @@ app.set('view engine', 'ejs')
 
 //initialising database
 
-db = require("./utils/database.js");
+const db = require("./utils/database.js");
 (async () => { //alternative method of asynchronous
     try {
        await db.connect();
@@ -103,11 +102,16 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
     const session = socket.request.session;
 
     socket.on("joinRoom", (roomId) => {
-        console.log("joinRoom socket connection")
         const user = session.user;
         if(!rooms[roomId]) {
             
             rooms[roomId] = new Game(io, roomId);
+            db.createRoom(user, roomId, (err) => {
+                if(err){
+                    console.error("database error:", err);
+                }
+            })
+            
         }
 
         rooms[roomId].join(socket, session);

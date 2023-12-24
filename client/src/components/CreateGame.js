@@ -34,7 +34,7 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, attempts = 0)
       
       
       
-    const random = generateRandomString(10);
+    const random = generateRandomString(5);
     console.log("random room name: ", random);
     
     try {

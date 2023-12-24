@@ -9,7 +9,7 @@ const fs = require("fs");
 const entities = require("entities");
 
 class Game {
-  constructor(io, gameid) {
+  constructor(io, roomId) {
     this.io = io;
     this.players = [];
     this.board = {
@@ -33,11 +33,11 @@ class Game {
     this.playTurn = this.playTurn.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
 
-    this.addCards(true, true);
+    this.addCards(true, true); //figure out how ill actually use this later...
   }
 
   join(socket, session) {
-    const { players, io, updateRoster, updateBoard, updateHand, runTurn } = this;
+    const { players, board, io, updateRoster, updateBoard, updateHand, runTurn } = this;
     let existingPlayer;
 
     for (let i = 0; i < players.length; i++) { //checking if already player with this name in room
@@ -53,10 +53,12 @@ class Game {
       return socket.emit("refuse join") //how to tell player user already in room (some some way of having popup??)
     } else if (existingPlayer && !existingPlayer.connected) {
       //reconnect the player
-      socket.id = existingPlayer.id;
-      existingPlayer.socket = socket;
+      // socket.id = existingPlayer.id;
+      // existingPlayer.socket = socket;
       existingPlayer.status = "played" //cant play till next round (fix later if needed)
     } else if (!existingPlayer) {
+      socket.roomId = board.roomId;
+      
       const newPlayer = {
         name: session.user,
         score: 0,
@@ -64,13 +66,22 @@ class Game {
         status: "played",
         socket: socket,
       };
-      players.push(newPlayer)
+      this.players.push(newPlayer)
+      socket.join(board.roomId);
+      console.log("players: ", players);
     }
 
-    socket.emit("join_ack", {id: socket.id, name: session.user});
-    updateLeaderboard();
-    updateBoard(socket);
-    updateHand(socket);
+    socket.emit("join_ack", {id: board.roomId, name: session.user});
+    console.log("join success")
+    this.updateLeaderboard();
+    console.log("updateLeaderboard success")
+
+    this.updateBoard(socket);
+    console.log("updateBoard success")
+
+    this.updateHand(socket);
+    console.log("updateHand success")
+
 
     //handle disconnect stuff later
 
@@ -111,12 +122,10 @@ class Game {
         jsonContent.board.whiteDeck.push(entities.decodeHTML(whiteCard));
       }
     }
-    // console.log("white deck: ", jsonContent.board.whiteDeck);
-    // console.log("black deck: ", jsonContent.board.blackDeck);
+
 
     board.whiteDeck = shuffle(jsonContent.board.whiteDeck);
     board.blackDeck = shuffle(jsonContent.board.blackDeck);
-    // console.log("board: ", board);
   }
 
   handleSelect() {
@@ -142,19 +151,29 @@ class Game {
 
   updateLeaderboard() {
     const { players, io } = this;
-    const leaderboard = [];
+  
+    if (!players) {
+      console.error("Players array is null or undefined");
+      return;
+    }
   
     for (const player of players) {
-      names.push({
+      const leaderboard = players.map(player => ({
         name: player.name,
         score: player.score,
         hand: player.hand,
         status: player.status,
-        socket: player.socket,
-      })
+      }));
+  
+      // Emit to the specific room the player is in
+      console.log(leaderboard);
+      io.to(player.socket.roomId).emit('leaderboard', leaderboard);
     }
-      io.to(player.name).emit('leaderboard', leaderboard.slice()); //is it definitely player.name??
   }
+  
+  
+  
+  
   
   
 
@@ -172,57 +191,44 @@ class Game {
   }
   
 
-  updateBoard(socket) { //fuck knows what im even doing here....
-    const {players, board} = this;
+  updateBoard(socket) {
+    const { players, board, io } = this;
     let newBoard = {
       roomId: board.roomId,
       whiteDeck: board.whiteDeck,
       blackDeck: board.blackDeck,
       playedBlackCard: board.playedBlackCard,
-      playedWhiteCards: board.playedWhiteCards,
+      playedWhiteCards: [],
       czar: board.czar,
       selected: board.selected,
       picking: board.picking,
-    }
-
-    if(board.selected) {
-      //do nothing
+    };
+  
+    if (board.selected) {
+      // Do nothing
     } else if (checkReady(players)) {
-      if(!board.picking) {
+      if (!board.picking) {
         board.picking = true;
         shuffle(board.playedWhiteCards);
-
-        board.playedWhiteCards.forEach((w, i) => {
-          board._whiteMappings[i] = w.playerIndex; //does this even belong here ??? - idk
-        })
-
-        
       }
-
-      newBoard.playedWhiteCards = [];
-      for (const w of board.playedWhiteCards) {
-        newBoard.playedWhiteCards.push({ cards: w.cards });
-      }
+  
+      newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ cards: w.cards }));
     } else {
-      //hide cards but show identities so we know who moves
-      newBoard.playedWhiteCards = [];
-      for (const w of board.playedWhiteCards) {
-        newBoard.playedWhiteCards.push({ playerIndex: w.playerIndex });
-      }
+      // Hide cards but show identities so we know who moves
+      newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ playerIndex: w.playerIndex }));
     }
-
+  
     const boardMsg = { type: 'board', data: newBoard };
-
+  
     if (socket) {
       // Send to just this player
       io.to(socket.id).emit('board', boardMsg);
     } else {
       // Broadcast to all players
-      players.forEach(player => {
-        io.to(player.socket.id).emit('board', boardMsg);
-      });
+      io.emit('board', boardMsg);
     }
   }
+  
 
   
 
