@@ -1,13 +1,13 @@
-# pokerGameNEA
-poker web application for AQA A-Level Computer Science NEA
+# cardsAgainstAadit
+cards-against-humanity style web game for AQA A-Level Computer Science NEA
 
-NOTE: once development finished, change the google oauth links etc. on the website
-
-<h1>development:</h1>
+# Setup
+## development
 - backend: nodemon server/server.js in root
 - frontend: npm run start in root/client
 
-<h2> environment variables </h2>
+### environment variables 
+
 create an environment variables file and populate it with the following:
 
 ```
@@ -18,3 +18,4 @@ PORT=3001
 
 ```
 
+## production
