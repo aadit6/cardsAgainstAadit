@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-// import axios from 'axios';
 import { io } from 'socket.io-client';
+import Leaderboard from './Leaderboard'; // Import the Leaderboard component
+import axios from "axios";
 
 import { SERVER_URL } from '../constants';
 
-const socket = io(SERVER_URL, {
-  withCredentials: true,
-});
+// Define a theme object with an empty object for now
 
 class Game extends Component {
   constructor(props) {
@@ -15,37 +14,55 @@ class Game extends Component {
 
     this.state = {
       leaderboard: [],
-      // hand: [],
       board: {},
+      currentUser: null,
     };
+
+    this.socket = io(SERVER_URL, {
+      withCredentials: true,
+    });
   }
 
   componentDidMount() {
-    socket.on('leaderboard', (leaderboard) => {
+    // Call joinRoom method to emit 'joinRoom' event
+    this.joinRoom(this.getRoomNameFromURL());
+
+    this.fetchCurrentUser();
+
+    this.socket.on('leaderboard', (leaderboard) => {
+      console.log("this is leaderboard: ", leaderboard);
       this.setState({ leaderboard });
     });
 
-    // socket.on('hand', (hand) => {
-    //   this.setState({ hand });
-    // });
-
-    socket.on('board', (board) => {
-      this.setState({ board });
+    this.socket.on('join_ack', ({ id, name }) => {
+      console.log(`Joined room with ID: ${id} and username: ${name}`);
     });
-
-    // Add event listener for joining a room
-    socket.on('join_ack', ({ id, name }) => {
-      console.log(`Joined room with ID: ${id} and username: ${name}`); //why is the id not the game id here???
-    });
-
     // Add more socket event listeners if needed
+
+
   }
+
+  async fetchCurrentUser() {
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/currentUser`);
+      const { success, currentUser } = response.data;
+
+      if (success) {
+        this.setState({ currentUser });
+      } else {
+        console.error('Failed to fetch current user:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  }
+
 
   // Add a function to emit 'joinRoom' event
   joinRoom(roomId) {
-    socket.emit('joinRoom', roomId);
+    console.log("joining room");
+    this.socket.emit('joinRoom', roomId);
   }
-
 
   getRoomNameFromURL() {
     const pathArray = window.location.pathname.split('/');
@@ -54,26 +71,12 @@ class Game extends Component {
   // Add other functions based on your game logic
 
   render() {
-    const { leaderboard} = this.state; // ,board, hand
+    const { leaderboard, currentUser } = this.state;
 
     return (
       <GameWrapper>
-        <Leaderboard>
-          <h2>Leaderboard</h2>
-          <ul>
-            {leaderboard.map((player) => (
-              <li key={player.name}>
-                {player.name} - Score: {player.score}
-              </li>
-            ))}
-          </ul>
-        </Leaderboard>
-
-        <GameContent>
-          <button onClick={() => this.joinRoom(this.getRoomNameFromURL())}>
-            Join Room
-          </button>
-        </GameContent>
+        {/* Pass the current user to the Leaderboard component */}
+        <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
       </GameWrapper>
     );
   }
@@ -81,18 +84,6 @@ class Game extends Component {
 
 const GameWrapper = styled.div`
   /* Add your styling for the game wrapper */
-`;
-
-const Leaderboard = styled.div`
-  /* Add your styling for the leaderboard */
-`;
-
-// const Hand = styled.div`
-//   /* Add your styling for the player's hand */
-// `;
-
-const GameContent = styled.div`
-  /* Add your styling for the main game content */
 `;
 
 export default Game;

@@ -29,6 +29,8 @@ router.post('/signin', (req, res) => {
                     if (isPasswordValid) {
                         // Password is correct, set the session
                         req.session.user = username;
+                        console.log("req.session: ", req.session);
+                        console.log("req.session.user:", req.session.user)
 
                         // Redirect to the menu
                         res.redirect("/menu");

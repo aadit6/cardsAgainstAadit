@@ -5,6 +5,7 @@ const session = require("express-session");
 const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
 const path = require("path");
 const {createProxyMiddleware} = require("http-proxy-middleware");
+const axios = require("axios");
 
 
 console.log("dirname", __dirname);
@@ -28,14 +29,24 @@ router.get('/signup', (req,res) => {
 })
 
 //router.gets after login successful (eg menu, items on navbar, logout)
-router.get('/menu', (req, res) => {
-    if(!req.session.user) {
-        res.redirect("/")
+router.get('/menu', async (req, res) => {
+    if (!req.session.user) {
+        res.redirect("/");
         return;
     } else {
-        res.render(dir + "/views/menu.ejs", {username: req.session.user});
+        try {
+            
+            res.render(dir + "/views/menu.ejs", { username: req.session.user });
+            const response = await axios.get("http://localhost:3001/api/currentUser", { withCredentials: true });
+            console.log("response.data:", response.data);
+        } catch (error) {
+            console.error("Axios Error:", error);
+            res.redirect("/");
+        }
     }
 });
+
+
 
 router.get('/rules', (req, res) => {
     if(!req.session.user) {

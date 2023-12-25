@@ -18,7 +18,7 @@ const {createProxyMiddleware} = require("http-proxy-middleware");
 const cors = require("cors");
 
 const corsOptions = {
-    origin: ["http://localhost:3000"], //set to URL of client application
+    origin: ["http://localhost:3000"],
     credentials: true
 }
 
@@ -81,14 +81,23 @@ const sessionStore = db.getSessionStore((error, sessionStore) => {
 const sessionMiddleware = session({
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: false,
+        saveUninitialized: true,
         store: sessionStore,
         cookie: {
-            maxAge: 1000 * 60 * 60 * 24 //time in milliseconds => made it so session expires after one day
+            maxAge: 1000 * 60 * 60 * 24, //time in milliseconds => made it so session expires after one day
+            httpOnly: true,
         }
     })
 
 app.use(sessionMiddleware);
+
+//ROUTES
+app.use('/', authRoute);
+app.use('/', googleAuthRoute);
+app.use('/', indexRoute);
+app.use('/', settingsRoute);
+app.use('/', apiRoutes);
+
 
 const io = new SocketIo (server, {
     cors: corsOptions
@@ -106,11 +115,14 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
         if(!rooms[roomId]) {
             
             rooms[roomId] = new Game(io, roomId);
-            db.createRoom(user, roomId, (err) => {
-                if(err){
-                    console.error("database error:", err);
-                }
-            })
+            if(user) {
+                db.createRoom(user, roomId, (err) => {
+                    if(err){
+                        console.error("database error:", err);
+                    }
+                })
+            }
+            
             
         }
 
@@ -124,12 +136,6 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
 
 })
 
-//ROUTES
-app.use('/', authRoute);
-app.use('/', googleAuthRoute);
-app.use('/', indexRoute);
-app.use('/', settingsRoute);
-app.use('/', apiRoutes);
 
 
 
