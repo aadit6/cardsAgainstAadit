@@ -10,7 +10,6 @@ const Leaderboard = ({ leaderboard, currentUser }) => {
           <LeaderboardItem key={player.name}>
             <PlayerName>
               {player.name} {player.name === currentUser && "(YOU)"}
-              
             </PlayerName>
             <PlayerScore>{player.score}</PlayerScore>
           </LeaderboardItem>
@@ -49,6 +48,7 @@ const LeaderboardList = styled.ul`
   list-style-type: none;
   padding: 0;
   overflow-y: auto; /* Add a scrollbar if content exceeds the height */
+  max-height: 100%; /* Set a maximum height to trigger overflow */
 `;
 
 const LeaderboardItem = styled.li`
@@ -69,6 +69,8 @@ const LeaderboardItem = styled.li`
 const PlayerName = styled.span`
   color: #ffffff;
   font-weight: bold; /* Make the username bold */
+  overflow: hidden; /* Hide overflow content */
+  text-overflow: ellipsis; /* Display an ellipsis for long names */
 `;
 
 const PlayerScore = styled.span`
