@@ -85,7 +85,7 @@ const sessionMiddleware = session({
         store: sessionStore,
         cookie: {
             maxAge: 1000 * 60 * 60 * 24, //time in milliseconds => made it so session expires after one day
-            httpOnly: true,
+            sameSite: 'Lax',
         }
     })
 
@@ -125,8 +125,13 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
             
             
         }
-
         rooms[roomId].join(socket, session);
+        console.log("appending players in db");
+        db.appendPlayersinDB(roomId, true, (err) => { //increases value of player column for that corresponding roomid in db
+            if(err){
+                console.log("Database Error: ", err);
+            }
+        })
 
 
     })

@@ -44,11 +44,11 @@ class Game extends Component {
 
   async fetchCurrentUser() {
     try {
-      const response = await axios.get(`${SERVER_URL}/api/currentUser`, {withCredentials: true});
+      const response = await axios.get(`${SERVER_URL}/api/getCurrentUser`, {withCredentials: true}); //calling API. withcredentials: true ensures cookies included in header so can get value of user in session
       const { success, currentUser } = response.data;
 
       if (success) {
-        this.setState({ currentUser });
+        this.setState({ currentUser }); 
       } else {
         console.error('Failed to fetch current user:', response.data.message);
       }

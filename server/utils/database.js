@@ -90,7 +90,7 @@ getSessionStore(callback) {
 }
 
 
-// DDL SCRIPT 
+// DDL SCRIPTS
 
     initTables() { 
         //NOTE: LOOK AT ALL THIS FOREIGN KEY/ UNIQUE/ PRIMARY KEY STUFF WHEN LOOKING AT DESIGN AT END 
@@ -117,11 +117,15 @@ getSessionStore(callback) {
         });
 
         //rooms table
-        const initRoomSql = `DROP TABLE IF EXISTS Rooms;`;
+
+        //crucial as want rooms table to reset every time (dont want rooms to stay when server resets)
+        
+        const initRoomSql = `DROP TABLE IF EXISTS Rooms;`; 
         const roomSql = `
             CREATE TABLE IF NOT EXISTS Rooms ( 
                 RoomID VARCHAR(255) PRIMARY KEY,
                 CreatorName VARCHAR(255),
+                Players INT NULL DEFAULT 0,
                 FOREIGN KEY (CreatorName) REFERENCES Users(Username)
             );
         `;
@@ -271,7 +275,6 @@ getSessionStore(callback) {
                 return callback("Error retrieving username", null);
             }
             
-            console.log("Result: ", result);
             const username = result[0].username;
             callback(null, username);
         })
@@ -299,7 +302,6 @@ getSessionStore(callback) {
             if (err) {
                 return callback ("Error inserting into database", null) //change?
             }
-            console.log(result);
             return callback(null, "Successfully updated account details!");
                 
             
@@ -340,16 +342,38 @@ getSessionStore(callback) {
         });
     }
 
-    addUsertoRoom() {
+    appendPlayersinDB(roomid, increasePlayers, callback) {
+        let operator;
+        if(increasePlayers){
+            operator = '+';
+        } else {
+            operator = '-'
+        }
+        const sql = `UPDATE Rooms SET Players = Players ${operator} 1 WHERE RoomID = ?`
+        console.log("this is the sql: " , sql);
+        const values = [roomid];
 
+        this.connection.query(sql, values, (err, result) => {
+            if(err) {
+                callback(err, null);
+            } else {
+                console.log("players appended in db");
+            }
+        })
     }
 
-    removeUserfromRoom() {
+    returnPlayersinRoom(roomid, callback) {
+        const sql = "SELECT Players FROM Rooms WHERE RoomID = ?"
+        const values = [roomid]
 
-    }
-
-    deleteRoom() {
-
+        this.connection.query(sql, values, (err, result) => {
+            if(err){
+                callback(err, null);
+            } else {
+                const numOfPlayers = result[0].Players;
+                callback(null, numOfPlayers)
+            }
+        })
     }
 
     

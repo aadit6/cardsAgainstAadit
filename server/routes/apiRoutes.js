@@ -19,12 +19,22 @@
         const {roomCode} = req.body;
         console.log("Request Headers:", req.headers);
         console.log("Cookies:", req.cookies);
-        db.checkRoomExists(roomCode, (msg, roomExists) => { //remember to update this later depending on what we're checking for
+        db.checkRoomExists(roomCode, (msg, roomExists) => { 
             if (roomExists) {
-                res.json({
-                    success: true,
-                    message: msg
-                })
+                db.returnPlayersinRoom(roomCode, (err, numOfPlayers) => {
+                    console.log("number of players is:::", numOfPlayers);
+                    if (numOfPlayers >= 2) {
+                        res.json({
+                            success: false,
+                            message: "Room is full (MAX 6 PLAYERS)"
+                        })
+                    } else {
+                        res.json({
+                            success: true,
+                            message: msg
+                        })
+                    }
+                }) 
             } else {
                 res.json({
                     success: false,
@@ -34,7 +44,7 @@
         })
     })
 
-    router.get('/api/currentUser', (req, res) => {
+    router.get('/api/getCurrentUser', (req, res) => {
         console.log("Request Headers:", req.headers);
         console.log("Cookies:", req.cookies);
     

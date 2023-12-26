@@ -34,15 +34,7 @@ router.get('/menu', async (req, res) => {
         res.redirect("/");
         return;
     } else {
-        try {
-            
-            res.render(dir + "/views/menu.ejs", { username: req.session.user });
-            const response = await axios.get("http://localhost:3001/api/currentUser", { withCredentials: true });
-            console.log("response.data:", response.data);
-        } catch (error) {
-            console.error("Axios Error:", error);
-            res.redirect("/");
-        }
+        res.render(dir + "/views/menu.ejs", { username: req.session.user });
     }
 });
 
