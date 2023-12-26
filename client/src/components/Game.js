@@ -44,7 +44,7 @@ class Game extends Component {
 
   async fetchCurrentUser() {
     try {
-      const response = await axios.get(`${SERVER_URL}/api/currentUser`);
+      const response = await axios.get(`${SERVER_URL}/api/currentUser`, {withCredentials: true});
       const { success, currentUser } = response.data;
 
       if (success) {
