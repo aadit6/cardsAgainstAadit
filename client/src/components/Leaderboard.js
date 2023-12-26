@@ -26,10 +26,7 @@ const LeaderboardContainer = styled.div`
   margin: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-  /* Position the leaderboard at the bottom left */
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
+ 
 
   /* Increase the size of the leaderboard */
   width: 300px;

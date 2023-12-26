@@ -1,10 +1,16 @@
+// Import necessary modules
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { io } from 'socket.io-client';
-import Leaderboard from './Leaderboard'; // Import the Leaderboard component
-import axios from "axios";
+import axios from 'axios';
 
 import { SERVER_URL } from '../constants';
+
+// Import additional components
+import Leaderboard from './Leaderboard';
+import GameTitle from './GameTitle';
+import UserInfo from './UserInfo';
+import InviteFriends from './InviteFriends';
 
 // Define a theme object with an empty object for now
 
@@ -38,17 +44,15 @@ class Game extends Component {
       console.log(`Joined room with ID: ${id} and username: ${name}`);
     });
     // Add more socket event listeners if needed
-
-
   }
 
   async fetchCurrentUser() {
     try {
-      const response = await axios.get(`${SERVER_URL}/api/getCurrentUser`, {withCredentials: true}); //calling API. withcredentials: true ensures cookies included in header so can get value of user in session
+      const response = await axios.get(`${SERVER_URL}/api/getCurrentUser`, { withCredentials: true });
       const { success, currentUser } = response.data;
 
       if (success) {
-        this.setState({ currentUser }); 
+        this.setState({ currentUser });
       } else {
         console.error('Failed to fetch current user:', response.data.message);
       }
@@ -56,7 +60,6 @@ class Game extends Component {
       console.error('Error fetching current user:', error);
     }
   }
-
 
   // Add a function to emit 'joinRoom' event
   joinRoom(roomId) {
@@ -75,15 +78,34 @@ class Game extends Component {
 
     return (
       <GameWrapper>
-        {/* Pass the current user to the Leaderboard component */}
+        <Header>
+          {/* Title component */}
+          <GameTitle />
+          {/* User info component */}
+          <UserInfo currentUser={currentUser} />
+        </Header>
+        {/* Invite friends component */}
+        <InviteFriends roomId={this.getRoomNameFromURL()} />
+        {/* Leaderboard component */}
         <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
+        
       </GameWrapper>
     );
   }
 }
 
 const GameWrapper = styled.div`
-  /* Add your styling for the game wrapper */
+  background-color: #262629; /* Grey background */
+  padding: 20px; /* Add padding as needed */
+  min-height: 100vh; /* Minimum height of 100% of the viewport height */
+`;
+
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Add margin as needed */
 `;
 
 export default Game;
