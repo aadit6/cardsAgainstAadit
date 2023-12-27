@@ -47,10 +47,14 @@ class Game extends Component {
   }
 
   updateStatusLogs = (newLog) => {
+    const timestamp = new Date().toLocaleTimeString(); // Get current time in HH:mm:ss format
+    const logWithTimestamp = `[${timestamp}] ${newLog}`; //so that time displayed before each log
+  
     this.setState((prevState) => ({
-      statusLogs: [...prevState.statusLogs, newLog],
+      statusLogs: [...prevState.statusLogs, logWithTimestamp],
     }));
   };
+  
 
   async fetchCurrentUser() {
     try {
@@ -69,7 +73,7 @@ class Game extends Component {
 
   // Add a function to emit 'joinRoom' event
   joinRoom(roomId) {
-    console.log("joining room");
+    this.updateStatusLogs(`New room created with room ID ${roomId}`);
     this.socket.emit('joinRoom', roomId);
   }
 

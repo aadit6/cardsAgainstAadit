@@ -24,6 +24,7 @@ const LeaderboardContainer = styled.div`
   border-radius: 12px;
   padding: 15px;
   margin: 20px;
+  margin-top: 80px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
  
