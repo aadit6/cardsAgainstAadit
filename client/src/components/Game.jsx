@@ -79,7 +79,7 @@ class Game extends Component {
   }
   // Add other functions based on your game logic
 
-  render() {
+  render() { //STATUS LOG DOESNT UPDATE FOR **EACH PLAYER** YET
     const { leaderboard, currentUser, statusLogs } = this.state;
 
     return (

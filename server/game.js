@@ -7,13 +7,14 @@ const server = http.createServer(app);
 const socketio = require("socket.io");
 const fs = require("fs");
 const entities = require("entities");
+const Queue = require("./helpers/queue.js"); //for use later => when changing which player is czar
 
 class Game {
   constructor(io, roomId) {
     this.io = io;
     this.players = [];
     this.board = {
-      roomId, //figure out how to link this with the actual room id --- (?)
+      roomId,
       whiteDeck: [],
       blackDeck: [],
       playedBlackCard: {},
@@ -37,7 +38,7 @@ class Game {
   }
 
   join(socket, session) {
-    const { players, board, io, updateRoster, updateBoard, updateHand, runTurn } = this;
+    const { players, board, io} = this;
     let existingPlayer;
 
     for (let i = 0; i < players.length; i++) { //checking if already player with this name in room
@@ -53,8 +54,8 @@ class Game {
       return socket.emit("refuse join") //how to tell player user already in room (some some way of having popup??)
     } else if (existingPlayer && !existingPlayer.connected) {
       //reconnect the player
-      // socket.id = existingPlayer.id;
-      // existingPlayer.socket = socket;
+      socket.id = existingPlayer.id;
+      existingPlayer.socket = socket;
       existingPlayer.status = "played" //cant play till next round (fix later if needed)
     } else if (!existingPlayer) {
       socket.roomId = board.roomId;
@@ -71,16 +72,13 @@ class Game {
       console.log("players: ", players);
     }
 
-    socket.emit("join_ack", {id: board.roomId, name: session.user});
-    console.log("join success")
+    this.io.to(board.roomId).emit('join_ack', { name: session.user});
+    
     this.updateLeaderboard();
-    console.log("updateLeaderboard success")
-
+ 
     this.updateBoard(socket);
-    console.log("updateBoard success")
 
     this.updateHand(socket);
-    console.log("updateHand success")
 
 
     //handle disconnect stuff later
@@ -102,7 +100,7 @@ class Game {
     };
 
     // Load the content of the single cards.json file
-    const deckContents = fs.readFileSync('server/cards.json');
+    const deckContents = fs.readFileSync('server/cards.json'); //reading file and parsing json
 
     // Add the black cards.
     if (addBlack) {

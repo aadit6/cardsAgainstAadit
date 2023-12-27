@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import JoinGame from './JoinGame';
-import Game from './Game';
+import Game from './Game.jsx';
 import axios from 'axios';
-import { SERVER_URL } from './../constants.js';
+import { SERVER_URL } from '../constants.js';
 
 const App = () => {
 

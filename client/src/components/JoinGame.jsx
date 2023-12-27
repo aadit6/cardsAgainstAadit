@@ -5,7 +5,7 @@ import axios from 'axios';
 import JoinGameHeader from './JoinGameHeader';
 import JoinGameInstructions from './JoinGameInstructions';
 import CreateGame from './CreateGame';
-import {SERVER_URL} from './../constants.js';
+import {SERVER_URL} from '../constants.js';
 
 
 const MAX_ROOM_CHARS = 15;
