@@ -22,15 +22,15 @@ const Leaderboard = ({ leaderboard, currentUser }) => {
 const LeaderboardContainer = styled.div`
   background-color: #3498db;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
   margin: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
  
 
   /* Increase the size of the leaderboard */
-  width: 300px;
-  height: 400px; /* Adjust the height as needed */
+  width: 225px;
+  height: 450px; /* Adjust the height as needed */
   font-size: 18px;
   font-family: 'Arial', sans-serif;
 `;

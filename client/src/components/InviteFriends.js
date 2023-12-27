@@ -34,11 +34,15 @@ const InviteFriends = ({ roomId }) => {
   );
 };
 
-const InviteContainer = styled.div`
+//shows success message when clicked on and copied. Changes color when hovered over
+const InviteContainer = styled.div` 
   background-color: ${({ isHovered, isCopied }) =>
     isCopied ? '#1f9a6f' : isHovered ? '#1a8daa' : '#20b9c7'};
-  padding-bottom: 15px;
-  border-radius: 12px;
+  padding: 0%;
+  border-radius: 10px;
+  margin-right: 1.5%;
+  margin-left: 1.5%;
+  margin-top: 0%
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -61,6 +65,7 @@ const InviteText = styled.h2`
 const RoomIdContainer = styled.div`
   display: flex;
   align-items: center;
+  padding: 0%;
 `;
 
 const RoomIdInput = styled.input`
@@ -68,7 +73,7 @@ const RoomIdInput = styled.input`
   background-color: transparent;
   border: none;
   color: #fff;
-  font-size: 40px;
+  font-size: 35px;
   margin-bottom: 10px;
   text-align: center;
   outline: none;
@@ -76,7 +81,7 @@ const RoomIdInput = styled.input`
 `;
 
 const SuccessMessage = styled.div`
-  position: absolute;
+  position: relative;
   bottom: 0;
   color: #fff;
   font-size: 18px;

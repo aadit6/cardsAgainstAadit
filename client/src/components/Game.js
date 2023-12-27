@@ -1,18 +1,15 @@
-// Import necessary modules
+// Game.js
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 
 import { SERVER_URL } from '../constants';
-
-// Import additional components
 import Leaderboard from './Leaderboard';
 import GameTitle from './GameTitle';
 import UserInfo from './UserInfo';
 import InviteFriends from './InviteFriends';
-
-// Define a theme object with an empty object for now
+import Status from './Status'; // Import the Status component
 
 class Game extends Component {
   constructor(props) {
@@ -22,6 +19,7 @@ class Game extends Component {
       leaderboard: [],
       board: {},
       currentUser: null,
+      statusLogs: [], // Initialize an empty array for status logs
     };
 
     this.socket = io(SERVER_URL, {
@@ -36,15 +34,23 @@ class Game extends Component {
     this.fetchCurrentUser();
 
     this.socket.on('leaderboard', (leaderboard) => {
-      console.log("this is leaderboard: ", leaderboard);
       this.setState({ leaderboard });
     });
 
-    this.socket.on('join_ack', ({ id, name }) => {
-      console.log(`Joined room with ID: ${id} and username: ${name}`);
+    this.socket.on('join_ack', ({ name }) => {
+      // Update status logs when a player joins
+      const newLog = `${name} has joined the room. Minimum 3 players required to start the game.`;
+      this.updateStatusLogs(newLog);
     });
+
     // Add more socket event listeners if needed
   }
+
+  updateStatusLogs = (newLog) => {
+    this.setState((prevState) => ({
+      statusLogs: [...prevState.statusLogs, newLog],
+    }));
+  };
 
   async fetchCurrentUser() {
     try {
@@ -74,19 +80,16 @@ class Game extends Component {
   // Add other functions based on your game logic
 
   render() {
-    const { leaderboard, currentUser } = this.state;
+    const { leaderboard, currentUser, statusLogs } = this.state;
 
     return (
       <GameWrapper>
         <Header>
-          {/* Title component */}
           <GameTitle />
-          {/* User info component */}
           <UserInfo currentUser={currentUser} />
         </Header>
-        {/* Invite friends component */}
-        <InviteFriends roomId={this.getRoomNameFromURL()} />
-        {/* Leaderboard component */}
+        <InviteFriends roomId={this.getRoomNameFromURL()} /> 
+        <Status logs={statusLogs} />
         <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
         
       </GameWrapper>
