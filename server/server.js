@@ -132,9 +132,11 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
                 console.log("Database Error: ", err);
             }
         })
-
-
     })
+
+    socket.on('startGame', (roomId) => {
+        io.to(roomId).emit('gameStarted');
+    });
 
 
 

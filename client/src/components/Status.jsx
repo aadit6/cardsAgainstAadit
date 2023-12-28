@@ -1,3 +1,4 @@
+// Status.jsx
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
@@ -30,7 +31,7 @@ const moveUp = keyframes`
   }
 `;
 
-const Status = ({ logs }) => {
+const Status = ({ logs, roomid }) => {
   const [statusLogs, setStatusLogs] = useState([]);
 
   useEffect(() => {
@@ -43,9 +44,9 @@ const Status = ({ logs }) => {
   const displayedLogs = statusLogs.slice(-maxLogs);
 
   const downloadLogs = () => {
-    const timestamp = new Date().toLocaleString(); // Get current date and time
-    const filename = `game_logs_${timestamp}.txt`;
-    const logsContent = statusLogs.join('\n'); // Join logs with line breaks
+    const timestamp = new Date().toLocaleTimeString();
+    const filename = `log_room_${roomid}_${timestamp}.txt`; // Use the roomid prop
+    const logsContent = statusLogs.join('\n');
 
     const blob = new Blob([logsContent], { type: 'text/plain' });
     const link = document.createElement('a');
@@ -92,35 +93,33 @@ const Status = ({ logs }) => {
   `;
 
   const StatusList = styled.div`
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 100%;
-  margin-right: 50px; /* Adjust the margin-right value to move the button further to the right */
-`;
-
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 100%;
+    margin-right: 50px; /* Adjust the margin-right value to move the button further to the right */
+  `;
 
   const DownloadLogsButton = styled.button`
-  margin-top: 10px;
-  padding: 12px 20px; /* Adjust padding for a cleaner look */
-  background-color: #3498db; /* Use a different color */
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  align-self: flex-end;
-  font-size: 16px;
-  position: absolute;
-  bottom: 10px; /* Adjust the bottom value to move the button further down */
-  right: 10px; /* Adjust the right value to move the button further to the right */
-  transition: background-color 0.3s ease; /* Add a smooth transition effect */
-  
-  &:hover {
-    background-color: #2980b9; /* Change color on hover */
-  }
-`;
+    margin-top: 10px;
+    padding: 12px 20px; /* Adjust padding for a cleaner look */
+    background-color: #3498db; /* Use a different color */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-end;
+    font-size: 16px;
+    position: absolute;
+    bottom: 20px; /* Adjust the bottom value to move the button further down */
+    right: 25px; /* Adjust the right value to move the button further to the right */
+    transition: background-color 0.3s ease; /* Add a smooth transition effect */
 
+    &:hover {
+      background-color: #2980b9; /* Change color on hover */
+    }
+  `;
 
   const AnimatedStatusMessage = styled.div`
     background-color: #333;
@@ -154,7 +153,7 @@ const Status = ({ logs }) => {
             {log}
           </AnimatedStatusMessage>
         ))}
-        <DownloadLogsButton onClick={downloadLogs}>Download Logs</DownloadLogsButton>
+        <DownloadLogsButton onClick={downloadLogs}>Download Log</DownloadLogsButton>
       </StatusList>
     </StatusWrapper>
   );

@@ -17,7 +17,7 @@ const UserContainer = styled.div`
 
 
 const UserName = styled.span`
-  font-size: 24px; /* Adjust the font size as needed */
+  font-size: 34px; /* Adjust the font size as needed */
   font-weight: bold; /* Make the username bold */
   color: white; /* Adjust the color as needed */
   margin-top: 20%

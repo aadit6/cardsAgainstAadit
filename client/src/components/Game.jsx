@@ -9,7 +9,10 @@ import Leaderboard from './Leaderboard';
 import GameTitle from './GameTitle';
 import UserInfo from './UserInfo';
 import InviteFriends from './InviteFriends';
-import Status from './Status'; // Import the Status component
+import Status from './Status';
+import StartButton from './StartButton';
+import WhiteCard from './WhiteCard';
+import BlackCard from './BlackCard';
 
 class Game extends Component {
   constructor(props) {
@@ -19,7 +22,10 @@ class Game extends Component {
       leaderboard: [],
       board: {},
       currentUser: null,
-      statusLogs: [], // Initialize an empty array for status logs
+      statusLogs: [],
+      isStartButtonDisabled: true,
+      gameStarted: false,
+      dealtCards: [],
     };
 
     this.socket = io(SERVER_URL, {
@@ -28,33 +34,58 @@ class Game extends Component {
   }
 
   componentDidMount() {
-    // Call joinRoom method to emit 'joinRoom' event
     this.joinRoom(this.getRoomNameFromURL());
 
     this.fetchCurrentUser();
 
     this.socket.on('leaderboard', (leaderboard) => {
       this.setState({ leaderboard });
+      this.handlePlayerCountChange(leaderboard.length);
     });
 
     this.socket.on('join_ack', ({ name }) => {
-      // Update status logs when a player joins
       const newLog = `${name} has joined the room. Minimum 3 players required to start the game.`;
       this.updateStatusLogs(newLog);
     });
 
-    // Add more socket event listeners if needed
+    this.socket.on('playerCountChanged', (playerCount) => {
+      this.handlePlayerCountChange(playerCount);
+    });
+
+    this.socket.on('gameStarted', () => {
+      this.handleGameStart();
+    });
   }
 
+  handlePlayerCountChange = (playerCount) => {
+    this.setState({
+      isStartButtonDisabled: playerCount < 3,
+    });
+  };
+
+  handleGameStart = () => {
+    this.setState({
+      gameStarted: true,
+    });
+
+    const dealtCards = Array.from({ length: 8 }, (_, index) => `Card ${index + 1}`);
+    this.setState({
+      dealtCards,
+    });
+  };
+
+  handleStartButtonClick = (roomid) => {
+    this.socket.emit('startGame', roomid);
+  };
+
   updateStatusLogs = (newLog) => {
-    const timestamp = new Date().toLocaleTimeString(); // Get current time in HH:mm:ss format
-    const logWithTimestamp = `[${timestamp}] ${newLog}`; //so that time displayed before each log
-  
+    const timestamp = new Date().toLocaleTimeString();
+    const logWithTimestamp = `[${timestamp}] ${newLog}`;
+
     this.setState((prevState) => ({
       statusLogs: [...prevState.statusLogs, logWithTimestamp],
     }));
   };
-  
 
   async fetchCurrentUser() {
     try {
@@ -71,7 +102,6 @@ class Game extends Component {
     }
   }
 
-  // Add a function to emit 'joinRoom' event
   joinRoom(roomId) {
     this.updateStatusLogs(`New room created with room ID ${roomId}`);
     this.socket.emit('joinRoom', roomId);
@@ -81,10 +111,10 @@ class Game extends Component {
     const pathArray = window.location.pathname.split('/');
     return pathArray[pathArray.length - 1];
   }
-  // Add other functions based on your game logic
 
-  render() { //STATUS LOG DOESNT UPDATE FOR **EACH PLAYER** YET
-    const { leaderboard, currentUser, statusLogs } = this.state;
+  render() {
+    const { leaderboard, currentUser, statusLogs, isStartButtonDisabled, gameStarted, dealtCards } = this.state;
+    const roomid = this.getRoomNameFromURL();
 
     return (
       <GameWrapper>
@@ -92,27 +122,45 @@ class Game extends Component {
           <GameTitle />
           <UserInfo currentUser={currentUser} />
         </Header>
-        <InviteFriends roomId={this.getRoomNameFromURL()} /> 
-        <Status logs={statusLogs} />
+        <InviteFriends roomId={roomid} />
+        <Status logs={statusLogs} roomid={roomid} />
         <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
-        
+        {!gameStarted && (
+          <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} />
+        )}
+        {gameStarted && (
+          <div>
+            <DealtCardsContainer>
+              {dealtCards.map((card, index) => (
+                <WhiteCard key={index} text={card} />
+              ))}
+            </DealtCardsContainer>
+            <BlackCard text="This is a black card." />
+          </div>
+        )}
       </GameWrapper>
     );
   }
 }
 
 const GameWrapper = styled.div`
-  background-color: #262629; /* Grey background */
-  padding: 20px; /* Add padding as needed */
-  min-height: 100vh; /* Minimum height of 100% of the viewport height */
+  background-color: #262629;
+  padding: 0px;
+  margin: 0px;
+  min-height: 100vh;
 `;
-
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px; /* Add margin as needed */
+  margin-bottom: 20px;
+`;
+
+const DealtCardsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
 `;
 
 export default Game;

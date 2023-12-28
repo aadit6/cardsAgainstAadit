@@ -60,6 +60,7 @@ const InviteText = styled.h2`
   color: white;
   font-size: 24px;
   margin-bottom: 10px;
+  margin-top: 0px;
 `;
 
 const RoomIdContainer = styled.div`
