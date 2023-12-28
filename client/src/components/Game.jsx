@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 
 import { SERVER_URL } from '../constants';
+
 import Leaderboard from './Leaderboard';
 import GameTitle from './GameTitle';
 import UserInfo from './UserInfo';
@@ -13,6 +14,8 @@ import Status from './Status';
 import StartButton from './StartButton';
 import WhiteCard from './WhiteCard';
 import BlackCard from './BlackCard';
+import Board from './Board'; 
+import Hand from './Hand'; 
 
 class Game extends Component {
   constructor(props) {
@@ -44,7 +47,12 @@ class Game extends Component {
     });
 
     this.socket.on('join_ack', ({ name }) => {
-      const newLog = `${name} has joined the room. Minimum 3 players required to start the game.`;
+      let newLog
+      if (this.state.leaderboard.length < 2) {
+        newLog = `${name} has joined the room. ${2 - (this.state.leaderboard.length)} more player(s) required to start the game.`;
+      } else {
+        newLog = `${name} has joined the room.`;
+      }
       this.updateStatusLogs(newLog);
     });
 
@@ -68,10 +76,14 @@ class Game extends Component {
       gameStarted: true,
     });
 
+    this.updateStatusLogs(`New game started with ${this.state.leaderboard.length} players`);
     const dealtCards = Array.from({ length: 8 }, (_, index) => `Card ${index + 1}`);
     this.setState({
       dealtCards,
     });
+
+    
+
   };
 
   handleStartButtonClick = (roomid) => {
@@ -124,20 +136,34 @@ class Game extends Component {
         </Header>
         <InviteFriends roomId={roomid} />
         <Status logs={statusLogs} roomid={roomid} />
-        <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
-        {!gameStarted && (
-          <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} />
-        )}
-        {gameStarted && (
-          <div>
-            <DealtCardsContainer>
-              {dealtCards.map((card, index) => (
-                <WhiteCard key={index} text={card} />
-              ))}
-            </DealtCardsContainer>
-            <BlackCard text="This is a black card." />
-          </div>
-        )}
+        <GameContent>
+          <LeaderboardContainer>
+            <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
+          </LeaderboardContainer>
+          <Container>
+            {!gameStarted && (
+              <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} />
+            )}
+            {gameStarted && (
+              <div>
+                <ContentContainer>
+                  <ContentTitle>Board</ContentTitle>
+                  <Board>
+                    <BlackCard text="This is a black card." />
+                  </Board>
+                </ContentContainer>
+                <ContentContainer>
+                  <ContentTitle>Hand</ContentTitle>
+                  <Hand>
+                    {dealtCards.map((card, index) => (
+                      <WhiteCard key={index} text={card} />
+                    ))}
+                  </Hand>
+                </ContentContainer>
+              </div>
+            )}
+          </Container>
+        </GameContent>
       </GameWrapper>
     );
   }
@@ -157,10 +183,36 @@ const Header = styled.div`
   margin-bottom: 20px;
 `;
 
-const DealtCardsContainer = styled.div`
+const GameContent = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
+  align-items: flex-start;
+  margin-top: 20px;
 `;
+
+const LeaderboardContainer = styled.div`
+  width: 200px;
+  margin-right: 20px;
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0px;
+`;
+
+const ContentContainer = styled.div`
+  background-color: #333;
+  padding-bottom: 0px;
+  border-radius: 8px;
+  margin-left: 80px;
+  margin-top: 15px;
+  max-width: 100%;
+`;
+
+const ContentTitle = styled.h2`
+  color: #fff;
+  margin-bottom: 10px;
+`;
+
 
 export default Game;

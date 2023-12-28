@@ -1,5 +1,5 @@
 // Status.jsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
 const fadeDuration = 0.5; // seconds
@@ -32,21 +32,14 @@ const moveUp = keyframes`
 `;
 
 const Status = ({ logs, roomid }) => {
-  const [statusLogs, setStatusLogs] = useState([]);
-
-  useEffect(() => {
-    // Update the statusLogs state whenever logs prop changes
-    setStatusLogs(logs);
-  }, [logs]);
-
   // Limit the number of logs to display
   const maxLogs = 5;
-  const displayedLogs = statusLogs.slice(-maxLogs);
+  const displayedLogs = logs.slice(-maxLogs);
 
   const downloadLogs = () => {
     const timestamp = new Date().toLocaleTimeString();
     const filename = `log_room_${roomid}_${timestamp}.txt`; // Use the roomid prop
-    const logsContent = statusLogs.join('\n');
+    const logsContent = logs.join('\n');
 
     const blob = new Blob([logsContent], { type: 'text/plain' });
     const link = document.createElement('a');
