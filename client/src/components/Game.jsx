@@ -54,7 +54,20 @@ class Game extends Component {
         newLog = `${name} has joined the room.`;
       }
       this.updateStatusLogs(newLog);
+
+      // Send the entire logs array to the newly joined player
+      this.socket.emit('allLogs', this.state.statusLogs);
     });
+
+    this.socket.on('allLogs', (allLogs) => { //updating logs for every player
+      this.setState({
+        statusLogs: allLogs,
+      });
+    });
+  
+
+    
+    
 
     this.socket.on('playerCountChanged', (playerCount) => {
       this.handlePlayerCountChange(playerCount);
