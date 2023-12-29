@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const session = require("express-session");
 const db = require("../utils/database.js")
-const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
+const dir = `C:\\Users\\aadit\\Documents\\A-Levels\\CS\\NEA\\pokerGameNEA\\server`;
 
 const ggl = require("../utils/googleAuth.js");
 router.get("/auth/google", (req, res) => {
