@@ -1,4 +1,4 @@
-// Game.js
+// Game.jsx
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { io } from 'socket.io-client';
@@ -47,27 +47,18 @@ class Game extends Component {
     });
 
     this.socket.on('join_ack', ({ name }) => {
-      let newLog
-      if (this.state.leaderboard.length < 2) {
-        newLog = `${name} has joined the room. ${2 - (this.state.leaderboard.length)} more player(s) required to start the game.`;
-      } else {
-        newLog = `${name} has joined the room.`;
-      }
+      const newLog = `${name} has joined the room.`;
       this.updateStatusLogs(newLog);
 
       // Send the entire logs array to the newly joined player
       this.socket.emit('allLogs', this.state.statusLogs);
     });
 
-    this.socket.on('allLogs', (allLogs) => { //updating logs for every player
+    this.socket.on('allLogs', (allLogs) => {
       this.setState({
         statusLogs: allLogs,
       });
     });
-  
-
-    
-    
 
     this.socket.on('playerCountChanged', (playerCount) => {
       this.handlePlayerCountChange(playerCount);
@@ -75,6 +66,22 @@ class Game extends Component {
 
     this.socket.on('gameStarted', () => {
       this.handleGameStart();
+
+      console.log("board: ", this.state.board)
+    });
+
+    // Listen for the 'hand' event to update dealtCards
+    this.socket.on('hand', (handData) => {
+      console.log('Received hand:', handData.hand);
+      this.setState({
+        dealtCards: handData.hand,
+      });
+    });
+
+    this.socket.on('board', (newBoard) => {
+      this.setState({
+        board: newBoard.data,
+      });
     });
   }
 
@@ -90,13 +97,6 @@ class Game extends Component {
     });
 
     this.updateStatusLogs(`New game started with ${this.state.leaderboard.length} players`);
-    const dealtCards = Array.from({ length: 8 }, (_, index) => `Card ${index + 1}`);
-    this.setState({
-      dealtCards,
-    });
-
-    
-
   };
 
   handleStartButtonClick = (roomid) => {
@@ -130,6 +130,13 @@ class Game extends Component {
   joinRoom(roomId) {
     this.updateStatusLogs(`New room created with room ID ${roomId}`);
     this.socket.emit('joinRoom', roomId);
+
+    // Listen for 'hand' event to receive the dealt hand
+    this.socket.on('hand', (handData) => {
+      this.setState({
+        dealtCards: handData.hand,
+      });
+    });
   }
 
   getRoomNameFromURL() {
@@ -138,7 +145,7 @@ class Game extends Component {
   }
 
   render() {
-    const { leaderboard, currentUser, statusLogs, isStartButtonDisabled, gameStarted, dealtCards } = this.state;
+    const { leaderboard, currentUser, statusLogs, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
     const roomid = this.getRoomNameFromURL();
 
     return (
@@ -162,14 +169,14 @@ class Game extends Component {
                 <ContentContainer>
                   <ContentTitle>Board</ContentTitle>
                   <Board>
-                    <BlackCard text="This is a black card." />
+                    <BlackCard text={board.playedBlackCard.text} />
                   </Board>
                 </ContentContainer>
                 <ContentContainer>
                   <ContentTitle>Hand</ContentTitle>
                   <Hand>
                     {dealtCards.map((card, index) => (
-                      <WhiteCard key={index} text={card} />
+                      <WhiteCard key={index} text={card.text} />
                     ))}
                   </Hand>
                 </ContentContainer>
@@ -226,6 +233,5 @@ const ContentTitle = styled.h2`
   color: #fff;
   margin-bottom: 10px;
 `;
-
 
 export default Game;
