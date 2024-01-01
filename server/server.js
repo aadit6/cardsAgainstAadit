@@ -125,6 +125,7 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
             
             
         }
+
         rooms[roomId].join(socket, session);
         console.log("appending players in db");
         db.appendPlayersinDB(roomId, true, (err) => { //increases value of player column for that corresponding roomid in db

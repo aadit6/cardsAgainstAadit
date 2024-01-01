@@ -170,7 +170,7 @@ class Game extends Component {
                 <ContentContainer>
                   <ContentTitle>Board</ContentTitle>
                   <Board>
-                    <BlackCard text={board.playedBlackCard.text} />
+                    <BlackCard text={board.playedBlackCard[0].text} />
                   </Board>
                 </ContentContainer>
                 <ContentContainer>

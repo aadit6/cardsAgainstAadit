@@ -19,8 +19,7 @@ class Game {
       roomId,
       whiteDeck: [],
       blackDeck: [],
-      playedBlackCard: {},
-      playedWhiteCards: [],
+      playedBlackCard: [], //changed from {}
       czar: 0,
       selected: false,
       picking: false,
@@ -30,13 +29,14 @@ class Game {
     this.decks = [];
 
     this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
-    this.updateBoard = this.updateBoard.bind(this);
-    this.updateHand = this.updateHand.bind(this);
+    this.initBoard = this.initBoard.bind(this);
+    this.initHand = this.initHand.bind(this);
     this.updateLeaderboard = this.updateLeaderboard.bind(this);
     this.playTurn = this.playTurn.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
 
     this.addCards(true, true); 
+    this.initBlackCard();
   }
 
   join(socket, session) {
@@ -80,8 +80,9 @@ class Game {
   
 
     this.updateLeaderboard();
-    this.updateHand(socket);
-    this.updateBoard(socket);
+    this.initHand(socket);
+    this.initBoard(socket);
+    
 
   }
   
@@ -90,7 +91,7 @@ class Game {
     const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
 
     if (addBlack) {
-      board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({
+      board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
         id: index,
         text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
       })));
@@ -104,8 +105,8 @@ class Game {
     }
 
     this.board.whiteDeck = board.whiteDeck.shuffle() //originally had .stack here
-    console.log("board.whiteDeck is: ", this.board.whiteDeck)
-    // board.blackDeck = blackCardStack.shuffle().stack;
+    this.board.blackDeck = board.blackDeck.shuffle()
+
   }
 
 
@@ -122,7 +123,7 @@ class Game {
   }
 
   playTurn() { //FINISH LATER
-    const {players, board, updateBoard, updateHand, updateLeaderboard} = this;
+    const {players, board, initBoard, initHand, updateLeaderboard} = this;
     console.log(`advancing turn in room ${board.roomId}`);
 
 
@@ -158,18 +159,24 @@ class Game {
   
   
 
-  updateHand(socket) { //tbh no need for the (socket) right now => later may have situation where we do if(socket) but not sure why...
-    const { io, board, players } = this;
-      // Each player gets exactly 8 cards
-    let whiteCards = []
+  initHand(socket) { //seperate function as seperate from the board => as hand different for each player
+    const { io, players, board } = this;
+    console.log("board.whitedeck: ", this.board.whiteDeck);
+    let playedWhiteCards = []
     for (let i = 0; i < 8; i++) {
-      whiteCards.push(board.whiteDeck.draw())
+      playedWhiteCards.push(this.board.whiteDeck.draw())
     }
-    board.playedWhiteCards = whiteCards
-    console.log("played white cards: ", board.playedWhiteCards);
+    console.log("played white cards: ", playedWhiteCards);
       // Broadcast the new player's hand to the specific player
-    io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: board.playedWhiteCards });
+    io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: playedWhiteCards });
   }
+
+  initBlackCard() {
+    this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the first round
+    console.log("this.board: ", this.board);
+  }
+
+  
   
   
 
@@ -212,14 +219,14 @@ class Game {
   //   }
   // }
 
-  updateBoard(socket) {
-    const { io, board, players } = this;
+  initBoard(socket) {
+    const { io, players } = this;
     
 
     // const playerBlackDeck = board.blackDeck.slice();
     // const shuffledBlackDeck = shuffle
 
-    io.to(board.roomId).emit('board', {data: board})
+    io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
 
 
 
