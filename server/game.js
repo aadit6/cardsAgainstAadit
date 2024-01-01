@@ -8,6 +8,8 @@ const socketio = require("socket.io");
 const fs = require("fs");
 const entities = require("entities");
 const Queue = require("./helpers/queue.js"); //for use later => when changing which player is czar
+const CardStack = require("./helpers/cardStack.js");
+
 
 class Game {
   constructor(io, roomId) {
@@ -83,67 +85,27 @@ class Game {
 
   }
   
-  
-
-  
-
-
-
-  // addCards(addWhite, addBlack) {
-  //   const { board } = this;
-  //   const jsonContent = {
-  //     board: {
-  //       whiteDeck: [],
-  //       blackDeck: [],
-  //     },
-  //   };
-  //   // Load the content of the single cards.json file
-  //   const deckContents = fs.readFileSync('server/cards.json'); //reading file and parsing json
-  //   // Add the black cards.
-  //   if (addBlack) {
-  //     const blackCards = JSON.parse(deckContents).black;
-
-  //     for (const blackCard of blackCards) {
-  //       blackCard.text = entities.decodeHTML(blackCard.text).replace(/_+/g, '_____');
-  //       jsonContent.board.blackDeck.push(blackCard);
-  //     }
-  //   }
-  //   // Add the white cards.
-  //   if (addWhite) {
-  //     const whiteCards = JSON.parse(deckContents).white;
-
-  //     for (const whiteCard of whiteCards) {
-  //       jsonContent.board.whiteDeck.push(entities.decodeHTML(whiteCard));
-  //     }
-  //   }
-  //   board.whiteDeck = shuffle(jsonContent.board.whiteDeck);
-  //   board.blackDeck = shuffle(jsonContent.board.blackDeck);
-  // }
-
-  // Update the addCards method
-  
   addCards(addWhite, addBlack) {
     const { board } = this;
     const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
 
-    // Add the black cards.
     if (addBlack) {
-      board.blackDeck = jsonContent.black.map((blackCard, index) => ({
+      board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({
         id: index,
         text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
-      }));
+      })));
     }
 
-    // Add the white cards.
     if (addWhite) {
-      board.whiteDeck = jsonContent.white.map((whiteCard, index) => ({
+      board.whiteDeck = new CardStack(jsonContent.white.map((whiteCard, index) => ({
         id: index,
         text: entities.decodeHTML(whiteCard),
-      }));
+      })));
     }
 
-    board.whiteDeck = shuffle(board.whiteDeck);
-    board.blackDeck = shuffle(board.blackDeck);
+    this.board.whiteDeck = board.whiteDeck.shuffle() //originally had .stack here
+    console.log("board.whiteDeck is: ", this.board.whiteDeck)
+    // board.blackDeck = blackCardStack.shuffle().stack;
   }
 
 
@@ -185,7 +147,7 @@ class Game {
   
       // Emit to the specific room the player is in
       console.log(leaderboard);
-      io.to(player.socket.roomId).emit('leaderboard', leaderboard);
+      io.to(this.board.roomId).emit('leaderboard', leaderboard);
       
     }
   }
@@ -198,53 +160,69 @@ class Game {
 
   updateHand(socket) { //tbh no need for the (socket) right now => later may have situation where we do if(socket) but not sure why...
     const { io, board, players } = this;
-    const playerWhiteDeck = board.whiteDeck.slice(); // Shallow copy of the white deck
-    const shuffledWhiteDeck = shuffle(playerWhiteDeck);
-
       // Each player gets exactly 8 cards
-    board.playedWhiteCards = shuffledWhiteDeck.slice(0, 8);
+    let whiteCards = []
+    for (let i = 0; i < 8; i++) {
+      whiteCards.push(board.whiteDeck.draw())
+    }
+    board.playedWhiteCards = whiteCards
+    console.log("played white cards: ", board.playedWhiteCards);
       // Broadcast the new player's hand to the specific player
     io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: board.playedWhiteCards });
   }
   
   
 
+  // updateBoard(socket) {
+  //   const { players, board, io } = this;
+  //   let newBoard = {
+  //     roomId: board.roomId,
+  //     whiteDeck: board.whiteDeck,
+  //     blackDeck: board.blackDeck,
+  //     playedBlackCard: board.playedBlackCard,
+  //     playedWhiteCards: [],
+  //     czar: board.czar,
+  //     selected: board.selected,
+  //     picking: board.picking,
+  //   };
+    
+  //   if (board.selected) {
+  //     // Do nothing
+
+  //   } else if (checkReady(players)) {
+  //     if (!board.picking) {
+  //       board.picking = true;
+  //       shuffle(board.playedWhiteCards);
+  //     }
+  
+  //     newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ cards: w.cards }));
+  //   } else {
+  //     // Hide cards but show identities so we know who moves
+  //     newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ playerIndex: w.playerIndex }));
+  //   }
+  
+  //   const boardMsg = { type: 'board', data: newBoard };
+  
+  //   if (socket) {
+  //     // Send to just this player
+  //     io.to(socket.id).emit('board', boardMsg);
+  //   } else {
+  //     // Broadcast to all players
+  //     io.emit('board', boardMsg);
+  //   }
+  // }
+
   updateBoard(socket) {
-    const { players, board, io } = this;
-    let newBoard = {
-      roomId: board.roomId,
-      whiteDeck: board.whiteDeck,
-      blackDeck: board.blackDeck,
-      playedBlackCard: board.playedBlackCard,
-      playedWhiteCards: [],
-      czar: board.czar,
-      selected: board.selected,
-      picking: board.picking,
-    };
-  
-    if (board.selected) {
-      // Do nothing
-    } else if (checkReady(players)) {
-      if (!board.picking) {
-        board.picking = true;
-        shuffle(board.playedWhiteCards);
-      }
-  
-      newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ cards: w.cards }));
-    } else {
-      // Hide cards but show identities so we know who moves
-      newBoard.playedWhiteCards = board.playedWhiteCards.map(w => ({ playerIndex: w.playerIndex }));
-    }
-  
-    const boardMsg = { type: 'board', data: newBoard };
-  
-    if (socket) {
-      // Send to just this player
-      io.to(socket.id).emit('board', boardMsg);
-    } else {
-      // Broadcast to all players
-      io.emit('board', boardMsg);
-    }
+    const { io, board, players } = this;
+    
+
+    // const playerBlackDeck = board.blackDeck.slice();
+    // const shuffledBlackDeck = shuffle
+
+    io.to(board.roomId).emit('board', {data: board})
+
+
+
   }
   
 
@@ -252,23 +230,6 @@ class Game {
 
 
 
-}
-
-function shuffle(deck) { //complex user-defined algorithm: Fisher-Yates shuffle. Maybe alter to have better implementation(?????)
-    var currentIndex = deck.length,
-      temp,
-      randomIndex;
-  
-    while (0 !== currentIndex) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-  
-      temp = deck[currentIndex];
-      deck[currentIndex] = deck[randomIndex];
-      deck[randomIndex] = temp;
-    }
-  
-    return deck;
 }
 
 function checkReady(players) { //goes through each player + checks if connected
@@ -278,6 +239,8 @@ function checkReady(players) { //goes through each player + checks if connected
     }
   }
   return true;
+
+
 }
 
 
