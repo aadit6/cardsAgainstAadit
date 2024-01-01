@@ -23,9 +23,16 @@ class Game extends Component {
 
     this.state = {
       leaderboard: [],
-      board: {},
+      board: {
+        whiteDeck: [],
+        blackDeck: [],
+        playedBlackCard: [], //changed from {}
+        czar: 0,
+        selected: false,
+        picking: false,
+        statusLog: [],
+      },
       currentUser: null,
-      statusLogs: [],
       isStartButtonDisabled: true,
       gameStarted: false,
       dealtCards: [],
@@ -46,20 +53,6 @@ class Game extends Component {
       this.handlePlayerCountChange(leaderboard.length);
     });
 
-    this.socket.on('join_ack', ({ name }) => {
-      const newLog = `${name} has joined the room.`;
-      this.updateStatusLogs(newLog);
-
-      // Send the entire logs array to the newly joined player
-      this.socket.emit('allLogs', this.state.statusLogs);
-    });
-
-    this.socket.on('allLogs', (allLogs) => {
-      this.setState({
-        statusLogs: allLogs,
-      });
-    });
-
     this.socket.on('playerCountChanged', (playerCount) => {
       this.handlePlayerCountChange(playerCount);
     });
@@ -67,7 +60,6 @@ class Game extends Component {
     this.socket.on('gameStarted', () => {
       this.handleGameStart();
 
-      console.log("board: ", this.state.board)
     });
 
     // Listen for the 'hand' event to update dealtCards
@@ -96,22 +88,13 @@ class Game extends Component {
       gameStarted: true,
     });
 
-    this.updateStatusLogs(`New game started with ${this.state.leaderboard.length} players`);
-    this.updateStatusLogs(`Please select a card....`) //maybe later when we implement multiple rounds then put this somewhere else as will be repeated etc.
   };
 
   handleStartButtonClick = (roomid) => {
     this.socket.emit('startGame', roomid);
   };
 
-  updateStatusLogs = (newLog) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const logWithTimestamp = `[${timestamp}] ${newLog}`;
 
-    this.setState((prevState) => ({
-      statusLogs: [...prevState.statusLogs, logWithTimestamp],
-    }));
-  };
 
   async fetchCurrentUser() {
     try {
@@ -129,7 +112,6 @@ class Game extends Component {
   }
 
   joinRoom(roomId) {
-    this.updateStatusLogs(`New room created with room ID ${roomId}`);
     this.socket.emit('joinRoom', roomId);
 
     // Listen for 'hand' event to receive the dealt hand
@@ -146,8 +128,10 @@ class Game extends Component {
   }
 
   render() {
-    const { leaderboard, currentUser, statusLogs, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
+    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
     const roomid = this.getRoomNameFromURL();
+
+
 
     return (
       <GameWrapper>
@@ -156,7 +140,7 @@ class Game extends Component {
           <UserInfo currentUser={currentUser} />
         </Header>
         <InviteFriends roomId={roomid} />
-        <Status logs={statusLogs} roomid={roomid} />
+        <Status logs={board.statusLog} roomid={roomid} />
         <GameContent>
           <LeaderboardContainer>
             <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
@@ -164,6 +148,7 @@ class Game extends Component {
           <Container>
             {!gameStarted && (
               <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} numPlayers={this.state.leaderboard.length} />
+              
             )}
             {gameStarted && (
               <div>

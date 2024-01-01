@@ -136,6 +136,7 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
     })
 
     socket.on('startGame', (roomId) => {
+        rooms[roomId].updateLog("gameStarted");
         io.to(roomId).emit('gameStarted');
     });
 

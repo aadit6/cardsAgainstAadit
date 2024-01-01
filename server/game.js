@@ -23,9 +23,9 @@ class Game {
       czar: 0,
       selected: false,
       picking: false,
+      statusLog: [],
     };
     this.started = false;
-    this.log = [];  //some reason commenting this out makes leaderboard not work
     this.decks = [];
 
     this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
@@ -34,9 +34,13 @@ class Game {
     this.updateLeaderboard = this.updateLeaderboard.bind(this);
     this.playTurn = this.playTurn.bind(this);
     this.handlePlay = this.handlePlay.bind(this);
+    this.updateLog = this.updateLog.bind(this);
+
 
     this.addCards(true, true); 
     this.initBlackCard();
+    this.updateLog("newRoom")
+    
   }
 
   join(socket, session) {
@@ -75,13 +79,13 @@ class Game {
       
 
     }
-  
-    io.to(board.roomId).emit('join_ack', { name: session.user });
-  
+
+    this.updateLog("newPlayer", session)
+    
 
     this.updateLeaderboard();
     this.initHand(socket);
-    this.initBoard(socket);
+    this.initBoard();
     
 
   }
@@ -104,8 +108,10 @@ class Game {
       })));
     }
 
-    this.board.whiteDeck = board.whiteDeck.shuffle() //originally had .stack here
+    this.board.whiteDeck = board.whiteDeck.shuffle() 
     this.board.blackDeck = board.blackDeck.shuffle()
+    //shuffling both decks initially for the entire room. 
+    //later white cards and black cards are drawn from top of the stack of cards
 
   }
 
@@ -219,17 +225,40 @@ class Game {
   //   }
   // }
 
-  initBoard(socket) {
+  initBoard() {
     const { io, players } = this;
     
 
     // const playerBlackDeck = board.blackDeck.slice();
     // const shuffledBlackDeck = shuffle
 
+
+    console.log("Emitting 'board' event:", this.board);
+
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
+  }
 
+  updateLog(logMessage, session) {
+    
 
+    if(logMessage === "gameStarted") {
+      this.board.statusLog.push(`New game started with ${this.players.length} players. Please select a card`)
+    
+    } else if (logMessage === "newPlayer") {
+      
+      if (this.players.length < 3) {
+        this.board.statusLog.push(`${session.user} has joined the room. ${3 - this.players.length} players required to start the game.`)
+      } else {
+        this.board.statusLog.push(`${session.user} has joined the room. Press START to start the game.`)
+  
+      }
 
+    } else if (logMessage === "newRoom") {
+      this.board.statusLog.push(`new room created with room ID ${this.board.roomId}`);
+
+    }
+
+    this.initBoard();
   }
   
 

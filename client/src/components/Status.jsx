@@ -33,8 +33,9 @@ const moveUp = keyframes`
 
 const Status = ({ logs, roomid }) => {
   // Limit the number of logs to display
-  const maxLogs = 5;
-  const displayedLogs = logs.slice(-maxLogs);
+  console.log(logs);
+  console.log(roomid)
+  const displayedLogs = logs.slice();
 
   const downloadLogs = () => {
     const timestamp = new Date().toLocaleTimeString();
