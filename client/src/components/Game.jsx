@@ -97,6 +97,7 @@ class Game extends Component {
     });
 
     this.updateStatusLogs(`New game started with ${this.state.leaderboard.length} players`);
+    this.updateStatusLogs(`Please select a card....`) //maybe later when we implement multiple rounds then put this somewhere else as will be repeated etc.
   };
 
   handleStartButtonClick = (roomid) => {
@@ -162,7 +163,7 @@ class Game extends Component {
           </LeaderboardContainer>
           <Container>
             {!gameStarted && (
-              <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} />
+              <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} numPlayers={this.state.leaderboard.length} />
             )}
             {gameStarted && (
               <div>
