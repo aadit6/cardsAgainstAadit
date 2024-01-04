@@ -26,8 +26,10 @@ const Card = styled.div`
   }
 `;
 
-const WhiteCard = ({ text }) => {
-  return <Card>{text}</Card>;
+const WhiteCard = ({ text, onClick }) => {
+  return(
+    <Card onClick={onClick} >{text}</Card>
+  ) 
 };
 
 export default WhiteCard;

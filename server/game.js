@@ -32,8 +32,8 @@ class Game {
     this.initBoard = this.initBoard.bind(this);
     this.initHand = this.initHand.bind(this);
     this.updateLeaderboard = this.updateLeaderboard.bind(this);
-    this.playTurn = this.playTurn.bind(this);
-    this.handlePlay = this.handlePlay.bind(this);
+    // this.playTurn = this.playTurn.bind(this);
+    // this.handlePlay = this.handlePlay.bind(this);
     this.updateLog = this.updateLog.bind(this);
 
 
@@ -115,28 +115,6 @@ class Game {
 
   }
 
-
-  handleSelect() {
-
-  }
-
-  handlePlay() {
-
-  }
-
-  handleAdvance() {
-
-  }
-
-  playTurn() { //FINISH LATER
-    const {players, board, initBoard, initHand, updateLeaderboard} = this;
-    console.log(`advancing turn in room ${board.roomId}`);
-
-
-
-
-  }
-
   updateLeaderboard() {
     const { players, io } = this;
   
@@ -158,12 +136,6 @@ class Game {
       
     }
   }
-  
-  
-  
-  
-  
-  
 
   initHand(socket) { //seperate function as seperate from the board => as hand different for each player
     const { io, players, board } = this;
@@ -240,25 +212,39 @@ class Game {
 
   updateLog(logMessage, session) {
     
-
+    let log;
     if(logMessage === "gameStarted") {
-      this.board.statusLog.push(`New game started with ${this.players.length} players. Please select a card`)
+      
+      log = `New game started with ${this.players.length} players. Please select a card`
     
     } else if (logMessage === "newPlayer") {
       
       if (this.players.length < 3) {
-        this.board.statusLog.push(`${session.user} has joined the room. ${3 - this.players.length} players required to start the game.`)
+        log = `${session.user} has joined the room. ${3 - this.players.length} players required to start the game.`
       } else {
-        this.board.statusLog.push(`${session.user} has joined the room. Press START to start the game.`)
+        log = `${session.user} has joined the room. Press START to start the game.`
   
       }
 
     } else if (logMessage === "newRoom") {
-      this.board.statusLog.push(`new room created with room ID ${this.board.roomId}`);
-
+      log = `new room created with room ID ${this.board.roomId}`
+ 
+    } else if (logMessage === "cardPlayed") {
+      log = `${session.user} has selected a card.`
     }
 
+    const timestamp = new Date().toLocaleTimeString();
+    this.board.statusLog.push(`[${timestamp}] ` + log);
+
+
     this.initBoard();
+  }
+
+  handlePlayCard(text, index, roomid, session ){
+    const user = session.user;
+    const {players, board} = this;
+    console.log("value of text is: ", text);
+    console.log("value of index is: ", index);
   }
   
 

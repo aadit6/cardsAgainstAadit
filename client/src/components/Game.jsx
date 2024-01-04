@@ -94,6 +94,10 @@ class Game extends Component {
     this.socket.emit('startGame', roomid);
   };
 
+  handlePlayCard = (text, index, roomid) => {
+    this.socket.emit("playCard", text, index, roomid)
+  }
+
 
 
   async fetchCurrentUser() {
@@ -162,7 +166,7 @@ class Game extends Component {
                   <ContentTitle>Hand</ContentTitle>
                   <Hand>
                     {dealtCards.map((card, index) => (
-                      <WhiteCard key={index} text={card.text} />
+                      <WhiteCard key={index} text={card.text} onClick={() => this.handlePlayCard(card.text, index, roomid)}/>
                     ))}
                   </Hand>
                 </ContentContainer>

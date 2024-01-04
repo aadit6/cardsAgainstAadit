@@ -140,6 +140,12 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
         io.to(roomId).emit('gameStarted');
     });
 
+    socket.on("playCard" , (text, index, roomid) => {
+        console.log("received playCard");
+        rooms[roomid].updateLog("cardPlayed", session);
+        rooms[roomid].handlePlayCard(text, index, roomid, session) //remove the parameters which arent needed later
+    })
+
 
 
 

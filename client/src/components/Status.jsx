@@ -89,7 +89,7 @@ const Status = ({ logs, roomid }) => {
   const StatusList = styled.div`
     display: flex;
     flex-direction: column-reverse;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     height: 100%;
     margin-right: 50px; /* Adjust the margin-right value to move the button further to the right */
