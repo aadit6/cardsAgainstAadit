@@ -37,7 +37,7 @@ class Game extends Component {
       isStartButtonDisabled: true,
       gameStarted: false,
       dealtCards: [],
-      updateUser: null,
+      updateUser: [],
     };
 
     this.socket = io(SERVER_URL, {
@@ -75,9 +75,14 @@ class Game extends Component {
     this.socket.on('board', (newBoard) => {
       this.setState({
         board: newBoard.data,
-        updateUser: newBoard.user,
       });
+
     });
+
+    this.socket.on("updateUser", (updateUser) => {
+      this.state.updateUser.push(updateUser.data)
+
+    })
   }
 
   handlePlayerCountChange = (playerCount) => {
@@ -164,7 +169,7 @@ class Game extends Component {
                   <Board>
                     <BlackCard text={board.playedBlackCard[0].text} />
                     {board.playedWhites.map((card, index) => (
-                      <WhiteCard key={index} text={updateUser} onClick={null}/>
+                      <WhiteCard key={index} text={updateUser[index]} onClick={null}/>
                     ))}
 
                   </Board>
@@ -185,6 +190,9 @@ class Game extends Component {
     );
   }
 }
+
+//NOTE: currently there isnt a username attached to every single white card on board. Right now, if 3 different users 
+//play a card then will just have all 3 names as third user. fix this
 
 const GameWrapper = styled.div`
   background-color: #262629;
@@ -225,6 +233,8 @@ const ContentContainer = styled.div`
   margin-top: 15px;
   max-width: 100%;
   width: 100%;
+  position: relative;
+  overflow: hidden;
 `;
 
 const ContentTitle = styled.h2`
