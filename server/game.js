@@ -26,7 +26,8 @@ class Game {
       picking: false,
       statusLog: [],
     };
-    this.started = false;
+    this.started = false; //how to use this??
+    this.gameOver = false;
     this.decks = [];
 
     this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
@@ -69,7 +70,7 @@ class Game {
       const newPlayer = {
         name: session.user,
         score: 0,
-        status: "played",
+        status: "played", //is this needed??
         hand: [],
         socket: socket,
       };
@@ -242,32 +243,41 @@ class Game {
     this.initBoard();
   }
 
-  handlePlayCard(text, index, roomid, session ){
+  handlePlayCard(text, index, roomid, session ){ //when a player plays one of their white cards on their hand
     const user = session.user;
     const {io, players, board} = this;
-    // console.log("value of text is: ", text);
-    // console.log("value of index is: ", index);
-    let currentPlayer = this.players.find(p => p.name === session.user)
-    // console.log("this.players is: ", this.players);
-    console.log("session.user is: ", session.user);
-    console.log("currentPlayer is: ", currentPlayer);
 
-    // let playerWhites = board.whites.find(w => w.playerIndex === playerIndex); => is a player index for whites needed???
+    if(!this.gameOver && !board.picking){ //add more stuff to this. Later on also have if !czar etc.
 
-    this.board.playedWhites.push(currentPlayer.hand[index]);
-    currentPlayer.hand.splice(index, 1);
+      let currentPlayer = this.players.find(p => p.name === session.user)
+      const playerIndex = this.players.indexOf(currentPlayer);
 
-    let playerIndex = this.players.indexOf(currentPlayer);
-    io.to(players[playerIndex].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
+      console.log("session.user is: ", session.user);
+      console.log("currentPlayer is: ", currentPlayer);
 
-    this.initBoard();
-    io.to(this.board.roomId).emit('updateUser', {data: session.user})
+      this.board.playedWhites.push(currentPlayer.hand[index]); //places played card from hand to board
+      currentPlayer.hand.splice(index, 1); //removed card thats played from hand
+
+      io.to(players[playerIndex].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
+      this.initBoard();
+      io.to(this.board.roomId).emit('updateUser', {data: session.user})
+
+    }
+
+    
   }
-  
 
-  
+  handleSelect(){ //for when the czar selects one of their cards to be winner
 
+  }
 
+  handleAdvance() { //for when the czar advances the round to start following round
+
+  }
+
+  resetBoard () { //when new round started => so might need to rest values such as playedWhites etc. Maybe combine with initBoard ... idk?
+
+  }
 
 }
 
