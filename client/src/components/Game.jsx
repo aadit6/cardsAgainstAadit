@@ -26,7 +26,8 @@ class Game extends Component {
       board: {
         whiteDeck: [],
         blackDeck: [],
-        playedBlackCard: [], //changed from {}
+        playedBlackCard: [], 
+        playedWhites: [],
         czar: 0,
         selected: false,
         picking: false,
@@ -36,6 +37,7 @@ class Game extends Component {
       isStartButtonDisabled: true,
       gameStarted: false,
       dealtCards: [],
+      updateUser: null,
     };
 
     this.socket = io(SERVER_URL, {
@@ -73,6 +75,7 @@ class Game extends Component {
     this.socket.on('board', (newBoard) => {
       this.setState({
         board: newBoard.data,
+        updateUser: newBoard.user,
       });
     });
   }
@@ -132,7 +135,7 @@ class Game extends Component {
   }
 
   render() {
-    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
+    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board, updateUser } = this.state;
     const roomid = this.getRoomNameFromURL();
 
 
@@ -160,6 +163,10 @@ class Game extends Component {
                   <ContentTitle>Board</ContentTitle>
                   <Board>
                     <BlackCard text={board.playedBlackCard[0].text} />
+                    {board.playedWhites.map((card, index) => (
+                      <WhiteCard key={index} text={updateUser} onClick={null}/>
+                    ))}
+
                   </Board>
                 </ContentContainer>
                 <ContentContainer>
@@ -217,6 +224,7 @@ const ContentContainer = styled.div`
   margin-left: 80px;
   margin-top: 15px;
   max-width: 100%;
+  width: 100%;
 `;
 
 const ContentTitle = styled.h2`

@@ -17,9 +17,10 @@ class Game {
     this.players = [];
     this.board = {
       roomId,
-      whiteDeck: [],
-      blackDeck: [],
-      playedBlackCard: [], //changed from {}
+      whiteDeck: [], //deck of all white cards
+      blackDeck: [], //deck of all black cards
+      playedBlackCard: [], //current black card which is being played
+      playedWhites: [],
       czar: 0,
       selected: false,
       picking: false,
@@ -29,7 +30,7 @@ class Game {
     this.decks = [];
 
     this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
-    this.initBoard = this.initBoard.bind(this);
+    // this.initBoard = this.initBoard.bind(this);
     this.initHand = this.initHand.bind(this);
     this.updateLeaderboard = this.updateLeaderboard.bind(this);
     // this.playTurn = this.playTurn.bind(this);
@@ -69,6 +70,7 @@ class Game {
         name: session.user,
         score: 0,
         status: "played",
+        hand: [],
         socket: socket,
       };
   
@@ -84,8 +86,10 @@ class Game {
     
 
     this.updateLeaderboard();
-    this.initHand(socket);
-    this.initBoard();
+    this.initHand(socket, session);
+    console.log("session at join: ", session);
+
+    this.initBoard(session);
     
 
   }
@@ -137,16 +141,16 @@ class Game {
     }
   }
 
-  initHand(socket) { //seperate function as seperate from the board => as hand different for each player
+  initHand(socket, session) { //seperate function as seperate from the board => as hand different for each player
     const { io, players, board } = this;
     console.log("board.whitedeck: ", this.board.whiteDeck);
-    let playedWhiteCards = []
+    let currentPlayer = this.players.find(p => p.name === session.user)
     for (let i = 0; i < 8; i++) {
-      playedWhiteCards.push(this.board.whiteDeck.draw())
+      currentPlayer.hand.push(this.board.whiteDeck.draw())
     }
-    console.log("played white cards: ", playedWhiteCards);
+    console.log("played white cards: ", currentPlayer.hand);
       // Broadcast the new player's hand to the specific player
-    io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: playedWhiteCards });
+    io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
   }
 
   initBlackCard() {
@@ -197,8 +201,10 @@ class Game {
   //   }
   // }
 
-  initBoard() {
+  initBoard(session) {
     const { io, players } = this;
+    console.log("session: ", session)
+
     
 
     // const playerBlackDeck = board.blackDeck.slice();
@@ -207,7 +213,13 @@ class Game {
 
     console.log("Emitting 'board' event:", this.board);
 
-    io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
+    if (session) {
+      io.to(this.board.roomId).emit('board', {data: this.board, user: session.user}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
+
+    } else {
+      io.to(this.board.roomId).emit('board', {data: this.board, user: null}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
+
+    }
   }
 
   updateLog(logMessage, session) {
@@ -220,7 +232,7 @@ class Game {
     } else if (logMessage === "newPlayer") {
       
       if (this.players.length < 3) {
-        log = `${session.user} has joined the room. ${3 - this.players.length} players required to start the game.`
+        log = `${session.user} has joined the room. ${3 - this.players.length} more player(s) required to start the game.`
       } else {
         log = `${session.user} has joined the room. Press START to start the game.`
   
@@ -235,16 +247,33 @@ class Game {
 
     const timestamp = new Date().toLocaleTimeString();
     this.board.statusLog.push(`[${timestamp}] ` + log);
+    console.log("session at updatelog: ", session);
 
-
-    this.initBoard();
+    this.initBoard(null);
   }
 
   handlePlayCard(text, index, roomid, session ){
     const user = session.user;
-    const {players, board} = this;
-    console.log("value of text is: ", text);
-    console.log("value of index is: ", index);
+    const {io, players, board} = this;
+    // console.log("value of text is: ", text);
+    // console.log("value of index is: ", index);
+    let currentPlayer = this.players.find(p => p.name === session.user)
+
+    // let playerWhites = board.whites.find(w => w.playerIndex === playerIndex); => is a player index for whites needed???
+
+    this.board.playedWhites.push(currentPlayer.hand[index]);
+    currentPlayer.hand.splice(index, 1);
+    io.to(players[players.length - 1].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
+
+    console.log("session at handleplaycard: ", session);
+
+    this.initBoard(session);
+
+
+
+
+
+
   }
   
 
