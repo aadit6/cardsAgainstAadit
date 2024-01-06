@@ -100,6 +100,9 @@ class Game extends Component {
 
   handleStartButtonClick = (roomid) => {
     this.socket.emit('startGame', roomid);
+    console.clear();
+    console.log("startgame emitted")
+    console.error("startgame emitted")
   };
 
   handlePlayCard = (text, index, roomid) => {

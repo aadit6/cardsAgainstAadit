@@ -122,10 +122,7 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
                     }
                 })
             }
-            
-            
         }
-
         rooms[roomId].join(socket, session);
         console.log("appending players in db");
         db.appendPlayersinDB(roomId, true, (err) => { //increases value of player column for that corresponding roomid in db
@@ -134,34 +131,18 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
             }
         })
     })
-
+    
     socket.on('startGame', (roomId) => {
-        rooms[roomId].updateLog("gameStarted");
-        io.to(roomId).emit('gameStarted');
+        console.log("startgame received");
+        rooms[roomId].initRound(true, session)
     });
 
     socket.on("playCard" , (text, index, roomid) => {
-        console.log("received playCard");
-        rooms[roomid].updateLog("cardPlayed", session);
         rooms[roomid].handlePlayCard(text, index, roomid, session) //remove the parameters which arent needed later
     })
-
-
-
-
 })
-
-
-
-
-
-
 
 server.listen(port, () => {
     console.log(`server running on port ${port} and path ${__dirname}.`);
     
 })
-
-
-
-
