@@ -84,7 +84,8 @@ class Game {
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
         id: index,
-        text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
+        text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'), //makes the blank space more prominent
+        pick: blackCard.pick
       })));
     }
 
@@ -202,14 +203,15 @@ class Game {
         this.board.playedWhites.push(playerWhites) //sort out how this works to display all white cards on board in react
 
       }
+      console.log("this.board.playedblackcard: ", this.board.playedBlackCard);
 
-      if(playerWhites.cards.length === 0) { //later change this to value of blackcard pick - 1
+      if(playerWhites.cards.length < (this.board.playedBlackCard[0].pick)) { 
         
         playerWhites.cards.push(currentPlayer.hand[index]); //places played card from hand to board
         currentPlayer.hand.splice(index, 1); //removed card thats played from hand
         this.updateLog("cardPlayed", session);
 
-        if (playerWhites.cards.length >= 1) { //remember replace the 1 with value of black card pick - 1
+        if (playerWhites.cards.length >= (this.board.playedBlackCard[0].pick)) { //if have picked as many cards as allowed by the black card's pick value
           this.players[playerIndex].status = "played"
           let readyPlayers = 0;
           for (let i = 0; i < this.players.length; i++) {

@@ -20,6 +20,8 @@ const Card = styled.div`
   flex: 0 0 auto;
   transition: transform 0.2s; /* Add transition for the transform property */
   cursor: pointer; /* Change cursor to pointer on hover */
+  margin-top: 20px;
+
 
   &:hover {
     transform: scale(1.1); /* Scale the card slightly on hover */

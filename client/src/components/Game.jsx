@@ -150,6 +150,7 @@ class Game extends Component {
     const currentUserStatus = currentUserStatusObject ? currentUserStatusObject.status : '';
 
     console.log("currentUserStatus is: ", currentUserStatus);
+    
 
 
 
@@ -176,7 +177,7 @@ class Game extends Component {
                 <ContentContainer>
                   <ContentTitle>Board</ContentTitle>
                   <Board>
-                    <BlackCard text={board.playedBlackCard[0].text} />
+                    <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} />
                     {board.playedWhites.map((card, index) => (
                       <WhiteCard key={index} text={updateUser[index]} onClick={null}/>
                     ))}
@@ -213,7 +214,7 @@ const GameWrapper = styled.div`
   background-color: #262629;
   padding: 0px;
   margin: 0px;
-  min-height: 100vh;
+  min-height: 100%
 `;
 
 const Header = styled.div`
@@ -247,7 +248,7 @@ const ContentContainer = styled.div`
   margin-left: 80px;
   margin-top: 15px;
   max-width: 100%;
-  width: 100%;
+  width: 95%;
   position: relative;
   overflow: hidden;
 `;
