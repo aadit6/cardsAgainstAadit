@@ -61,7 +61,7 @@ class Game {
       const newPlayer = {
         name: session.user,
         score: 0,
-        status: "played", //is this needed??
+        status: null, 
         hand: [],
         socket: socket,
         //isjudge: false => for later
@@ -229,6 +229,7 @@ class Game {
 
         io.to(players[playerIndex].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
         this.initBoard();
+        this.updateLeaderboard();
         io.to(this.board.roomId).emit('updateUser', {data: session.user})
       } 
 
@@ -266,7 +267,7 @@ class Game {
       io.to(this.board.roomId).emit('gameStarted');
       
       
-    } else {
+    } else { //for when its a new round but not start of new game
 
     }
 
@@ -299,6 +300,5 @@ function checkReady(players) { //goes through each player + checks if connected
 
 
 }
-
 
 module.exports = Game;

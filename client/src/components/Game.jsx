@@ -146,6 +146,12 @@ class Game extends Component {
     const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board, updateUser } = this.state;
     const roomid = this.getRoomNameFromURL();
 
+    const currentUserStatusObject = leaderboard.find(p => p.name === currentUser);
+    const currentUserStatus = currentUserStatusObject ? currentUserStatusObject.status : '';
+
+    console.log("currentUserStatus is: ", currentUserStatus);
+
+
 
 
     return (
@@ -175,13 +181,19 @@ class Game extends Component {
                       <WhiteCard key={index} text={updateUser[index]} onClick={null}/>
                     ))}
 
+                  
+
                   </Board>
                 </ContentContainer>
                 <ContentContainer>
                   <ContentTitle>Hand</ContentTitle>
                   <Hand>
                     {dealtCards.map((card, index) => (
-                      <WhiteCard key={index} text={card.text} onClick={() => this.handlePlayCard(card.text, index, roomid)}/>
+                      <WhiteCard 
+                      key={index}
+                      text={card.text} 
+                      onClick={() => this.handlePlayCard(card.text, index, roomid)}
+                      disabled={currentUserStatus === "played"}/>
                     ))}
                   </Hand>
                 </ContentContainer>

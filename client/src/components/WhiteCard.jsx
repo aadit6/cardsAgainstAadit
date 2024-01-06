@@ -1,6 +1,6 @@
 // WhiteCard.jsx
 import React from 'react';
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 
 const Card = styled.div`
   background-color: white;
@@ -24,12 +24,19 @@ const Card = styled.div`
   &:hover {
     transform: scale(1.1); /* Scale the card slightly on hover */
   }
+
+  ${({ disabled }) =>
+  disabled &&
+  css`
+    opacity: 0.5; /* Adjust opacity to visually indicate disabled state */
+    pointer-events: none; /* Disable pointer events to prevent interaction */
+  `}
 `;
 
-const WhiteCard = ({ text, onClick }) => {
+const WhiteCard = ({ text, onClick, disabled }) => {
   return(
-    <Card onClick={onClick} >{text}</Card>
-  ) 
+    <Card onClick={onClick} disabled={disabled}>{text}</Card>
+    ) 
 };
 
 export default WhiteCard;
