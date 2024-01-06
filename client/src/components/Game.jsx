@@ -28,7 +28,7 @@ class Game extends Component {
         blackDeck: [],
         playedBlackCard: [], 
         playedWhites: [],
-        czar: 0,
+        czar: null,
         selected: false,
         picking: false,
         statusLog: [],
@@ -83,6 +83,8 @@ class Game extends Component {
       this.state.updateUser.push(updateUser.data)
 
     })
+
+
   }
 
   handlePlayerCountChange = (playerCount) => {
@@ -165,7 +167,7 @@ class Game extends Component {
         <Status logs={board.statusLog} roomid={roomid} />
         <GameContent>
           <LeaderboardContainer>
-            <Leaderboard leaderboard={leaderboard} currentUser={currentUser} />
+            <Leaderboard leaderboard={leaderboard} currentUser={currentUser} czar={board.czar} />
           </LeaderboardContainer>
           <Container>
             {!gameStarted && (

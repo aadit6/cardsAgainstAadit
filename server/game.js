@@ -7,7 +7,7 @@ const server = http.createServer(app);
 const socketio = require("socket.io");
 const fs = require("fs");
 const entities = require("entities");
-const Queue = require("./helpers/queue.js"); //for use later => when changing which player is czar
+const CircularQueue = require("./helpers/circularQueue.js"); //for use later => when changing which player is czar
 const CardStack = require("./helpers/cardStack.js");
 
 class Game {
@@ -20,7 +20,7 @@ class Game {
       blackDeck: [], //deck of all black cards
       playedBlackCard: [], //current black card which is being played
       playedWhites: [], 
-      czar: 0,
+      czar: null,
       selected: false,
       picking: false,
       statusLog: [],
@@ -29,13 +29,7 @@ class Game {
     this.gameOver = false;
     this.decks = [];
 
-    this.addCards = this.addCards.bind(this); //binds method to current instance => come back to this
-    this.initBoard = this.initBoard.bind(this);
-    this.initHand = this.initHand.bind(this);
-    this.updateLeaderboard = this.updateLeaderboard.bind(this);
-    // this.playTurn = this.playTurn.bind(this);
-    // this.handlePlay = this.handlePlay.bind(this);
-    this.updateLog = this.updateLog.bind(this);
+    this.czarQueue = new CircularQueue(0);
 
 
     this.addCards(true, true); 
@@ -79,7 +73,8 @@ class Game {
   
   addCards(addWhite, addBlack) {
     const { board } = this;
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards_nsfw.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
@@ -170,7 +165,7 @@ class Game {
         break;
     
       case "allPlayed":
-        log = `All players have now played. Czar now selecting winner ....`;
+        log = `All players have now played. The czar (${this.board.czar}) is now selecting the winner ....`;
         break;
     
       default:
@@ -238,10 +233,10 @@ class Game {
     }
     
   }
-  handleSelect(){ //for when the czar selects one of their cards to be winner
+  handleSelect(){ //for when the czar selects one of their cards to be winner 
 
   }
-  handleAdvance() { //for when the czar advances the round to start following round
+  handleAdvance() { //for when the czar advances the round to start following round (only a couple lines)
 
   }
   initRound(newGame, session) { //could make it easier by using this function whenever start game / new round. Would init values here
@@ -254,14 +249,15 @@ class Game {
       selected: false,
       picking: false,
       gameOver: this.gameOver,
-      //turn: => add this eventually 
-      //czar => add this eventually
+      //turn: => add this eventually (???)
 
     }
 
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
     console.log(`advancing turn in room ${this.board.roomId} `)
     if (newGame) { 
+      this.players.forEach(player => this.czarQueue.enQueue(player))
+      
       this.initHand();
       this.initBoard();
       this.updateLog("gameStarted");
@@ -269,25 +265,33 @@ class Game {
       io.to(this.board.roomId).emit('gameStarted');
       
       
-    } else { //for when its a new round but not start of new game
+    } else { //for when its a new round but not start of new game => what do i put here??? idk. Maybe smth to do with sort algo for leaderboard??
 
     }
+    this.rotateCzar()
 
     this.players.forEach(p => {
-      if(1===0) { //change this when implement czar / changing of czar functionality
+      if(p.name === this.board.czar) { //ensure that czar cant play cards by setting status to "played"
         p.status = "played"
       } else {
         p.status = null
       }
     })
 
-    // this.updateHand()
-    // this.updateLeaderboard()
-    // this.updateLeaderboard()
+    this.updateLeaderboard()     
+    this.initBoard()
+  }
 
-    //(what it has on other one)
+  rotateCzar() {
     
-    
+    const {io} = this;
+
+    const newCzar = this.czarQueue.deQueue()
+    this.czarQueue.enQueue(newCzar) //moving the czar to the back of the queue to be the next czar
+
+    this.board.czar = newCzar.name;
+
+
   }
 
 }

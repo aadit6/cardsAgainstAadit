@@ -1,13 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Leaderboard = ({ leaderboard, currentUser }) => {
+import crownImage from './../crown.png'; // Update the path based on your actual file structure
+
+const Leaderboard = ({ leaderboard, currentUser, czar }) => {
   return (
     <LeaderboardContainer>
       <LeaderboardHeader>Players</LeaderboardHeader>
       <LeaderboardList>
         {leaderboard.map((player) => (
-          <LeaderboardItem key={player.name}>
+          <LeaderboardItem key={player.name} isCzar={player.name === czar}>
+            {player.name === czar && <CrownImage src={crownImage} alt="Crown" />}
             <PlayerName>
               {player.name} {player.name === currentUser && "(YOU)"}
             </PlayerName>
@@ -26,8 +29,6 @@ const LeaderboardContainer = styled.div`
   margin: 20px;
   margin-top: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
- 
 
   /* Increase the size of the leaderboard */
   width: 225px;
@@ -62,6 +63,12 @@ const LeaderboardItem = styled.li`
   &:hover {
     background-color: #1f618d;
   }
+
+  ${(props) =>
+    props.isCzar &&
+    `
+    background-color: #f39c12; // Change the background color for the czar
+  `}
 `;
 
 const PlayerName = styled.span`
@@ -69,10 +76,20 @@ const PlayerName = styled.span`
   font-weight: bold; /* Make the username bold */
   overflow: hidden; /* Hide overflow content */
   text-overflow: ellipsis; /* Display an ellipsis for long names */
+  margin: 0px;
+  padding: 0px;
+  margin-right: 10%;
 `;
 
 const PlayerScore = styled.span`
   color: #ffffff;
+`;
+
+const CrownImage = styled.img`
+  width: 35px; // Set the desired width for the crown image
+  height: auto;
+  margin-left: 0px; // Adjust margin as needed
+  margin-right: 0px;
 `;
 
 export default Leaderboard;
