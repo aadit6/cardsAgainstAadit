@@ -138,7 +138,29 @@ getSessionStore(callback) {
             }
         });
 
-        //to store room members in normalised format => not sure if even needed ngl
+        const leaderboardSql =  //to be used for leaderboard
+            `CREATE TABLE IF NOT EXISTS Leaderboard (
+                LeaderboardID INT AUTO_INCREMENT PRIMARY KEY,
+                UserID INT,
+                Wins INT DEFAULT 0,
+                FOREIGN KEY (UserID) REFERENCES Users(UserID)
+            );
+        `;
+
+        const leaderboardPopulateSql = `INSERT INTO Leaderboard (UserID)
+        SELECT UserID FROM Users;
+        `
+
+        this.connection.query(leaderboardSql, (err, result) => {
+            if(err){
+                console.error("error creating room table", err);
+            } else {
+                console.log("rooms table created successfully")
+            }
+        })
+
+        this.connection.query(leaderboardPopulateSql, (err, result) => {});
+
  
     
     }
@@ -372,6 +394,23 @@ getSessionStore(callback) {
             } else {
                 const numOfPlayers = result[0].Players;
                 callback(null, numOfPlayers)
+            }
+        })
+    }
+
+    increaseLeaderboardWins(username, callback) {
+        const sql = `UPDATE Leaderboard, Users
+        SET Leaderboard.Wins = Leaderboard.Wins + 1
+        WHERE Leaderboard.UserID = Users.UserID
+        AND Users.Username = ?;`;
+
+        const values = [username]
+
+        this.connection.query(sql, values, (err, result) => {
+            if(err) {
+                callback(err)
+            } else {
+                return
             }
         })
     }

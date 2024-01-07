@@ -97,6 +97,8 @@ const Status = ({ logs, roomid }) => {
 
   const DownloadLogsButton = styled.button`
     margin-top: 10px;
+    margin-left: 20%;
+    
     padding: 12px 20px; /* Adjust padding for a cleaner look */
     background-color: #3498db; /* Use a different color */
     color: #fff;
@@ -119,6 +121,7 @@ const Status = ({ logs, roomid }) => {
     background-color: #333;
     color: #fff;
     padding: 10px;
+    margin-right: 10%;
     border-radius: 8px;
     margin-bottom: 8px;
     font-size: 20px;

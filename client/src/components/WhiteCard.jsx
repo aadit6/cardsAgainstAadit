@@ -23,6 +23,17 @@ const Card = styled.div`
 
   white-space: pre-wrap; /* Preserve both spaces and line breaks */
 
+  &:after {
+    content: "${props => props.selectedPlayer}";
+    position: absolute;
+    bottom: 10px;
+    left: 0%;
+    transform: translateX(15%);
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0px;
+  }
+
 
 
   ${({ hoverEffect }) =>
@@ -36,10 +47,14 @@ const Card = styled.div`
         transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s; /* Add smooth transitions */
         border: 4px solid #3498db; /* Change border color on hover */
 
+      }
+    `}
 
-
-
-        // Add additional hover styles if needed
+    ${({ selected }) =>
+    selected &&
+    css`
+        box-shadow: 0px 0px 10px green;        
+        border: 5px solid #3498db;
       }
     `}
 
@@ -49,11 +64,20 @@ const Card = styled.div`
     opacity: 0.5; /* Adjust opacity to visually indicate disabled state */
     pointer-events: none; /* Disable pointer events to prevent interaction */
   `}
+
+ 
 `;
 
-const WhiteCard = ({ text, onClick, disabled, hoverEffect }) => {
+const WhiteCard = ({ text, onClick, disabled, hoverEffect, selected, selectedPlayer }) => {
   return(
-    <Card onClick={onClick} disabled={disabled} hoverEffect={hoverEffect}>{text}</Card>
+    <Card 
+    onClick={onClick} 
+    disabled={disabled} 
+    hoverEffect={hoverEffect} 
+    selected={selected} 
+    selectedPlayer={selectedPlayer}
+    >{text}
+    </Card>
     ) 
 };
 

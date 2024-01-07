@@ -37,7 +37,6 @@ class Game extends Component {
       isStartButtonDisabled: true,
       gameStarted: false,
       dealtCards: [],
-      updateUser: [],
     };
 
     this.socket = io(SERVER_URL, {
@@ -78,11 +77,6 @@ class Game extends Component {
       });
 
     });
-
-    this.socket.on("updateUser", (updateUser) => {
-      this.state.updateUser.push(updateUser.data)
-
-    })
 
 
   }
@@ -151,7 +145,7 @@ class Game extends Component {
   }
 
   render() {
-    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board, updateUser } = this.state;
+    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
     const roomid = this.getRoomNameFromURL();
 
     const currentUserStatusObject = leaderboard.find(p => p.name === currentUser);
@@ -189,13 +183,22 @@ class Game extends Component {
                   <Board>
                   <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} />
                   {board.playedWhites.map((playedWhite, index) => (
-                    <WhiteCard
+                  <WhiteCard
                     key={index}
-                    text={board.picking ? playedWhite.cards.map(card => card.text).join('\n\n') : updateUser[index]}
+                    text={
+                      board.selected
+                        ? playedWhite.cards.map(card => card.text).join('\n\n') + '\n\n'
+                        : board.picking
+                        ? playedWhite.cards.map(card => card.text).join('\n\n')
+                        : playedWhite.playerName 
+                    }
                     onClick={board.picking && currentUser === board.czar ? () => this.handleSelectWinner(roomid, playedWhite.playerName) : null}
-                    hoverEffect={board.picking && currentUser === board.czar} //only hover for czar when picking winner
+                    hoverEffect={board.picking && currentUser === board.czar && !board.selected} // only hover for czar when picking winner
+                    selected={board.selected && playedWhite.winner} // selected prop for when selected by czar
+                    selectedPlayer={board.selected ? playedWhite.playerName : null} //so all playernames displayed at bottom when selection complete
                   />
-                  ))}
+                ))}
+
                 </Board>
                 </ContentContainer>
                 <ContentContainer>

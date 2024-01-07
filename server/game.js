@@ -137,8 +137,8 @@ class Game {
   updateBoard() { 
     const { io } = this;
     
-    //handle if picking cards, selecting cards etc.
-    if (this.checkReady()) { //if all players have played required number of cards
+    //handle if picking cards
+    if (this.checkReady() && !this.board.selected) { //if all players have played required number of cards and cards not already selected by czar
       if(!this.board.picking) {
         this.board.picking = true //sets game state to picking (aka selecting winner)
 
@@ -184,7 +184,7 @@ class Game {
         break;
       
       case "cardWon":
-        log = `${winningPlayer} has won the round! The final phrase is "${finalPhrase}"`
+        log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
     
       default:
         break;
@@ -212,7 +212,7 @@ class Game {
 
       if (!playerWhites) {
 
-        playerWhites = {playerName, cards: []}
+        playerWhites = {playerName, cards: [], winner: false} //iswinner used so that can later set state of specific card to be winning card
         this.board.playedWhites.push(playerWhites) 
 
       }
@@ -239,7 +239,6 @@ class Game {
         io.to(players[playerIndex].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
         this.updateLeaderboard();
         this.updateBoard();
-        io.to(this.board.roomId).emit('updateUser', {data: session.user})
       } 
 
     }
@@ -249,23 +248,16 @@ class Game {
 
     if(!this.gameOver && session.user === this.board.czar && !this.board.selected) {
       let currentPlayer = this.players.find(p => p.name === winningUser)
-      console.log(currentPlayer)
-      console.log(this.players)
-      console.log(winningUser, "the winning user btw")
       currentPlayer.score += 1
       this.board.selected = true;
 
       
 
-
-      this.updateBoard();
-      this.updateLeaderboard();
-
       let blackPhrase = this.board.playedBlackCard[0].text;
-      console.log(this.board.playedWhites)
       let playerWhites = this.board.playedWhites.find(w => w.playerName === winningUser);
-      console.log(playerWhites)
+      playerWhites.winner = true //set property of the selected card to be the winner
       
+
       const fillBlanks = (phrase, cards) => { //to complete the full phrase using blanks in black card and white card
         let blankCount = phrase.match(/_____/g) ? phrase.match(/_____/g).length : 0;
         
@@ -291,8 +283,10 @@ class Game {
       console.log("playerWhites.cards: ", playerWhites.cards);
       let finalPhrase = fillBlanks(blackPhrase, playerWhites.cards);
       console.log(finalPhrase)
-      this.updateLog("cardWon", null, winningUser , finalPhrase) //replace "" with the value for the winning player
+      this.updateLog("cardWon", null, winningUser , finalPhrase) 
 
+      this.updateLeaderboard();
+      this.updateBoard();
 
     }
 
