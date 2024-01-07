@@ -9,10 +9,12 @@ const fs = require("fs");
 const entities = require("entities");
 const CircularQueue = require("./helpers/circularQueue.js"); //for use later => when changing which player is czar
 const CardStack = require("./helpers/cardStack.js");
+const db = require("./utils/database.js");
 
 class Game {
   constructor(io, roomId) {
     this.io = io;
+    this.db = db;
     this.players = [];
     this.board = {
       roomId,
@@ -29,7 +31,7 @@ class Game {
     this.gameOver = false;
     this.decks = [];
 
-    this.czarQueue = new CircularQueue(0);
+    this.czarQueue = null //for now... => need to change this laterrrrr
 
 
     this.addCards(true, true); 
@@ -73,8 +75,8 @@ class Game {
   
   addCards(addWhite, addBlack) {
     const { board } = this;
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
@@ -105,9 +107,11 @@ class Game {
       console.error("Players array is null or undefined");
       return;
     }
+
+    const sortedPlayers = this.mergeSort([...players]) //mergesort function to sort players based on 1) score and 2) alphabetically
   
-    for (const player of players) {
-      const leaderboard = players.map(player => ({
+    for (const player of sortedPlayers) {
+      const leaderboard = sortedPlayers.map(player => ({
         name: player.name,
         score: player.score,
         status: player.status,
@@ -123,8 +127,11 @@ class Game {
   updateHand() { //seperate function as seperate from the board => as hand different for each player
     const { io, players, board } = this;
     console.log("board.whitedeck: ", this.board.whiteDeck);
+    
     this.players.forEach((player, index) => {
-      for (let i = 0; i < 8; i++) {
+      
+      let cardsNeeded = 8 - player.hand //a player must always have exactly 8 players in hand at start of each round
+      for (let i = 0; i < cardsNeeded; i++) {
         player.hand.push(this.board.whiteDeck.draw());
       }
 
@@ -153,6 +160,8 @@ class Game {
 
 
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
+    console.log("board data emitted")
+    console.log("value of picking is: ", board.picking);
   }
 
   updateLog(logMessage, session, winningPlayer, finalPhrase) {
@@ -185,7 +194,9 @@ class Game {
       
       case "cardWon":
         log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
-    
+        break;
+      case "roundStarted":
+        log = `new round started with ${this.players.length} players` //later also have round number here
       default:
         break;
     }    
@@ -203,7 +214,7 @@ class Game {
     let currentPlayer = this.players.find(p => p.name === session.user)
     const playerIndex = this.players.indexOf(currentPlayer);
 
-    if(!this.gameOver && !board.picking && this.players[playerIndex].status !== "played"){ //add stuff about being czar. Maybe add isJudge to the players array
+    if(!this.gameOver && !board.picking && this.players[playerIndex].status !== "played" && session.user !== this.board.czar){
 
       console.log("session.user is: ", session.user);
       console.log("currentPlayer is: ", currentPlayer);
@@ -256,6 +267,15 @@ class Game {
       let blackPhrase = this.board.playedBlackCard[0].text;
       let playerWhites = this.board.playedWhites.find(w => w.playerName === winningUser);
       playerWhites.winner = true //set property of the selected card to be the winner
+
+      this.db.increaseLeaderboardWins(winningUser, (err) => {
+        if(err) {
+          console.log("error increasing wins in database: ", err)
+        }
+      })
+
+      
+
       
 
       const fillBlanks = (phrase, cards) => { //to complete the full phrase using blanks in black card and white card
@@ -292,10 +312,13 @@ class Game {
 
 
   }
-  handleAdvance() { //for when the czar advances the round to start following round (only a couple lines)
-
+  handleAdvance(session) { //for when the czar advances the round to start following round 
+    if(this.board.czar === session.user) {
+      this.initRound(false, session)
+    }
   }
-  initRound(newGame, session) { //could make it easier by using this function whenever start game / new round. Would init values here
+
+  initRound(isNewGame, session) { //could make it easier by using this function whenever start game / new round. Would init values here
     const {io} = this;
     
     this.board = {
@@ -305,24 +328,22 @@ class Game {
       selected: false,
       picking: false,
       gameOver: this.gameOver,
-      //turn: => add this eventually (???)
 
     }
 
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
     console.log(`advancing turn in room ${this.board.roomId} `)
-    if (newGame) { 
-      this.players.forEach(player => this.czarQueue.enQueue(player))
+    if (isNewGame) { 
       
-      this.updateHand();
-      this.updateBoard();
+      this.czarQueue = new CircularQueue(this.players.length); //initialising circular queue
+      this.players.forEach(player => this.czarQueue.enQueue(player))
       this.updateLog("gameStarted");
 
       io.to(this.board.roomId).emit('gameStarted');
       
       
-    } else { //for when its a new round but not start of new game => what do i put here??? idk. Maybe smth to do with sort algo for leaderboard??
-
+    } else { //for when its a new round but not start of new game. Maybe check for winner
+      this.updateLog("roundStarted")
     }
     this.rotateCzar()
 
@@ -333,20 +354,22 @@ class Game {
         p.status = null
       }
     })
-
-    this.updateLeaderboard()     
-    this.updateBoard()
+    this.updateHand();
+    this.updateLeaderboard()  
+    this.updateBoard();
+   
   }
 
   rotateCzar() {
     
-    const {io} = this;
+    
 
     const newCzar = this.czarQueue.deQueue()
     this.czarQueue.enQueue(newCzar) //moving the czar to the back of the queue to be the next czar
 
     this.board.czar = newCzar.name;
 
+    
 
   }
 
@@ -364,6 +387,51 @@ class Game {
         return false
       }
   }
+
+
+  //maybe have these 2 following functions as part of a seperate class (??) => not sure
+  mergeSort(arr) {
+    if (arr.length <= 1) {
+      return arr;
+    }
+
+    const middle = Math.floor(arr.length / 2);
+    const left = arr.slice(0, middle);
+    const right = arr.slice(middle);
+
+    return this.merge(
+      this.mergeSort(left),
+      this.mergeSort(right)
+    );
+  }
+
+  merge(left, right) {
+    let result = [];
+    let leftIndex = 0;
+    let rightIndex = 0;
+
+    while (leftIndex < left.length && rightIndex < right.length) {
+      if (left[leftIndex].score > right[rightIndex].score) {
+        result.push(left[leftIndex]);
+        leftIndex++;
+      } else if (left[leftIndex].score < right[rightIndex].score) {
+        result.push(right[rightIndex]);
+        rightIndex++;
+      } else {
+        // Scores are equal, compare alphabetically
+        if (left[leftIndex].name.localeCompare(right[rightIndex].name) <= 0) {
+          result.push(left[leftIndex]);
+          leftIndex++;
+        } else {
+          result.push(right[rightIndex]);
+          rightIndex++;
+        }
+      }
+    }
+
+    return result.concat(left.slice(leftIndex)).concat(right.slice(rightIndex));
+  }
+
 
 }
 

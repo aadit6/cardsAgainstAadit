@@ -65,11 +65,11 @@ const Tooltip = styled.div`
   }
 `;
 
-const StartButton = ({ onClick, disabled, numPlayers }) => {
+const StartButton = ({ onClick, disabled, numPlayers, buttonText }) => {
   return (
     <Container>
-      <Button onClick={onClick} disabled={disabled}>
-        Start Game
+      <Button onClick={onClick} disabled={disabled} numPlayers={numPlayers} buttonText={buttonText}>
+        {buttonText}
         {disabled && (
           <Tooltip>
             {3 - numPlayers} more player(s) required before the game can start

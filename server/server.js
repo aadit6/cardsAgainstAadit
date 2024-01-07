@@ -145,6 +145,10 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
         console.log("handleSelect received")
         rooms[roomid].handleSelect(winningUser, session )
     })
+
+    socket.on("advanceRound", (roomid) => {
+        rooms[roomid].handleAdvance(session)
+    })
 })
 
 server.listen(port, () => {

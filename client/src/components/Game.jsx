@@ -109,6 +109,10 @@ class Game extends Component {
     this.socket.emit("selectWinner", roomid, winningUser)
   }
 
+  handleAdvanceRound = (roomid) => {
+    this.socket.emit("advanceRound",roomid )
+  }
+
 
 
 
@@ -172,8 +176,12 @@ class Game extends Component {
             <Leaderboard leaderboard={leaderboard} currentUser={currentUser} czar={board.czar} />
           </LeaderboardContainer>
           <Container>
-            {!gameStarted && (
-              <StartButton onClick={() => this.handleStartButtonClick(roomid)} disabled={isStartButtonDisabled} numPlayers={this.state.leaderboard.length} />
+            {(!gameStarted  || board.selected) && (
+              <StartButton 
+              onClick={!gameStarted ? () => this.handleStartButtonClick(roomid) : () => this.handleAdvanceRound(roomid)} 
+              disabled={isStartButtonDisabled} 
+              numPlayers={this.state.leaderboard.length}
+              buttonText={!gameStarted ? "Start Game" : "Advance Round"} />
               
             )}
             {gameStarted && (
