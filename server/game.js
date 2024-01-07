@@ -73,8 +73,8 @@ class Game {
   
   addCards(addWhite, addBlack) {
     const { board } = this;
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_nsfw.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
@@ -155,7 +155,7 @@ class Game {
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
   }
 
-  updateLog(logMessage, session) {
+  updateLog(logMessage, session, winningPlayer, finalPhrase) {
     
     let log;
     switch (logMessage) {
@@ -182,6 +182,9 @@ class Game {
       case "allPlayed":
         log = `All players have now played. The czar (${this.board.czar}) is now selecting the winner ....`;
         break;
+      
+      case "cardWon":
+        log = `${winningPlayer} has won the round! The final phrase is "${finalPhrase}"`
     
       default:
         break;
@@ -242,7 +245,57 @@ class Game {
     }
     
   }
-  handleSelect(){ //for when the czar selects one of their cards to be winner 
+  handleSelect(winningUser, session){ //for when the czar selects one of their cards to be winner 
+
+    if(!this.gameOver && session.user === this.board.czar && !this.board.selected) {
+      let currentPlayer = this.players.find(p => p.name === winningUser)
+      console.log(currentPlayer)
+      console.log(this.players)
+      console.log(winningUser, "the winning user btw")
+      currentPlayer.score += 1
+      this.board.selected = true;
+
+      
+
+
+      this.updateBoard();
+      this.updateLeaderboard();
+
+      let blackPhrase = this.board.playedBlackCard[0].text;
+      console.log(this.board.playedWhites)
+      let playerWhites = this.board.playedWhites.find(w => w.playerName === winningUser);
+      console.log(playerWhites)
+      
+      const fillBlanks = (phrase, cards) => { //to complete the full phrase using blanks in black card and white card
+        let blankCount = phrase.match(/_____/g) ? phrase.match(/_____/g).length : 0;
+        
+        if (blankCount === 0) {
+          // If no blanks, concatenate the full blackPhrase with the 0th index of playerWhites.cards
+          return `${phrase} ${cards[0].text}`;
+        } else {
+          // If there are blanks, replace them with values from playerWhites.cards sequentially
+          let replacedPhrase = phrase.replace(/_____/g, match => {
+            if (cards.length > 0) {
+              const replacement = cards.shift().text;
+              return replacement;
+            } else {
+              return match; // If there are no more cards, leave the blank as is
+            }
+          });
+      
+          return replacedPhrase;
+        }
+      };
+
+      console.log("playerwhites: ", playerWhites);
+      console.log("playerWhites.cards: ", playerWhites.cards);
+      let finalPhrase = fillBlanks(blackPhrase, playerWhites.cards);
+      console.log(finalPhrase)
+      this.updateLog("cardWon", null, winningUser , finalPhrase) //replace "" with the value for the winning player
+
+
+    }
+
 
   }
   handleAdvance() { //for when the czar advances the round to start following round (only a couple lines)

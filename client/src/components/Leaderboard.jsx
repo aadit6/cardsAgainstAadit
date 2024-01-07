@@ -86,7 +86,7 @@ const PlayerScore = styled.span`
 `;
 
 const CrownImage = styled.img`
-  width: 35px; // Set the desired width for the crown image
+  width: 25px; // Set the desired width for the crown image
   height: auto;
   margin-left: 0px; // Adjust margin as needed
   margin-right: 0px;

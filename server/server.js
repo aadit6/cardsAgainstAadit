@@ -140,6 +140,11 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
     socket.on("playCard" , (index, roomid) => {
         rooms[roomid].handlePlayCard(index, session) //remove the parameters which arent needed later
     })
+
+    socket.on("selectWinner", (roomid, winningUser) => {
+        console.log("handleSelect received")
+        rooms[roomid].handleSelect(winningUser, session )
+    })
 })
 
 server.listen(port, () => {

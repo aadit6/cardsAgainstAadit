@@ -111,8 +111,8 @@ class Game extends Component {
     this.socket.emit("playCard", index, roomid)
   }
 
-  handleSelectWinner = (index, roomid) => {
-    this.socket.emit("selectWinner", index, roomid)
+  handleSelectWinner = (roomid, winningUser) => {
+    this.socket.emit("selectWinner", roomid, winningUser)
   }
 
 
@@ -192,7 +192,7 @@ class Game extends Component {
                     <WhiteCard
                     key={index}
                     text={board.picking ? playedWhite.cards.map(card => card.text).join('\n\n') : updateUser[index]}
-                    onClick={board.picking && currentUser === board.czar ? () => this.handleSelectWinner(index) : null}
+                    onClick={board.picking && currentUser === board.czar ? () => this.handleSelectWinner(roomid, playedWhite.playerName) : null}
                     hoverEffect={board.picking && currentUser === board.czar} //only hover for czar when picking winner
                   />
                   ))}
