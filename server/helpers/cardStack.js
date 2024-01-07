@@ -1,6 +1,7 @@
 class CardStack { //javascript implementation of a stack
-    constructor(cards) {
+    constructor(cards, returnArray) {
       this.stack = cards || [];
+      this.returnArray = returnArray
     }
   
     shuffle() { //fisher-yates shuffle: complex user-defined algorithm
@@ -16,8 +17,14 @@ class CardStack { //javascript implementation of a stack
         this.stack[currentIndex] = this.stack[randomIndex];
         this.stack[randomIndex] = temp;
       }
-  
-      return this;
+      if (this.returnArray) {
+        return this.stack;
+
+      } else {
+
+        return this
+        
+      }
     }
   
     draw() {
@@ -30,14 +37,6 @@ class CardStack { //javascript implementation of a stack
       this.stack.push(...cards);
     }
 
-    drawMultiple(count) {
-        for (let i = 0; i < count; i++) {
-          const card = this.draw();
-          if (!card) {
-            console.warn('Tried to draw from an empty stack.');}
-            break;
-        }
-    }
   }
 
   module.exports = CardStack;

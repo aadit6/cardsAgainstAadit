@@ -107,9 +107,15 @@ class Game extends Component {
     console.error("startgame emitted")
   };
 
-  handlePlayCard = (text, index, roomid) => {
-    this.socket.emit("playCard", text, index, roomid)
+  handlePlayCard = (index, roomid) => {
+    this.socket.emit("playCard", index, roomid)
   }
+
+  handleSelectWinner = (index, roomid) => {
+    this.socket.emit("selectWinner", index, roomid)
+  }
+
+
 
 
 
@@ -152,6 +158,8 @@ class Game extends Component {
     const currentUserStatus = currentUserStatusObject ? currentUserStatusObject.status : '';
 
     console.log("currentUserStatus is: ", currentUserStatus);
+
+    console.log("playedwhite: ", board.playedWhites);
     
 
 
@@ -179,14 +187,16 @@ class Game extends Component {
                 <ContentContainer>
                   <ContentTitle>Board</ContentTitle>
                   <Board>
-                    <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} />
-                    {board.playedWhites.map((card, index) => (
-                      <WhiteCard key={index} text={updateUser[index]} onClick={null}/>
-                    ))}
-
-                  
-
-                  </Board>
+                  <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} />
+                  {board.playedWhites.map((playedWhite, index) => (
+                    <WhiteCard
+                    key={index}
+                    text={board.picking ? playedWhite.cards.map(card => card.text).join('\n\n') : updateUser[index]}
+                    onClick={board.picking && currentUser === board.czar ? () => this.handleSelectWinner(index) : null}
+                    hoverEffect={board.picking && currentUser === board.czar} //only hover for czar when picking winner
+                  />
+                  ))}
+                </Board>
                 </ContentContainer>
                 <ContentContainer>
                   <ContentTitle>Hand</ContentTitle>
@@ -195,8 +205,9 @@ class Game extends Component {
                       <WhiteCard 
                       key={index}
                       text={card.text} 
-                      onClick={() => this.handlePlayCard(card.text, index, roomid)}
-                      disabled={currentUserStatus === "played"}/>
+                      onClick={() => this.handlePlayCard(index, roomid)}
+                      disabled={currentUserStatus === "played"}
+                      hoverEffect={true}/>
                     ))}
                   </Hand>
                 </ContentContainer>

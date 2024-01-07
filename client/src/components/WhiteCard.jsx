@@ -19,13 +19,29 @@ const Card = styled.div`
   font-family: Arial, Helvetica, sans-serif;
   flex: 0 0 auto;
   transition: transform 0.2s; /* Add transition for the transform property */
-  cursor: pointer; /* Change cursor to pointer on hover */
   margin-top: 20px;
 
+  white-space: pre-wrap; /* Preserve both spaces and line breaks */
 
-  &:hover {
-    transform: scale(1.1); /* Scale the card slightly on hover */
-  }
+
+
+  ${({ hoverEffect }) =>
+    hoverEffect &&
+    css`
+      &:hover {
+        transform: scale(1.1);
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Add a subtle box shadow */
+        background-color: #f0f0f0; /* Change background color on hover */
+        transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s; /* Add smooth transitions */
+        border: 4px solid #3498db; /* Change border color on hover */
+
+
+
+
+        // Add additional hover styles if needed
+      }
+    `}
 
   ${({ disabled }) =>
   disabled &&
@@ -35,9 +51,9 @@ const Card = styled.div`
   `}
 `;
 
-const WhiteCard = ({ text, onClick, disabled }) => {
+const WhiteCard = ({ text, onClick, disabled, hoverEffect }) => {
   return(
-    <Card onClick={onClick} disabled={disabled}>{text}</Card>
+    <Card onClick={onClick} disabled={disabled} hoverEffect={hoverEffect}>{text}</Card>
     ) 
 };
 

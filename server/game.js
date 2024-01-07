@@ -73,8 +73,8 @@ class Game {
   
   addCards(addWhite, addBlack) {
     const { board } = this;
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards_nsfw.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_nsfw.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
@@ -120,7 +120,7 @@ class Game {
     }
   }
 
-  initHand() { //seperate function as seperate from the board => as hand different for each player
+  updateHand() { //seperate function as seperate from the board => as hand different for each player
     const { io, players, board } = this;
     console.log("board.whitedeck: ", this.board.whiteDeck);
     this.players.forEach((player, index) => {
@@ -134,9 +134,24 @@ class Game {
 
 
   
-  initBoard() { //rename to sendBoard => or combine this function with something else ??? idk
+  updateBoard() { 
     const { io } = this;
-  
+    
+    //handle if picking cards, selecting cards etc.
+    if (this.checkReady()) { //if all players have played required number of cards
+      if(!this.board.picking) {
+        this.board.picking = true //sets game state to picking (aka selecting winner)
+
+        console.log("value of picking changed to true");
+
+        let whites = new CardStack(this.board.playedWhites, true)
+        this.board.playedWhites = whites.shuffle(); //so that the czar cant tell whose card is whose
+
+      }
+    }
+
+
+
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
   }
 
@@ -175,10 +190,10 @@ class Game {
     this.board.statusLog.push(`[${timestamp}] ` + log);
 
 
-    this.initBoard();
+    this.updateBoard();
   }
 
-  handlePlayCard(text, index, roomid, session ){ //when a player plays one of their white cards on their hand
+  handlePlayCard(index, session ){ //when a player plays one of their white cards on their hand
     const playerName = session.user;
     const {io, players, board} = this;
 
@@ -195,7 +210,7 @@ class Game {
       if (!playerWhites) {
 
         playerWhites = {playerName, cards: []}
-        this.board.playedWhites.push(playerWhites) //sort out how this works to display all white cards on board in react
+        this.board.playedWhites.push(playerWhites) 
 
       }
       console.log("this.board.playedblackcard: ", this.board.playedBlackCard);
@@ -208,25 +223,19 @@ class Game {
 
         if (playerWhites.cards.length >= (this.board.playedBlackCard[0].pick)) { //if have picked as many cards as allowed by the black card's pick value
           this.players[playerIndex].status = "played"
-          let readyPlayers = 0;
-          for (let i = 0; i < this.players.length; i++) {
-            if (this.players[i].status === "played") {
-              readyPlayers += 1
-            }
+
+          if(this.checkReady()){
+            this.updateLog("allPlayed");
           }
-          console.log("readyplayers: ", readyPlayers);
-          if(readyPlayers === this.players.length) {
-            this.updateLog("allPlayed")
-            //anything else want to add once all players have played???
-          }
+          
         }
         console.log("playedwhites.cards: ", playerWhites.cards)
   
         console.log("this.board.playedwhites: ", this.board.playedWhites);
 
         io.to(players[playerIndex].socket.id).emit('hand', { type: 'hand', hand: currentPlayer.hand });
-        this.initBoard();
         this.updateLeaderboard();
+        this.updateBoard();
         io.to(this.board.roomId).emit('updateUser', {data: session.user})
       } 
 
@@ -258,8 +267,8 @@ class Game {
     if (newGame) { 
       this.players.forEach(player => this.czarQueue.enQueue(player))
       
-      this.initHand();
-      this.initBoard();
+      this.updateHand();
+      this.updateBoard();
       this.updateLog("gameStarted");
 
       io.to(this.board.roomId).emit('gameStarted');
@@ -279,7 +288,7 @@ class Game {
     })
 
     this.updateLeaderboard()     
-    this.initBoard()
+    this.updateBoard()
   }
 
   rotateCzar() {
@@ -294,17 +303,23 @@ class Game {
 
   }
 
-}
-
-function checkReady(players) { //goes through each player + checks if connected
-  for (let i = 0; i < players.length; i++) {
-    if (players[i].status !== 'played' && players[i].socket.connected) { 
-      return false;
-    }
+  checkReady() { //returns true if all players in room have played their cards
+    let readyPlayers = 0;
+      for (let i = 0; i < this.players.length; i++) {
+        if (this.players[i].status === "played") {
+          readyPlayers += 1
+        }
+      }
+      console.log("readyplayers: ", readyPlayers);
+      if(readyPlayers === this.players.length) {
+        return true
+      } else {
+        return false
+      }
   }
-  return true;
-
 
 }
+
+
 
 module.exports = Game;

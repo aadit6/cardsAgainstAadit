@@ -137,8 +137,8 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
         rooms[roomId].initRound(true, session)
     });
 
-    socket.on("playCard" , (text, index, roomid) => {
-        rooms[roomid].handlePlayCard(text, index, roomid, session) //remove the parameters which arent needed later
+    socket.on("playCard" , (index, roomid) => {
+        rooms[roomid].handlePlayCard(index, session) //remove the parameters which arent needed later
     })
 })
 
