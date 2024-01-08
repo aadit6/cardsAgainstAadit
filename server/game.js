@@ -170,7 +170,7 @@ class Game {
     let log;
     switch (logMessage) {
       case "gameStarted":
-        log = `New game started with ${this.players.length} players.${this.board.czar} is the czar. Please select your card(s)....`;
+        log = `New game started with ${this.players.length} players. Please select your card(s)....`;
         break;
     
       case "newPlayer":
@@ -197,7 +197,7 @@ class Game {
         log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
         break;
       case "roundStarted":
-        log = `Round ${this.board.turn} has started. ${this.board.czar} is the new czar. Please select your card{s}....` 
+        log = `Round ${this.board.turn} has started. Please select your card{s}....` 
       default:
         break;
     }    
