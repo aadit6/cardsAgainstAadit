@@ -270,7 +270,7 @@ class Game {
       let playerWhites = this.board.playedWhites.find(w => w.playerName === winningUser);
       playerWhites.winner = true //set property of the selected card to be the winner
 
-      this.db.increaseLeaderboardWins(winningUser, (err) => {
+      this.db.increaseLeaderboardWins(winningUser, true, (err) => {
         if(err) {
           console.log("error increasing wins in database: ", err)
         }
@@ -336,7 +336,6 @@ class Game {
    
 
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
-    console.log(`advancing turn in room ${this.board.roomId} `)
     if (isNewGame) { 
       
       this.czarQueue = new CircularQueue(this.players.length); //initialising circular queue
@@ -348,7 +347,34 @@ class Game {
       
       
     } else { //for when its a new round but not start of new game. Maybe check for winner
-      this.updateLog("roundStarted")
+      
+      let gameOver = false
+      let winningPlayer
+      this.players.forEach(p => {
+        if(p.score === 5) { //game ends after one player has reached a score of 5. TODO: make this variable and let user set an amount
+          gameOver = true
+          winningPlayer = p.name
+          return
+        }
+      })
+
+      if(gameOver) {
+        this.gameOver = true
+        this.db.increaseLeaderboardWins(winningPlayer, false, (err) => {
+          if(err) {
+            console.log("database error: ", err)
+          }
+        })
+
+        io.to(this.board.roomId).emit("gameOver", {winner: winningPlayer})
+
+
+      } else {
+        this.updateLog("roundStarted")
+      }
+
+      
+      
     }
     this.rotateCzar()
 

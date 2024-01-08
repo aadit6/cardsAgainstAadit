@@ -16,6 +16,7 @@ import WhiteCard from './WhiteCard';
 import BlackCard from './BlackCard';
 import Board from './Board'; 
 import Hand from './Hand'; 
+import GameOverScreen from "./GameOverScreen"
 
 class Game extends Component {
   constructor(props) {
@@ -37,6 +38,7 @@ class Game extends Component {
       isStartButtonDisabled: true,
       gameStarted: false,
       dealtCards: [],
+      winningPlayer: null,
     };
 
     this.socket = io(SERVER_URL, {
@@ -45,6 +47,11 @@ class Game extends Component {
   }
 
   componentDidMount() {
+    
+    
+    
+
+    
     this.joinRoom(this.getRoomNameFromURL());
 
     this.fetchCurrentUser();
@@ -63,7 +70,6 @@ class Game extends Component {
 
     });
 
-    // Listen for the 'hand' event to update dealtCards
     this.socket.on('hand', (handData) => {
       console.log('Received hand:', handData.hand);
       this.setState({
@@ -75,8 +81,14 @@ class Game extends Component {
       this.setState({
         board: newBoard.data,
       });
-
     });
+
+    this.socket.on("gameOver", (data) => {
+      this.setState({
+        winningPlayer: data.winner,
+      })
+
+    })
 
 
   }
@@ -97,8 +109,6 @@ class Game extends Component {
   handleStartButtonClick = (roomid) => {
     this.socket.emit('startGame', roomid);
     console.clear();
-    console.log("startgame emitted")
-    console.error("startgame emitted")
   };
 
   handlePlayCard = (index, roomid) => {
@@ -144,12 +154,12 @@ class Game extends Component {
   }
 
   getRoomNameFromURL() {
-    const pathArray = window.location.pathname.split('/');
-    return pathArray[pathArray.length - 1];
+    const pathArray = window.location.pathname.split('/')
+    return pathArray[pathArray.length - 1]
   }
 
   render() {
-    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board } = this.state;
+    const { leaderboard, currentUser, isStartButtonDisabled, gameStarted, dealtCards, board, winningPlayer } = this.state;
     const roomid = this.getRoomNameFromURL();
 
     const currentUserStatusObject = leaderboard.find(p => p.name === currentUser);
@@ -172,6 +182,15 @@ class Game extends Component {
         <InviteFriends roomId={roomid} />
         <Status logs={board.statusLog} roomid={roomid} />
         <GameContent>
+        {winningPlayer ? (
+          <GameOverScreen
+            winningPlayer={winningPlayer}
+            currentUser={currentUser}
+            onNewGame={() => this.handleStartButtonClick(roomid)} // Implement new game action
+            onBack={() => console.log('Back button clicked')} // Implement back action
+          />
+        ) : (
+          <>
           <LeaderboardContainer>
             <Leaderboard leaderboard={leaderboard} currentUser={currentUser} czar={board.czar} />
           </LeaderboardContainer>
@@ -223,6 +242,8 @@ class Game extends Component {
               </div>
             )}
           </Container>
+          </>
+        )}
         </GameContent>
       </GameWrapper>
     );
