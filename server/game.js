@@ -264,6 +264,7 @@ class Game {
       this.board.selected = true;
       this.board.picking = false;
 
+
       
 
       let blackPhrase = this.board.playedBlackCard[0].text;
@@ -280,9 +281,9 @@ class Game {
 
       
 
-      const fillBlanks = (phrase, cards) => { //to complete the full phrase using blanks in black card and white card
+      const fillBlanks = (phrase, cards) => {
         let blankCount = phrase.match(/_____/g) ? phrase.match(/_____/g).length : 0;
-        
+      
         if (blankCount === 0) {
           // If no blanks, concatenate the full blackPhrase with the 0th index of playerWhites.cards
           return `${phrase} ${cards[0].text}`;
@@ -290,7 +291,8 @@ class Game {
           // If there are blanks, replace them with values from playerWhites.cards sequentially
           let replacedPhrase = phrase.replace(/_____/g, match => {
             if (cards.length > 0) {
-              const replacement = cards.shift().text;
+              const replacement = cards[0].text;
+              cards = cards.slice(1); // Slice to create a new array without modifying the original
               return replacement;
             } else {
               return match; // If there are no more cards, leave the blank as is
@@ -300,14 +302,20 @@ class Game {
           return replacedPhrase;
         }
       };
+      
 
       console.log("playerwhites: ", playerWhites);
       console.log("playerWhites.cards: ", playerWhites.cards);
       let finalPhrase = fillBlanks(blackPhrase, playerWhites.cards);
+      console.log("value of board 0 is: ", this.board)
+
       console.log(finalPhrase)
       this.updateLog("cardWon", null, winningUser , finalPhrase) 
+      console.log("value of board 1 is: ", this.board)
+
 
       this.updateLeaderboard();
+
       this.updateBoard();
 
     }
