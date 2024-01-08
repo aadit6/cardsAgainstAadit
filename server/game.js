@@ -30,6 +30,7 @@ class Game {
     this.started = false; //how to use this??
     this.gameOver = false;
     this.decks = [];
+    this.gameStarted = false;
 
     this.czarQueue = null //for now... => need to change this laterrrrr
 
@@ -116,12 +117,11 @@ class Game {
         score: player.score,
         status: player.status,
       }));
-  
-      // Emit to the specific room the player is in
-      console.log(leaderboard);
-      io.to(this.board.roomId).emit('leaderboard', leaderboard);
+      io.to(this.board.roomId).emit('leaderboard', leaderboard); //emits to specific room the leaderboard is in
+      console.log(leaderboard)
       
     }
+
   }
 
   updateHand() { //seperate function as seperate from the board => as hand different for each player
@@ -141,11 +141,11 @@ class Game {
 
 
   
-  updateBoard() { 
+  updateBoard(dontUpdatePicking) { 
     const { io } = this;
     
     //handle if picking cards
-    if (this.checkReady() && !this.board.selected) { //if all players have played required number of cards and cards not already selected by czar
+    if (this.checkReady() && !this.board.selected && !dontUpdatePicking  ) { //if all players have played required number of cards and cards not already selected by czar
       if(!this.board.picking) {
         this.board.picking = true //sets game state to picking (aka selecting winner)
 
@@ -161,7 +161,7 @@ class Game {
 
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
     console.log("board data emitted")
-    console.log("value of picking is: ", board.picking);
+    console.log("value of picking is: ", this.board.picking);
   }
 
   updateLog(logMessage, session, winningPlayer, finalPhrase) {
@@ -204,7 +204,7 @@ class Game {
     this.board.statusLog.push(`[${timestamp}] ` + log);
 
 
-    this.updateBoard();
+    this.updateBoard(true);
   }
 
   handlePlayCard(index, session ){ //when a player plays one of their white cards on their hand
@@ -213,6 +213,7 @@ class Game {
 
     let currentPlayer = this.players.find(p => p.name === session.user)
     const playerIndex = this.players.indexOf(currentPlayer);
+    console.log("handlePlayCard received [?]")
 
     if(!this.gameOver && !board.picking && this.players[playerIndex].status !== "played" && session.user !== this.board.czar){
 
@@ -261,6 +262,7 @@ class Game {
       let currentPlayer = this.players.find(p => p.name === winningUser)
       currentPlayer.score += 1
       this.board.selected = true;
+      this.board.picking = false;
 
       
 
@@ -331,6 +333,8 @@ class Game {
 
     }
 
+   
+
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
     console.log(`advancing turn in room ${this.board.roomId} `)
     if (isNewGame) { 
@@ -340,6 +344,7 @@ class Game {
       this.updateLog("gameStarted");
 
       io.to(this.board.roomId).emit('gameStarted');
+      this.gameStarted = true
       
       
     } else { //for when its a new round but not start of new game. Maybe check for winner
@@ -354,6 +359,11 @@ class Game {
         p.status = null
       }
     })
+
+    
+
+    console.log("players: ", this.players)
+    
     this.updateHand();
     this.updateLeaderboard()  
     this.updateBoard();

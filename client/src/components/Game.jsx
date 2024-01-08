@@ -194,9 +194,7 @@ class Game extends Component {
                   <WhiteCard
                     key={index}
                     text={
-                      board.selected
-                        ? playedWhite.cards.map(card => card.text).join('\n\n') + '\n\n'
-                        : board.picking
+                      (board.selected || board.picking)
                         ? playedWhite.cards.map(card => card.text).join('\n\n')
                         : playedWhite.playerName 
                     }
