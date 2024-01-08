@@ -138,11 +138,14 @@ getSessionStore(callback) {
             }
         });
 
+        //leaderboard table stuff
+        const initLeaderboardSql = `DROP TABLE IF EXISTS Leaderboard`
         const leaderboardSql =  //to be used for leaderboard
             `CREATE TABLE IF NOT EXISTS Leaderboard (
                 LeaderboardID INT AUTO_INCREMENT PRIMARY KEY,
                 UserID INT,
-                Wins INT DEFAULT 0,
+                RoundWins INT DEFAULT 0,
+                GameWins INT DEFAULT 0,
                 FOREIGN KEY (UserID) REFERENCES Users(UserID)
             );
         `;
@@ -150,7 +153,7 @@ getSessionStore(callback) {
         const leaderboardPopulateSql = `INSERT INTO Leaderboard (UserID)
         SELECT UserID FROM Users;
         `
-
+        this.connection.query(initLeaderboardSql, (err, result) => {})
         this.connection.query(leaderboardSql, (err, result) => {
             if(err){
                 console.error("error creating room table", err);
@@ -398,9 +401,17 @@ getSessionStore(callback) {
         })
     }
 
-    increaseLeaderboardWins(username, callback) {
+    increaseLeaderboardWins(username, isRoundWins, callback) {
+       
+        let winType
+        if(isRoundWins) {
+            winType = "Round"
+        } else {
+            winType = "Game"
+        }
+        
         const sql = `UPDATE Leaderboard, Users
-        SET Leaderboard.Wins = Leaderboard.Wins + 1
+        SET Leaderboard.${winType}Wins = Leaderboard.${winType}Wins + 1
         WHERE Leaderboard.UserID = Users.UserID
         AND Users.Username = ?;`;
 
@@ -414,6 +425,23 @@ getSessionStore(callback) {
             }
         })
     }
+
+    getLeaderboardData(callback) { //no parameterisation needed since no values are inputted therefore no possibility of sql injection
+        const sql = `SELECT users.Username, leaderboard.RoundWins, leaderboard.GameWins 
+        FROM users, leaderboard 
+        WHERE leaderboard.UserID = users.UserID 
+        ORDER BY leaderboard.GameWins DESC, leaderboard.RoundWins DESC`
+        
+        
+        this.connection.query(sql, (err, result) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result); //if no error, gives value of result of leaderboard query on callback
+        }
+        });
+    }
+  
 
     
     

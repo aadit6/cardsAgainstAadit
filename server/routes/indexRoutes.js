@@ -1,11 +1,8 @@
 const express = require("express");
-const fs = require("fs");
 const router = express.Router();
-const session = require("express-session");
 const dir = `C:\\Users\\aadit\\Documents\\A-Levels\\CS\\NEA\\pokerGameNEA\\server`;
-const path = require("path");
-const {createProxyMiddleware} = require("http-proxy-middleware");
-const axios = require("axios");
+const db = require("../utils/database.js")
+
 
 
 console.log("dirname", __dirname);
@@ -63,7 +60,14 @@ router.get('/leaderboard', (req, res) => { //NOT IN USE YET
         res.redirect('/');
         return;
     } else{
-        res.render(dir + "/views/leaderboard.ejs", {username:req.session.user})
+        db.getLeaderboardData((err, leaderboardData) => {
+            if(err) {
+                res.status(500).send("Internal Server Error")
+            } else {
+                console.log("leaderboard data is: ", leaderboardData)
+                res.render(dir + "/views/leaderboard.ejs", {username: req.session.user, leaderboardData: leaderboardData}) //sends result of select query to leaderboard page
+            }
+        })
     }
 })
 

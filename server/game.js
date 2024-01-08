@@ -7,7 +7,7 @@ const server = http.createServer(app);
 const socketio = require("socket.io");
 const fs = require("fs");
 const entities = require("entities");
-const CircularQueue = require("./helpers/circularQueue.js"); //for use later => when changing which player is czar
+const CircularQueue = require("./helpers/circularQueue.js"); 
 const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
@@ -26,13 +26,14 @@ class Game {
       selected: false,
       picking: false,
       statusLog: [],
+      turn: 1,
     };
-    this.started = false; //how to use this??
+    this.started = false; //how to use this?? => maybe for a "spectator mode"
     this.gameOver = false;
     this.decks = [];
     this.gameStarted = false;
 
-    this.czarQueue = null //for now... => need to change this laterrrrr
+    this.czarQueue = null //value of it is set later when game starts based on amount of players in the room 
 
 
     this.addCards(true, true); 
@@ -124,7 +125,7 @@ class Game {
 
   }
 
-  updateHand() { //seperate function as seperate from the board => as hand different for each player
+  updateHand() { //seperate function as seperate from the board => since the hand different for each player
     const { io, players, board } = this;
     console.log("board.whitedeck: ", this.board.whiteDeck);
     
@@ -169,12 +170,12 @@ class Game {
     let log;
     switch (logMessage) {
       case "gameStarted":
-        log = `New game started with ${this.players.length} players. Please select a card`;
+        log = `New game started with ${this.players.length} players.${this.board.czar} is the czar. Please select your card(s)....`;
         break;
     
       case "newPlayer":
         if (this.players.length < 3) {
-          log = `${session.user} has joined the room. ${3 - this.players.length} players required to start the game.`;
+          log = `${session.user} has joined the room. ${3 - this.players.length} more player(s) required to start the game.`;
         } else {
           log = `${session.user} has joined the room. Press START to start the game.`;
         }
@@ -196,7 +197,7 @@ class Game {
         log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
         break;
       case "roundStarted":
-        log = `new round started with ${this.players.length} players` //later also have round number here
+        log = `Round ${this.board.turn} has started. ${this.board.czar} is the new czar. Please select your card{s}....` 
       default:
         break;
     }    
@@ -328,7 +329,7 @@ class Game {
     }
   }
 
-  initRound(isNewGame, session) { //could make it easier by using this function whenever start game / new round. Would init values here
+  initRound(isNewGame, session) { //called when its the start of a new game / new round 
     const {io} = this;
     
     this.board = {
@@ -376,8 +377,8 @@ class Game {
 
         io.to(this.board.roomId).emit("gameOver", {winner: winningPlayer})
 
-
       } else {
+        this.board.turn += 1
         this.updateLog("roundStarted")
       }
 

@@ -1,0 +1,30 @@
+<%- include("partials/header") %>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Leaderboard</h1>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Rank</th>
+            <th scope="col">Username</th>
+            <th scope="col">Round Wins</th>
+            <th scope="col">Game Wins</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% leaderboardData.forEach((entry, index) => { %>
+            <tr>
+                <th scope="row"><%= index + 1 %></th>
+                <td><%= entry.Username %></td>
+                <td><%= entry.RoundWins %></td>
+                <td><%= entry.GameWins %></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
