@@ -74,11 +74,15 @@ class Game {
     this.updateLog("newPlayer", session)
     this.updateLeaderboard();
   }
+
+  disconnectUser(user) { //remember to include stuff about reconnection etc.
+
+  }
   
   addCards(addWhite, addBlack) {
     const { board } = this;
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
@@ -198,7 +202,7 @@ class Game {
         log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
         break;
       case "roundStarted":
-        log = `Round ${this.board.turn} has started. Please select your card{s}....` 
+        log = `Round ${this.board.turn} has started. Please select your card(s)....` 
       default:
         break;
     }    

@@ -107,7 +107,7 @@ io.engine.use(sessionMiddleware);
 
 const rooms = {};
 
-io.on("connection", (socket) => { //what should correct order be => socket/io or routes??
+io.on("connection", (socket) => { 
     const session = socket.request.session;
 
     socket.on("joinRoom", (roomId) => {
@@ -149,6 +149,15 @@ io.on("connection", (socket) => { //what should correct order be => socket/io or
     socket.on("advanceRound", (roomid) => {
         rooms[roomid].handleAdvance(session)
     })
+
+    //handle player disconnecting (refresh, close tab etc.)
+    // socket.on("disconnect", () => {
+    //     const playerName = session.user
+    //     const roomid = socket.roomid
+    //     if(rooms[roomid]) {
+    //         rooms[roomid].disconnectUser(playerName)
+    //     }
+    // })
 })
 
 server.listen(port, () => {
