@@ -53,7 +53,7 @@ class Game {
       }
     }
   
-    if (!existingPlayer) { //TODO: handle if player already exists etc. later
+    if (!existingPlayer) { 
       socket.roomId = board.roomId;
   
       const newPlayer = {
@@ -131,7 +131,8 @@ class Game {
     
     this.players.forEach((player, index) => {
       
-      let cardsNeeded = 8 - player.hand //a player must always have exactly 8 players in hand at start of each round
+      let cardsNeeded = 8 - player.hand.length //a player must always have exactly 8 players in hand at start of each round
+      console.log("cardsNeeded is:", cardsNeeded)
       for (let i = 0; i < cardsNeeded; i++) {
         player.hand.push(this.board.whiteDeck.draw());
       }

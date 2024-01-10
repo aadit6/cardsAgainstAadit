@@ -195,7 +195,7 @@ class Game extends Component {
             <Leaderboard leaderboard={leaderboard} currentUser={currentUser} czar={board.czar} />
           </LeaderboardContainer>
           <Container>
-            {(!gameStarted  || board.selected) && (
+            {(!gameStarted  || (board.selected && currentUser === board.czar)) && ( //visible for anyone when game not started but only visible to czar after card has been selected
               <StartButton 
               onClick={!gameStarted ? () => this.handleStartButtonClick(roomid) : () => this.handleAdvanceRound(roomid)} 
               disabled={isStartButtonDisabled} 

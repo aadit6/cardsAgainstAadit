@@ -13,13 +13,10 @@ class GoogleAuth {
             this.db = db;
         }
     
-      
         return GoogleAuth.instance;
         
     }
 
-
-  
     getAuthUrl() {
         let authUrl;
         authUrl = this.client.generateAuthUrl({
@@ -96,14 +93,13 @@ class GoogleAuth {
   
     createNewUser(googlePayload, callback) {
       // Extract relevant information from the Google payload
-      const { sub, email, given_name, family_name } = googlePayload;
+      const { sub, email } = googlePayload;
       const randNum = Math.floor(Math.random() * 10000);
-      const username = `${given_name.toLowerCase()}${family_name.toLowerCase()}${randNum}`;
       
       const newUser = {
         googleId: sub,
         email: email,
-        username: username,
+        username: email.split("@")[0], //usernames takes the part before the "@" in the email
       };
       console.log(newUser);
 
