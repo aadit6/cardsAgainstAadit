@@ -43,42 +43,66 @@ class Game {
 
   join(socket, session) {
     const { players, board, io } = this;
-    let existingPlayer;
-  
-    for (let i = 0; i < players.length; i++) {
-      const player = players[i];
-      if (player.name === session.user) {
-        existingPlayer = player;
-        break;
-      }
-    }
-  
-    if (!existingPlayer) { 
+    
+    const existingPlayer = this.players.find(p => p.name === session.user)
+
+
+    console.log("existingPlayer: ", existingPlayer)
+    console.log("players: ", this.players)
+    console.log("user: ", session.user)
+
+    if (existingPlayer && existingPlayer.socket.connected) {
+      console.log("player already in room")
+      // io.to(this.board.roomId).emit("joinRefuse") 
+
+    } else if (existingPlayer && !existingPlayer.socket.connected) { 
+      //aka if refreshing page etc. in which case handle reconnection
+      // console.log("handling reconnection")
+      // existingPlayer.socket = socket
+      // existingPlayer.status = "played"
+      // this.updateLeaderboard();
+
+
+      // socket.join(board.roomid)
+
+      // console.log(existingPlayer)
+
+      // this.updateHand();
+      // this.updateBoard();
+      
+    } else if (!existingPlayer) {
+      // new player - not refreshing or anything
       socket.roomId = board.roomId;
-  
+
       const newPlayer = {
         name: session.user,
         score: 0,
         status: null, 
         hand: [],
         socket: socket,
-        //isjudge: false => for later
       };
-  
+
       this.players.push(newPlayer);
       socket.join(board.roomId);
-  
-      // Deal exactly 8 random white cards to the new player
-    }
 
-    this.updateLog("newPlayer", session)
+      // Deal exactly 8 random white cards to the new player
+
+    } 
+    this.updateLog("newPlayer", session.user)
     this.updateLeaderboard();
   }
 
-  disconnectUser(user) { //remember to include stuff about reconnection etc.
+  // disconnectPlayer(player) {
+  //   const playerIndex = this.players.indexOf(player)
+  //   if (playerIndex != -1) {
+  //     this.players.splice(index, 1)
+  //   }
+  //   this.updateLeaderboard()
+  //   this.updateBoard()
 
-  }
-  
+  // }
+
+
   addCards(addWhite, addBlack) {
     const { board } = this;
     // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
@@ -170,7 +194,7 @@ class Game {
     console.log("value of picking is: ", this.board.picking);
   }
 
-  updateLog(logMessage, session, winningPlayer, finalPhrase) {
+  updateLog(logMessage, playerReturn, finalPhrase) {
     
     let log;
     switch (logMessage) {
@@ -180,9 +204,9 @@ class Game {
     
       case "newPlayer":
         if (this.players.length < 3) {
-          log = `${session.user} has joined the room. ${3 - this.players.length} more player(s) required to start the game.`;
+          log = `${playerReturn} has joined the room. ${3 - this.players.length} more player(s) required to start the game.`;
         } else {
-          log = `${session.user} has joined the room. Press START to start the game.`;
+          log = `${playerReturn} has joined the room. Press START to start the game.`;
         }
         break;
     
@@ -191,7 +215,7 @@ class Game {
         break;
     
       case "cardPlayed":
-        log = `${session.user} has selected a card.`;
+        log = `${playerReturn} has selected a card.`;
         break;
     
       case "allPlayed":
@@ -199,10 +223,17 @@ class Game {
         break;
       
       case "cardWon":
-        log = `${winningPlayer} has won the round! The final phrase is: "${finalPhrase}"`
+        log = `${playerReturn} has won the round! The final phrase is: "${finalPhrase}"`
         break;
+      
       case "roundStarted":
-        log = `Round ${this.board.turn} has started. Please select your card(s)....` 
+        log = `Round ${this.board.turn} has started. Please select your card(s)....`
+        break 
+      
+      case "playerDisconnect":
+        log = `${playerReturn} has left the room.`
+        break
+      
       default:
         break;
     }    
@@ -240,7 +271,7 @@ class Game {
         
         playerWhites.cards.push(currentPlayer.hand[index]); //places played card from hand to board
         currentPlayer.hand.splice(index, 1); //removed card thats played from hand
-        this.updateLog("cardPlayed", session);
+        this.updateLog("cardPlayed", session.user);
 
         if (playerWhites.cards.length >= (this.board.playedBlackCard[0].pick)) { //if have picked as many cards as allowed by the black card's pick value
           this.players[playerIndex].status = "played"
@@ -316,7 +347,7 @@ class Game {
       console.log("value of board 0 is: ", this.board)
 
       console.log(finalPhrase)
-      this.updateLog("cardWon", null, winningUser , finalPhrase) 
+      this.updateLog("cardWon", winningUser , finalPhrase) 
       console.log("value of board 1 is: ", this.board)
 
 
@@ -399,10 +430,6 @@ class Game {
         p.status = null
       }
     })
-
-    
-
-    console.log("players: ", this.players)
     
     this.updateHand();
     this.updateLeaderboard()  
@@ -411,16 +438,10 @@ class Game {
   }
 
   rotateCzar() {
-    
-    
-
     const newCzar = this.czarQueue.deQueue()
     this.czarQueue.enQueue(newCzar) //moving the czar to the back of the queue to be the next czar
 
     this.board.czar = newCzar.name;
-
-    
-
   }
 
   checkReady() { //returns true if all players in room have played their cards
@@ -438,9 +459,7 @@ class Game {
       }
   }
 
-
-  //maybe have these 2 following functions as part of a seperate class (??) => not sure
-  mergeSort(arr) {
+  mergeSort(arr) { //recursive merge sort algorithm
     if (arr.length <= 1) {
       return arr;
     }
@@ -450,7 +469,7 @@ class Game {
     const right = arr.slice(middle);
 
     return this.merge(
-      this.mergeSort(left),
+      this.mergeSort(left), 
       this.mergeSort(right)
     );
   }
@@ -467,8 +486,8 @@ class Game {
       } else if (left[leftIndex].score < right[rightIndex].score) {
         result.push(right[rightIndex]);
         rightIndex++;
-      } else {
-        // Scores are equal, compare alphabetically
+      } else { //compare alphabetically if scores are equal
+        
         if (left[leftIndex].name.localeCompare(right[rightIndex].name) <= 0) {
           result.push(left[leftIndex]);
           leftIndex++;

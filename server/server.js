@@ -100,7 +100,10 @@ app.use('/', apiRoutes);
 
 
 const io = new SocketIo (server, {
-    cors: corsOptions
+    cors: corsOptions,
+    reconnection: true,
+    reconnectionAttempts: 100,
+    reconnectionDelay: 1000,
 })
 
 io.engine.use(sessionMiddleware);
@@ -109,7 +112,6 @@ const rooms = {};
 
 io.on("connection", (socket) => { 
     const session = socket.request.session;
-
     socket.on("joinRoom", (roomId) => {
         const user = session.user;
         if(!rooms[roomId]) {
@@ -150,12 +152,11 @@ io.on("connection", (socket) => {
         rooms[roomid].handleAdvance(session)
     })
 
-    //handle player disconnecting (refresh, close tab etc.)
+    // handle player disconnecting (refresh, close tab etc.)
     // socket.on("disconnect", () => {
-    //     const playerName = session.user
     //     const roomid = socket.roomid
     //     if(rooms[roomid]) {
-    //         rooms[roomid].disconnectUser(playerName)
+    //         rooms[roomid].disconnectPlayer(session.user)
     //     }
     // })
 })
