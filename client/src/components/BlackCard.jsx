@@ -1,6 +1,13 @@
 // BlackCard.jsx
 import React from 'react';
 import styled from 'styled-components';
+import { MdVolumeUp } from 'react-icons/md';
+import axios from 'axios';
+import { ELEVENLABS_API_KEY, ELEVENLABS_URL } from '../constants';
+
+const Container = styled.div`
+    position: relative
+`
 
 const Card = styled.div`
     background-color: black;
@@ -33,8 +40,59 @@ const Card = styled.div`
     }
 `; 
 
+const SoundIconContainer = styled.div`  
+  display: flex;
+  justify-content: center;
+`;
+
+const SoundIcon = styled(MdVolumeUp)`
+  font-size: 20px;
+  color: #3498db;
+  cursor: pointer;
+`;
+
 const BlackCard = ({ text, pick }) => {
-  return <Card pick={pick}>{text}</Card>;
+
+  const playTTS = async () => {
+    const apiUrl = `${ELEVENLABS_URL}/v1/text-to-speech/Yko7PKHZNXotIFUBG7I9`;
+    const requestData = {
+      text: text,
+      voice_settings: {
+        similarity_boost: 0,
+        stability: 0,
+      },
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestData, {
+        headers: {
+          'xi-api-key': `${ELEVENLABS_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'arraybuffer',
+      });
+
+      const audioBlob = new Blob([response.data], { type: 'audio/mp3' });
+      const audio = new Audio(URL.createObjectURL(audioBlob));
+      audio.play();
+    } catch (error) {
+      console.error('Error playing text to speech: ', error);
+    }
+  };
+
+  return(
+    <Container>
+    <Card pick={pick}>{text}</Card>
+    <SoundIconContainer onClick={playTTS}>
+      <SoundIcon />
+    </SoundIconContainer>
+    </Container>
+
+
+  ) 
 };
 
 export default BlackCard;
+
+
+
