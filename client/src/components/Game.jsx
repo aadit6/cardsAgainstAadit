@@ -42,7 +42,6 @@ const Game = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate()
 
-  setPointsToWin(searchParams.get('pointsToWin'));
 
 
   const getRoomNameFromURL = () => {
@@ -140,6 +139,9 @@ const Game = () => {
   
     // ComponentDidMount equivalent
     const socket = initSocket();
+
+    setPointsToWin(searchParams.get('pointsToWin'));
+
   
     joinRoom(getRoomNameFromURL(), pointsToWin);
     fetchCurrentUser();
@@ -155,7 +157,7 @@ const Game = () => {
     return () => {
       socket.disconnect();
     };
-  }, []); // Empty dependency array to run only once when the component mounts
+  }, [pointsToWin, searchParams]); // Empty dependency array to run only once when the component mounts
   
 
   const currentUserStatusObject = leaderboard.find((p) => p.name === currentUser);

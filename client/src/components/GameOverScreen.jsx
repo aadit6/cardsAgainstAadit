@@ -10,7 +10,6 @@ const GameOverScreen = ({ winningPlayer, currentUser, onNewGame, onBack }) => {
       <Container>
         <Title>{isCurrentUserWinner ? 'Congratulations! You are the winner!' : `Game Over! ${winningPlayer} is the winner!`}</Title>
         <ButtonContainer>
-          <Button onClick={onNewGame}>New Game</Button>
           <Button onClick={onBack}>Back</Button>
         </ButtonContainer>
       </Container>
@@ -55,6 +54,8 @@ const Button = styled.button`
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
 `;
 
 export default GameOverScreen;

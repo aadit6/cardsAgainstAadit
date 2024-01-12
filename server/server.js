@@ -114,9 +114,7 @@ io.on("connection", (socket) => {
     const session = socket.request.session;
     socket.on("joinRoom", (roomId, points) => {
         const user = session.user;
-        if(!rooms[roomId]) {
-            console.log("value of points is: ", points)
-            
+        if(!rooms[roomId]) {            
             rooms[roomId] = new Game(io, roomId, points);
             if(user) {
                 db.createRoom(user, roomId, (err) => {

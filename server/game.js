@@ -385,15 +385,7 @@ class Game {
 
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
     if (isNewGame) {
-      
-      this.board = {
-        ...this.board,
-        whiteDeck: [],
-        blackDeck: [],
-        czar: null,
-        statusLog: [],
-        turn: 1
-      }
+       
       
       this.czarQueue = new CircularQueue(this.players.length); //initialising circular queue
       this.players.forEach(player => this.czarQueue.enQueue(player))
