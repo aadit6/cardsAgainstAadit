@@ -12,7 +12,10 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId) {
+  constructor(io, roomId, pointsToWin) {
+    
+    console.log("value of pointstowin is:", pointsToWin)
+    this.pointsToWin = pointsToWin || 5
     this.io = io;
     this.db = db;
     this.players = [];
@@ -396,7 +399,7 @@ class Game {
       let gameOver = false
       let winningPlayer
       this.players.forEach(p => {
-        if(p.score === 5) { //game ends after one player has reached a score of 5. TODO: make this variable and let user set an amount
+        if(p.score === this.pointsToWin) { //game ends after one player has reached a score of 5. TODO: make this variable and let user set an amount
           gameOver = true
           winningPlayer = p.name
           return

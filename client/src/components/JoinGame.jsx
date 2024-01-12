@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import axios from 'axios';
 import JoinGameHeader from './JoinGameHeader';
 import JoinGameInstructions from './JoinGameInstructions';
-import CreateGame from './CreateGame';
 import {SERVER_URL} from '../constants.js';
 
 
@@ -42,6 +41,12 @@ async function handleJoinGame(joinGameInputValue, setErrorMsg, setLoading, navig
   }
 }
 
+async function handleNavigateCreateGame(navigate, setLoading) {
+  setLoading(true);
+  navigate("/creategame")
+  setLoading(false)
+}
+
 const JoinGame = () => {
   const joinGameInputRef = useRef(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -51,16 +56,6 @@ const JoinGame = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     const joinGameInputValue = joinGameInputRef.current.value.trim();
-
-    // if (joinGameInputValue.length < MIN_ROOM_CHARS) {
-    //   console.error(`room code below ${MIN_ROOM_CHARS}  chars`);
-    //   setErrorMsg(`Room code must not be below ${MIN_ROOM_CHARS} characters`);
-    //   return;
-    // } else if (joinGameInputValue.length > MAX_ROOM_CHARS) {
-    //   console.error(`room code above ${MAX_ROOM_CHARS}  chars`);
-    //   setErrorMsg(`Room code must not be above ${MAX_ROOM_CHARS} characters`);
-    //   return;
-    // }
 
     await handleJoinGame(joinGameInputValue, setErrorMsg, setLoading, navigate);
   }
@@ -93,7 +88,8 @@ const JoinGame = () => {
         </JoinGameForm>
       {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
         <OrText>OR</OrText>
-        <CreateGame />
+        <StyledCreateGameButton onClick={() => handleNavigateCreateGame(navigate, setLoading)}> CREATE GAME
+        </StyledCreateGameButton>
       
     </JoinGameWrapper>
   );
@@ -187,6 +183,26 @@ const ErrorMessage = styled.p`
   color: red;
   margin-top: 10px;
   font-size: 20px;
+`;
+
+const StyledCreateGameButton = styled.button`
+  width: 70%;
+  background: #2cce9f;
+  color: #000;
+  font-size: 24px;
+  border: 0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.25s;
+
+  &:hover,
+  &:focus,
+  &:disabled {
+    opacity: 0.8;
+    outline: 0;
+  }
 `;
 
 export default JoinGame;

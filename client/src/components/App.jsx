@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import JoinGame from './JoinGame';
 import Game from './Game.jsx';
+import CreateGameOptions from "./CreateGameOptions.jsx"
 import axios from 'axios';
 import { SERVER_URL } from '../constants.js';
 
@@ -28,12 +29,9 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route
-          exact
-          path="/"
-          element={<JoinGame/>}
-        />
-        <Route path="/game/:roomid" element={<Game/>} />
+        <Route exact path="/" element={<JoinGame/>} />
+        <Route path="/game/:roomid/*" element={<Game />} />
+        <Route exact path="/creategame" element={<CreateGameOptions/>} />
       </Routes>
     </Router>
   );
