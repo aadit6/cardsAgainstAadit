@@ -15,7 +15,7 @@ class Game {
   constructor(io, roomId, pointsToWin) {
     
     console.log("value of pointstowin is:", pointsToWin)
-    this.pointsToWin = pointsToWin || 5
+    this.pointsToWin = Number(pointsToWin)
     this.io = io;
     this.db = db;
     this.players = [];
@@ -384,7 +384,16 @@ class Game {
    
 
     this.board.playedBlackCard.push(this.board.blackDeck.draw()); //initialising the blackcard for the round
-    if (isNewGame) { 
+    if (isNewGame) {
+      
+      this.board = {
+        ...this.board,
+        whiteDeck: [],
+        blackDeck: [],
+        czar: null,
+        statusLog: [],
+        turn: 1
+      }
       
       this.czarQueue = new CircularQueue(this.players.length); //initialising circular queue
       this.players.forEach(player => this.czarQueue.enQueue(player))
@@ -400,20 +409,20 @@ class Game {
       let winningPlayer
       this.players.forEach(p => {
         if(p.score === this.pointsToWin) { //game ends after one player has reached a score of 5. TODO: make this variable and let user set an amount
+          console.log("winning player is: ", p.name)
           gameOver = true
           winningPlayer = p.name
           return
         }
       })
-
       if(gameOver) {
+
         this.gameOver = true
         this.db.increaseLeaderboardWins(winningPlayer, false, (err) => {
           if(err) {
             console.log("database error: ", err)
           }
         })
-
         io.to(this.board.roomId).emit("gameOver", {winner: winningPlayer})
 
       } else {

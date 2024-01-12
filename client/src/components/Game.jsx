@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { io } from 'socket.io-client';
 import axios from 'axios';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import { SERVER_URL } from '../constants';
 
@@ -30,6 +30,8 @@ const Game = () => {
     picking: false,
     statusLog: [],
   });
+  
+  const [pointsToWin, setPointsToWin] = useState(null)
   const [currentUser, setCurrentUser] = useState(null);
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -38,9 +40,10 @@ const Game = () => {
 
   const [socket, setSocket] = useState(null);
   const [searchParams] = useSearchParams();
-  const pointsToWin = searchParams.get('pointsToWin');
+  const navigate = useNavigate()
 
-  console.log("pointstowin: ", pointsToWin)
+  setPointsToWin(searchParams.get('pointsToWin'));
+
 
   const getRoomNameFromURL = () => {
     const pathArray = window.location.pathname.split('/');
@@ -48,9 +51,20 @@ const Game = () => {
   };
 
   const handleStartButtonClick = (roomid) => {
+    setWinningPlayer(null); //so that the game over screen doesnt show up after a player has won as winningPlayer set to null
+    setDealtCards([]);
+    setLeaderboard([]);
+    setGameStarted(false);
+    setIsStartButtonDisabled(true);
+
     socket.emit('startGame', roomid);
     console.clear();
   };
+
+  const handleBackFromWinScreen = () => {
+    navigate("/")
+
+  }
 
   const handlePlayCard = (index, roomid) => {
     socket.emit('playCard', index, roomid);
@@ -161,8 +175,8 @@ const Game = () => {
           <GameOverScreen
             winningPlayer={winningPlayer}
             currentUser={currentUser}
-            onNewGame={() => handleStartButtonClick(getRoomNameFromURL())} // Implement new game action
-            onBack={() => console.log('Back button clicked')} // Implement back action
+            onNewGame={() => handleStartButtonClick(getRoomNameFromURL())} // meant to start a new game with re-initialised variables
+            onBack={() => handleBackFromWinScreen()} //takes back to initial join screen
           />
         ) : (
           <>
