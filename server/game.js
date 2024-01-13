@@ -87,6 +87,8 @@ class Game {
 
       this.players.push(newPlayer);
       socket.join(board.roomId);
+      console.log(socket.join(board.roomId))
+      console.log("user has joined room")
 
       // Deal exactly 8 random white cards to the new player
 

@@ -151,15 +151,25 @@ io.on("connection", (socket) => {
         rooms[roomid].handleAdvance(session)
     })
 
-    // Add a unique identifier to each message
     socket.on("sendMessage", (roomId, message, callback) => {
         console.log(`Received sendMessage event from user ${message.user} in room ${roomId}`);
-        const messageWithId = { ...message, messageId: new Date().getTime().toString() };
-        callback("sent")
+        
+        const messageWithId = { ...message, messageId: `${new Date().getTime().toString()}${Math.floor(Math.random() * 100000)}` };
+    
+        // Log message details
+        console.log("Message details:", messageWithId);
+    
+        // Ensure callback is called only once
+        callback("sent");
+    
+        // Log before emitting the message
+        console.log(`Emitting chatMessage event to room ${roomId}`);
+
+        // Log the list of sockets in the room
+        const roomSockets = io.of("/").adapter.rooms.get(roomId);
+        console.log("Sockets in the room:", roomSockets);
+    
         io.to(roomId).emit("chatMessage", messageWithId);
-
-        console.log(`Emitted chatMessage event to room ${roomId}`);
-
     });
 
     
