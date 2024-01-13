@@ -17,6 +17,7 @@ import BlackCard from './BlackCard';
 import Board from './Board';
 import Hand from './Hand';
 import GameOverScreen from './GameOverScreen';
+import ChatBox from "./ChatBox"
 
 const Game = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -39,6 +40,7 @@ const Game = () => {
   const [winningPlayer, setWinningPlayer] = useState(null);
 
   const [socket, setSocket] = useState(null);
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate()
 
@@ -163,6 +165,8 @@ const Game = () => {
   const currentUserStatusObject = leaderboard.find((p) => p.name === currentUser);
   const currentUserStatus = currentUserStatusObject ? currentUserStatusObject.status : '';
 
+  
+
 
   return (
     <GameWrapper>
@@ -170,6 +174,11 @@ const Game = () => {
         <GameTitle />
         <UserInfo currentUser={currentUser} />
       </Header>
+        <ChatBox
+          socket={socket}
+          roomId={getRoomNameFromURL()}
+          currentUser={currentUser}
+        />
       <InviteFriends roomId={getRoomNameFromURL()} />
       <Status logs={board.statusLog} roomid={getRoomNameFromURL()} />
       <GameContent>
@@ -177,7 +186,6 @@ const Game = () => {
           <GameOverScreen
             winningPlayer={winningPlayer}
             currentUser={currentUser}
-            onNewGame={() => handleStartButtonClick(getRoomNameFromURL())} // meant to start a new game with re-initialised variables
             onBack={() => handleBackFromWinScreen()} //takes back to initial join screen
           />
         ) : (
@@ -289,5 +297,7 @@ const ContentTitle = styled.h2`
   color: #fff;
   margin-bottom: 10px;
 `;
+
+
 
 export default Game;

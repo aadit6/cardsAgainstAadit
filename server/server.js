@@ -151,6 +151,19 @@ io.on("connection", (socket) => {
         rooms[roomid].handleAdvance(session)
     })
 
+    // Add a unique identifier to each message
+    socket.on("sendMessage", (roomId, message, callback) => {
+        console.log(`Received sendMessage event from user ${message.user} in room ${roomId}`);
+        const messageWithId = { ...message, messageId: new Date().getTime().toString() };
+        callback("sent")
+        io.to(roomId).emit("chatMessage", messageWithId);
+
+        console.log(`Emitted chatMessage event to room ${roomId}`);
+
+    });
+
+    
+
     // handle player disconnecting (refresh, close tab etc.)
     // socket.on("disconnect", () => {
     //     const roomid = socket.roomid
