@@ -1,15 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaComments } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaComments } from 'react-icons/fa';
+import { MdGif, MdSend } from 'react-icons/md'; // Import Gif icon
 import styled from 'styled-components';
+import axios from 'axios';
+import { GIPHY_API_KEY, GIPHY_URL } from '../constants';
 
 const ChatBox = ({ socket, roomId, currentUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mostRecentUnreadIndex, setMostRecentUnreadIndex] = useState(-1);
+  const [gifSearch, setGifSearch] = useState(''); // State for gif search
+  const [gifs, setGifs] = useState([]); // State for storing search results
+  const [showGifSearch, setShowGifSearch] = useState(false);
+  const [selectedGif, setSelectedGif] = useState(null);
+  const [gifIndex, setGifIndex] = useState(0);
   const chatInputRef = useRef(null);
   const chatMessagesRef = useRef(null);
-  const mostRecentUnreadIndexRef = useRef(-1);
 
   const handleChatMessage = (message) => {
     setMessages((prevMessages) => {
@@ -22,7 +30,7 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
 
     if (!isChatOpen) {
       setUnreadCount((prevCount) => prevCount + 1);
-      mostRecentUnreadIndexRef.current = messages.length;
+      setMostRecentUnreadIndex(messages.length); // Set most recent unread index
     }
   };
 
@@ -45,15 +53,29 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
   }, [isChatOpen, messages]);
 
   const handleSendMessage = () => {
-    if (socket && newMessage.trim() !== '') {
-      const message = {
-        user: currentUser,
-        text: newMessage.trim(),
-        timestamp: new Date().toISOString(),
-      };
+    if (socket && (newMessage.trim() !== '' || selectedGif)) {
+      let message;
+
+      if (selectedGif) {
+        message = {
+          user: currentUser,
+          text: selectedGif.images.fixed_height.url,
+          timestamp: new Date().toISOString(),
+          isGif: true,
+        };
+      } else {
+        message = {
+          user: currentUser,
+          text: newMessage.trim(),
+          timestamp: new Date().toISOString(),
+        };
+      }
 
       socket.emit('sendMessage', roomId, message, (ack) => {
         setNewMessage('');
+        setSelectedGif(null);
+        setGifIndex(0);
+        setShowGifSearch(false);
       });
     }
   };
@@ -67,12 +89,62 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
 
   const toggleChat = () => {
     setIsChatOpen((prev) => {
-      if (!prev && unreadCount > 0) {
+      if (!prev) {
         setUnreadCount(0);
-        mostRecentUnreadIndexRef.current = messages.length;
+        setMostRecentUnreadIndex(-1); // Reset most recent unread index when opening chat
       }
       return !prev;
     });
+  };
+
+  // Function to search for GIFs
+  const searchGifs = async () => {
+    try {
+      const response = await axios.get(`${GIPHY_URL}/v1/gifs/search`, {
+        params: {
+          api_key: GIPHY_API_KEY,
+          q: gifSearch,
+          limit: 200, // Increased limit to 200
+        },
+      });
+
+      setGifs(response.data.data.slice(0, 5)); // Show the first 5 gifs
+      setGifIndex(0);
+      setSelectedGif(null);
+    } catch (error) {
+      console.error('Error searching for GIFs', error);
+    }
+  };
+
+  const handleSendGif = () => {
+    if (gifs.length > 0 && selectedGif) {
+      handleSendMessage();
+    }
+  };
+
+  const handleGifSelection = (index) => {
+    if (gifs.length > 0) {
+      setGifIndex(index);
+      setSelectedGif(gifs[index]);
+    }
+  };
+
+  const toggleGifSearch = () => {
+    setShowGifSearch((prev) => !prev);
+    setGifs([]);
+    setSelectedGif(null);
+    setGifIndex(0);
+  };
+
+  const handleArrowClick = (direction) => {
+    if (gifs.length > 0) {
+      if (direction === 'left') {
+        setGifIndex((prevIndex) => (prevIndex > 4 ? prevIndex - 5 : gifs.length - ((gifs.length - 1) % 5) - 1));
+      } else if (direction === 'right') {
+        setGifIndex((prevIndex) => (prevIndex < gifs.length - 5 ? prevIndex + 5 : 0));
+      }
+      setSelectedGif(gifs[gifIndex]);
+    }
   };
 
   return (
@@ -87,12 +159,12 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
         <ChatMessages ref={chatMessagesRef}>
           {messages.map((message, index) => (
             <React.Fragment key={index}>
-              {index === mostRecentUnreadIndexRef.current && isChatOpen && (
+              {index === mostRecentUnreadIndex && isChatOpen && unreadCount > 0 && (
                 <Separator>--- New Messages Start Here ---</Separator>
               )}
               <ChatMessage>
                 <Timestamp>{new Date(message.timestamp).toLocaleTimeString()}</Timestamp>
-                <strong>{message.user}:</strong> {message.text}
+                <strong>{message.user}:</strong> {message.isGif ? <Gif src={message.text} /> : message.text}
               </ChatMessage>
             </React.Fragment>
           ))}
@@ -106,7 +178,48 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
             onKeyDown={handleKeyDown}
             ref={chatInputRef}
           />
-          <SendButton onClick={handleSendMessage}>Send</SendButton>
+          {/* Toggle the GIF search container */}
+          <GifIcon size={50} onClick={toggleGifSearch} />
+          {/* GIF search container */}
+          {showGifSearch && (
+            <>
+              <GifSearchInput
+                type="text"
+                placeholder="Search for GIFs..."
+                value={gifSearch}
+                onChange={(e) => setGifSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchGifs()}
+              />
+              <MdSend size={24} onClick={searchGifs} style={{ cursor: 'pointer', marginLeft: '8px' }} />
+              {/* Render GIF search results */}
+              {gifs.length >= 0 && (
+                <>
+                  <GifResults>
+                {gifs.map((gif, index) => (
+                  <GifThumbnail
+                    key={gif.id}
+                    src={gif.images.fixed_height.url}
+                    alt={gif.title}
+                    isSelected={index === gifIndex}
+                    onClick={() => handleGifSelection(index)}
+                  />
+                ))}
+              </GifResults>
+              {/* Updated arrow components */}
+              <ArrowIcon onClick={() => handleArrowClick('left')}>
+                <FaChevronLeft size={24} style={{ cursor: 'pointer' }} />
+              </ArrowIcon>
+              <ArrowIcon onClick={() => handleArrowClick('right')}>
+                <FaChevronRight size={24} style={{ cursor: 'pointer' }} />
+              </ArrowIcon>
+              <SendButton onClick={handleSendGif}>
+                <MdSend size={24} style={{ cursor: 'pointer' }} />
+                Send
+              </SendButton>
+                </>
+              )}
+            </>
+          )}
         </ChatInputContainer>
       </ChatBoxWrapper>
     </>
@@ -129,7 +242,7 @@ const Overlay = styled.div`
 const ChatButton = styled.button`
   position: fixed;
   bottom: 20px;
-  left: ${(props) => (props.isChatOpen ? '550px' : '20px')};
+  left: ${(props) => (props.isChatOpen ? '1230px' : '20px')};
   background-color: #4caf50;
   color: white;
   border: none;
@@ -143,13 +256,13 @@ const ChatButton = styled.button`
 
 const ChatBoxWrapper = styled.div`
   position: fixed;
-  left: ${(props) => (props.isChatOpen ? '20px' : '-550px')};
+  left: ${(props) => (props.isChatOpen ? '20px' : '-1250px')};
   bottom: 20px;
   top: px;
   z-index: 998;
   display: flex;
   flex-direction: column;
-  width: 500px;
+  width: 1200px;
   height: 95%;
   background-color: #fff;
   border: 1px solid #ccc;
@@ -184,6 +297,7 @@ const ChatMessage = styled.div`
 
 const ChatInputContainer = styled.div`
   display: flex;
+  flex-direction: row; /* Updated to row */
   align-items: center;
   padding: 10px;
   border-top: 1px solid #ccc;
@@ -219,8 +333,8 @@ const UnreadIndicator = styled.div`
   background-color: red;
   color: white;
   font-size: 15px;
-  padding: 3px 6px;
-  border-radius: 50%;
+  padding: 1px 5px;
+  border-radius: 100%;
 `;
 
 const Separator = styled.div`
@@ -228,6 +342,49 @@ const Separator = styled.div`
   margin: 8px 0;
   color: #4caf50; /* Adjust color as needed */
   font-weight: bold;
+`;
+
+const GifIcon = styled(MdGif)`
+  cursor: pointer;
+`;
+
+const GifSearchInput = styled.input`
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  margin-right: 8px;
+`;
+
+const GifResults = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const GifThumbnail = styled.img`
+  max-width: 100px;
+  max-height: 100px;
+  cursor: pointer;
+  border-radius: ${(props) => (props.isSelected ? '8px' : '0')};
+  border: ${(props) => (props.isSelected ? '2px solid #4caf50' : 'none')};
+  transition: border 0.3s ease-in-out;
+`;
+
+const ArrowIcon = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 100px
+  padding: 100px;
+`;
+
+const Gif = styled.img`
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  margin-top: 8px;
 `;
 
 export default ChatBox;
