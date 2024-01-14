@@ -244,12 +244,6 @@ const Game = () => {
   );
 };
 
-// Remaining styled components...
-
-
-//NOTE: currently there isnt a username attached to every single white card on board. Right now, if 3 different users 
-//play a card then will just have all 3 names as third user. fix this
-
 const GameWrapper = styled.div`
   background-color: #262629;
   padding: 0px;

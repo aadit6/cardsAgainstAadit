@@ -28,9 +28,9 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
       }
     });
 
-    if (!isChatOpen) {
-      setUnreadCount((prevCount) => prevCount + 1);
-      setMostRecentUnreadIndex(messages.length); // Set most recent unread index
+    if (!isChatOpen && message.user !== currentUser) {
+        setMostRecentUnreadIndex(messages.length); // Set most recent unread index
+        setUnreadCount((prevCount) => prevCount + 1);
     }
   };
 
@@ -77,6 +77,8 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
         setGifIndex(0);
         setShowGifSearch(false);
       });
+
+      
     }
   };
 
@@ -91,7 +93,11 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
     setIsChatOpen((prev) => {
       if (!prev) {
         setUnreadCount(0);
-        setMostRecentUnreadIndex(-1); // Reset most recent unread index when opening chat
+      } else {
+        // Clear unread count when closing chat
+        setUnreadCount(0);
+        setMostRecentUnreadIndex(-1); // Set most recent unread index when closing chat
+
       }
       return !prev;
     });
@@ -136,12 +142,10 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
     setGifIndex(0);
   };
 
-  
-  
-  
-  
+  const isUnread = (index) => {
+    return index === mostRecentUnreadIndex;
 
-
+  };
   return (
     <>
       <Overlay onClick={toggleChat} isChatOpen={isChatOpen} />
@@ -154,9 +158,9 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
         <ChatMessages ref={chatMessagesRef}>
           {messages.map((message, index) => (
             <React.Fragment key={index}>
-              {index === mostRecentUnreadIndex && isChatOpen && unreadCount > 0 && (
-                <Separator>--- New Messages Start Here ---</Separator>
-              )}
+               {isUnread(index) && isChatOpen && (
+              <Separator>New Messages Start Here</Separator>
+            )}
               <ChatMessage>
                 <Timestamp>{new Date(message.timestamp).toLocaleTimeString()}</Timestamp>
                 <strong>{message.user}:</strong> {message.isGif ? <Gif src={message.text} /> : message.text}
@@ -200,7 +204,6 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
                   />
                 ))}
               </GifResults>
-              {/* Updated arrow components */}
               <SendButton onClick={handleSendGif}>
                 <MdSend size={24} style={{ cursor: 'pointer' }} />
                 Send
@@ -329,10 +332,47 @@ const UnreadIndicator = styled.div`
 
 const Separator = styled.div`
   text-align: center;
-  margin: 8px 0;
-  color: #4caf50; /* Adjust color as needed */
+  margin: 2px 0;
   font-weight: bold;
+  color: #4caf50; /* Adjust color as needed */
+  position: relative;
+
+  &:before,
+  &:after {
+    content: '';
+    display: inline-block;
+    height: 2px;
+    background-color: #4caf50; /* Adjust color as needed */
+    width: 100px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:before {
+    left: 0;
+    animation: lineAnimation 3s ease-in-out infinite;
+  }
+
+  &:after {
+    right: 0;
+    animation: lineAnimation 3s ease-in-out infinite reverse;
+  }
+
+  @keyframes lineAnimation {
+    0% {
+      width: 0;
+    }
+    50% {
+      width: 500px;
+    }
+    100% {
+      width: 0;
+    }
+  }
 `;
+
+
 
 const GifIcon = styled(MdGif)`
   cursor: pointer;
