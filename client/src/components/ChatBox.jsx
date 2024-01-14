@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaChevronLeft, FaChevronRight, FaComments } from 'react-icons/fa';
+import { FaComments } from 'react-icons/fa';
 import { MdGif, MdSend } from 'react-icons/md'; // Import Gif icon
 import styled from 'styled-components';
 import axios from 'axios';
@@ -136,16 +136,11 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
     setGifIndex(0);
   };
 
-  const handleArrowClick = (direction) => {
-    if (gifs.length > 0) {
-      if (direction === 'left') {
-        setGifIndex((prevIndex) => (prevIndex > 4 ? prevIndex - 5 : gifs.length - ((gifs.length - 1) % 5) - 1));
-      } else if (direction === 'right') {
-        setGifIndex((prevIndex) => (prevIndex < gifs.length - 5 ? prevIndex + 5 : 0));
-      }
-      setSelectedGif(gifs[gifIndex]);
-    }
-  };
+  
+  
+  
+  
+
 
   return (
     <>
@@ -206,12 +201,6 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
                 ))}
               </GifResults>
               {/* Updated arrow components */}
-              <ArrowIcon onClick={() => handleArrowClick('left')}>
-                <FaChevronLeft size={24} style={{ cursor: 'pointer' }} />
-              </ArrowIcon>
-              <ArrowIcon onClick={() => handleArrowClick('right')}>
-                <FaChevronRight size={24} style={{ cursor: 'pointer' }} />
-              </ArrowIcon>
               <SendButton onClick={handleSendGif}>
                 <MdSend size={24} style={{ cursor: 'pointer' }} />
                 Send
@@ -318,6 +307,7 @@ const SendButton = styled.button`
   padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
+  margin-left: 2px;
 `;
 
 const Timestamp = styled.span`
@@ -367,17 +357,8 @@ const GifThumbnail = styled.img`
   max-height: 100px;
   cursor: pointer;
   border-radius: ${(props) => (props.isSelected ? '8px' : '0')};
-  border: ${(props) => (props.isSelected ? '2px solid #4caf50' : 'none')};
+  border: ${(props) => (props.isSelected ? '6px solid #4caf50' : 'none')};
   transition: border 0.3s ease-in-out;
-`;
-
-const ArrowIcon = styled.div`
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 100px
-  padding: 100px;
 `;
 
 const Gif = styled.img`
