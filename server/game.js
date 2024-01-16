@@ -12,10 +12,11 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId, pointsToWin) {
-    
+  constructor(io, roomId, pointsToWin, numOfCards) {
+    console.log("value of numOfCards is: ", numOfCards)
     console.log("value of pointstowin is:", pointsToWin)
     this.pointsToWin = Number(pointsToWin)
+    this.cardsInHand = Number(numOfCards)
     this.io = io;
     this.db = db;
     this.players = [];
@@ -41,6 +42,8 @@ class Game {
 
     this.addCards(true, true); 
     this.updateLog("newRoom")
+
+    console.log("this.cardsinhand = ", this.cardsInHand)
     
   }
 
@@ -87,7 +90,6 @@ class Game {
 
       this.players.push(newPlayer);
       socket.join(board.roomId);
-      console.log(socket.join(board.roomId))
       console.log("user has joined room")
 
       // Deal exactly 8 random white cards to the new player
@@ -164,7 +166,7 @@ class Game {
     
     this.players.forEach((player, index) => {
       
-      let cardsNeeded = 8 - player.hand.length //a player must always have exactly 8 players in hand at start of each round
+      let cardsNeeded = this.cardsInHand - player.hand.length //a player must always have exactly 8 players in hand at start of each round
       console.log("cardsNeeded is:", cardsNeeded)
       for (let i = 0; i < cardsNeeded; i++) {
         player.hand.push(this.board.whiteDeck.draw());
@@ -191,8 +193,6 @@ class Game {
 
       }
     }
-
-
 
     io.to(this.board.roomId).emit('board', {data: this.board}) //emits to every player in the room - is there an easier way of making this work wrt the black card?
     console.log("board data emitted")

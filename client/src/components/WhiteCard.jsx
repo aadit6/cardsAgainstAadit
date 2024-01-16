@@ -30,8 +30,8 @@ const Card = styled.div`
   &:after {
     content: "${props => props.selectedPlayer}";
     position: absolute;
-    bottom: 10px;
-    left: 0%;
+    bottom: 40px;
+    left: 10%;
     transform: translateX(15%);
     font-size: 14px;
     font-weight: bold;

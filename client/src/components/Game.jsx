@@ -1,3 +1,5 @@
+//note: must not have vpn on while testing to use api
+
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { io } from 'socket.io-client';
@@ -33,6 +35,7 @@ const Game = () => {
   });
   
   const [pointsToWin, setPointsToWin] = useState(null)
+  const [cardsInHand, setCardsInHand] = useState(null)
   const [currentUser, setCurrentUser] = useState(null);
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -107,8 +110,13 @@ const Game = () => {
       }
     };
   
-    const joinRoom = (roomId, pointsToWin) => {
-      socket.emit('joinRoom', roomId, pointsToWin);
+    const joinRoom = (roomId, pointsToWin, cardsInHand) => {
+      
+      setPointsToWin(searchParams.get('pointsToWin'));
+      setCardsInHand(searchParams.get('cardsInHand'))
+      
+      
+      socket.emit('joinRoom', roomId, pointsToWin, cardsInHand);
   
       // Listen for 'hand' event to receive the dealt hand
       socket.on('hand', (handData) => {
@@ -138,14 +146,17 @@ const Game = () => {
       setWinningPlayer(data.winner);
       setGameStarted(false);
     };
-  
+
     // ComponentDidMount equivalent
     const socket = initSocket();
 
-    setPointsToWin(searchParams.get('pointsToWin'));
+    
+
+
+    
 
   
-    joinRoom(getRoomNameFromURL(), pointsToWin);
+    joinRoom(getRoomNameFromURL(), pointsToWin, cardsInHand);
     fetchCurrentUser();
   
     socket.on('leaderboard', handleLeaderboardUpdate);
@@ -159,7 +170,7 @@ const Game = () => {
     return () => {
       socket.disconnect();
     };
-  }, [pointsToWin, searchParams]); // Empty dependency array to run only once when the component mounts
+  }, [pointsToWin, cardsInHand, searchParams]); 
   
 
   const currentUserStatusObject = leaderboard.find((p) => p.name === currentUser);
@@ -248,7 +259,9 @@ const GameWrapper = styled.div`
   background-color: #262629;
   padding: 0px;
   margin: 0px;
-  min-height: 100%
+  min-height: 100%;
+  height: 100%;
+  width: 100%;
 `;
 
 const Header = styled.div`
@@ -282,7 +295,7 @@ const ContentContainer = styled.div`
   margin-left: 80px;
   margin-top: 15px;
   max-width: 100%;
-  width: 95%;
+  width: 90%;
   position: relative;
   overflow: hidden;
 `;

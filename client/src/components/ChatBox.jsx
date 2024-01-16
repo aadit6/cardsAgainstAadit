@@ -19,22 +19,25 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
   const chatInputRef = useRef(null);
   const chatMessagesRef = useRef(null);
 
-  const handleChatMessage = (message) => {
-    setMessages((prevMessages) => {
-      if (!message.messageId || !prevMessages.some((msg) => msg.messageId === message.messageId)) {
-        return [...prevMessages, message];
-      } else {
-        return prevMessages;
-      }
-    });
-
-    if (!isChatOpen && message.user !== currentUser) {
-        setMostRecentUnreadIndex(messages.length); // Set most recent unread index
-        setUnreadCount((prevCount) => prevCount + 1);
-    }
-  };
-
+  
   useEffect(() => {
+
+    const handleChatMessage = (message) => {
+      setMessages((prevMessages) => {
+        if (!message.messageId || !prevMessages.some((msg) => msg.messageId === message.messageId)) {
+          return [...prevMessages, message];
+        } else {
+          return prevMessages;
+        }
+      });
+  
+      if (!isChatOpen && message.user !== currentUser) {
+          setMostRecentUnreadIndex(messages.length); // Set most recent unread index
+          setUnreadCount((prevCount) => prevCount + 1);
+      }
+    };
+
+    
     if (socket) {
       socket.on('chatMessage', handleChatMessage);
 
@@ -42,7 +45,7 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
         socket.off('chatMessage', handleChatMessage);
       };
     }
-  }, [socket, isChatOpen]);
+  }, [socket, isChatOpen, currentUser, messages.length]);
 
   useEffect(() => {
     if (chatMessagesRef.current) {
@@ -150,7 +153,7 @@ const ChatBox = ({ socket, roomId, currentUser }) => {
     <>
       <Overlay onClick={toggleChat} isChatOpen={isChatOpen} />
       <ChatButton onClick={toggleChat} isChatOpen={isChatOpen}>
-        <FaComments size={36} />
+        <FaComments size={50} />
         {unreadCount > 0 && <UnreadIndicator>{unreadCount}</UnreadIndicator>}
       </ChatButton>
       <ChatBoxWrapper isChatOpen={isChatOpen}>
@@ -224,7 +227,7 @@ const Overlay = styled.div`
   left: 0;
   width: 100%;
   height: calc(100%);
-  background: ${(props) => (props.isChatOpen ? 'rgba(0, 0, 0, 0.5)' : 'transparent')};
+  background: ${(props) => (props.isChatOpen ? 'rgba(0, 0, 0, 0.7)' : 'transparent')};
   z-index: ${(props) => (props.isChatOpen ? '998' : '0')};
   pointer-events: ${(props) => (props.isChatOpen ? 'auto' : 'none')};
   opacity: ${(props) => (props.isChatOpen ? '1' : '0')};
@@ -234,7 +237,7 @@ const Overlay = styled.div`
 const ChatButton = styled.button`
   position: fixed;
   bottom: 20px;
-  left: ${(props) => (props.isChatOpen ? '1230px' : '20px')};
+  left: ${(props) => (props.isChatOpen ? '630px' : '20px')};
   background-color: #4caf50;
   color: white;
   border: none;
@@ -244,17 +247,21 @@ const ChatButton = styled.button`
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 999;
   transition: left 0.3s ease-in-out;
+
+  &:hover {
+    background-color: #3f9942;
+  }
 `;
 
 const ChatBoxWrapper = styled.div`
   position: fixed;
-  left: ${(props) => (props.isChatOpen ? '20px' : '-1250px')};
+  left: ${(props) => (props.isChatOpen ? '20px' : '-650px')};
   bottom: 20px;
   top: px;
   z-index: 998;
   display: flex;
   flex-direction: column;
-  width: 1200px;
+  width: 600px;
   height: 95%;
   background-color: #fff;
   border: 1px solid #ccc;
@@ -281,6 +288,7 @@ const ChatMessages = styled.div`
 
 const ChatMessage = styled.div`
   margin-bottom: 8px;
+  font-size: 17px;
 
   strong {
     margin-right: 4px;
@@ -364,7 +372,7 @@ const Separator = styled.div`
       width: 0;
     }
     50% {
-      width: 500px;
+      width: 180px;
     }
     100% {
       width: 0;

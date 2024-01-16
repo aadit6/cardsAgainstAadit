@@ -8,7 +8,7 @@ import {SERVER_URL} from './../constants.js';
 const maxAttempts = 20;
 
 
-async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, attempts = 0) { //recursive method
+async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, attempts = 0) { //recursive method
     const generateRandomString = (length) => {
         let randomString = '';
       
@@ -39,9 +39,9 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
         console.log("response data: ",response.data);
 
         if (!response.data.success) { // used "!" as we want room to not already exist
-            navigate(`/game/${random}?pointsToWin=${pointsToWin}`);
+            navigate(`/game/${random}?pointsToWin=${pointsToWin}&cardsInHand=${cardsInHand}`);
             return; // breaks out of recursion
-        } else if (attempts < maxAttempts) {
+        } else if (attempts < maxAttempts) {  
             return createRandomRoom(navigate, setErrorMsg, setLoading, attempts + 1); // fixed typo
 
         } else {
@@ -59,14 +59,15 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
 
 
 
-const CreateGame = ({pointsToWin}) => {
+const CreateGame = ({pointsToWin, cardsInHand}) => {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
   
     const handleCreateGame = async () => {
       try {
-        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin);
+        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand);
       } catch (error) {
         console.error('Error creating game:', error);
       }
