@@ -11,7 +11,7 @@ console.log("dir", dir);
 //basic "GET" routes
 router.get('/', (req, res) => {
     if (req.session.user) {
-        res.redirect("/menu")
+        res.redirect("/menu", )
     } else {
         res.render(dir + "/views/login.ejs", {error:"", success:""});        
     }    
@@ -31,7 +31,7 @@ router.get('/menu', async (req, res) => {
         res.redirect("/");
         return;
     } else {
-        res.render(dir + "/views/menu.ejs", { username: req.session.user });
+        res.render(dir + "/views/menu.ejs", { username: req.session.user, success:"" });
     }
 });
 

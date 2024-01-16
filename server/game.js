@@ -112,8 +112,8 @@ class Game {
 
   addCards(addWhite, addBlack) {
     const { board } = this;
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)

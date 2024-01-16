@@ -100,7 +100,6 @@ getSessionStore(callback) {
                 Username VARCHAR(255) NOT NULL UNIQUE,
                 Email VARCHAR(255) NOT NULL,
                 PasswordHash VARCHAR(512),
-                Google_id VARCHAR(255),
                 INDEX (Username)
 
             );
@@ -115,6 +114,21 @@ getSessionStore(callback) {
                 console.log('user table created successfully!');
             }
         });
+
+        const googleUserSql = `
+            CREATE TABLE IF NOT EXISTS Google_Users (
+                UserID INT PRIMARY KEY,
+                Google_id VARCHAR(255),
+                FOREIGN KEY (UserID) REFERENCES Users (UserID)
+            )`
+        
+        this.connection.query(googleUserSql, (err, result) => {
+            if(!err) {
+                console.log("google_users created successfully")
+            } else {
+                console.log("error: ", err)
+            }
+        })
 
         //rooms table
 
@@ -222,7 +236,7 @@ getSessionStore(callback) {
             sql = "SELECT COUNT(*) AS count FROM users WHERE Username = ?"; //counts the number of rows where the username is already in the table
             values = [username];
         } else if (googleid) {
-            sql = "SELECT COUNT(*) AS count FROM users WHERE Google_id = ?";
+            sql = "SELECT COUNT(*) AS count FROM users JOIN google_users ON users.UserId = google_users.UserId WHERE google_users.Google_id = ?;";
             values = [googleid];    
         }
         this.connection.query(sql, values, (err, result) => {
@@ -230,10 +244,10 @@ getSessionStore(callback) {
                 console.error("Error checking user existence:", err);
                 callback("Server error: error checking user existence", false);
             } else if (result) {
-                const count = result[0].count;
+                const count = result[0].COUNT;
                 if (count > 0) {
                     // console.log("user already exists") 
-                    callback("an account with those details already exists", false);
+                    callback("That username is already taken", false);
                 } else {
                     console.log("user doesnt already exist!");
                     callback(null, true); //need to check if the null value still works in regular register form
@@ -243,31 +257,75 @@ getSessionStore(callback) {
         });
     }
 
+    checkEmail(email, callback) {
+        let sql;
+        let values;
+
+        sql = `SELECT COUNT(*) AS COUNT FROM users WHERE Email = ?`;
+        values = [email]
+
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                console.error("Error: ", err)
+                callback("Server Error: error checking user existence", false)
+            } else if (result) {
+                const count = result[0].COUNT
+                console.log(result[0].COUNT)
+                if(count > 0) {
+                    console.log("email taken")
+                    callback("That email is taken. Try another.", false)
+                }
+            } else {
+                console.log("email not alr used")
+                callback(null, true) //means email hasnt already been used
+            }
+        })
+    }
+
     createNewUser(email, username, hashedPassword, profile, callback) {
         let values, sql, callbackUsername;
-
+    
         if (profile) {
-            sql = "INSERT INTO users (email, username, Google_id) VALUES (?, ?, ?)";
-            values = [profile.email, profile.username, profile.googleId];
+            sql = "INSERT INTO users (email, username) VALUES (?, ?)";
+            values = [profile.email, profile.username];
             callbackUsername = profile.username;
+    
+            this.connection.query(sql, values, (err, result) => {
+                if (err) {
+                    console.error("Error inserting user into the database", err);
+                    callback("Error inserting user into the database", false, null);
+                } else {
+                    const userID = result.insertId; // Retrieve the last inserted ID
+                    const sql2 = "INSERT INTO google_users (UserID, Google_id) VALUES (?, ?)";
+                    const values2 = [userID, profile.googleId];
+    
+                    this.connection.query(sql2, values2, (err, result) => {
+                        if (err) {
+                            callback("Error inserting user into the database", false, null);
+                        } else {
+                            console.log("User and Google User successfully inserted into the database");
+                            callback(null, true, callbackUsername);
+                        }
+                    });
+                }
+            });
         } else {
             sql = "INSERT INTO users (email, username, passwordhash) VALUES (?, ?, ?)";
             values = [email, username, hashedPassword];
             callbackUsername = username;
+    
+            this.connection.query(sql, values, (err, result) => {
+                if (err) {
+                    console.error("Error inserting user into the database", err);
+                    callback("Error inserting user into the database", false, null);
+                } else {
+                    console.log("User successfully inserted into the database");
+                    callback(null, true, callbackUsername);
+                }
+            });
         }
-        
-        this.connection.query(sql, values, (err, result) => {
-            if (err) {
-                console.error("Error inserting user into the database", err);
-                callback("Error inserting user into the database", false, null);
-            } else {
-                // console.log(result);
-                
-                console.log("User successfully inserted into the database");
-                callback(null, true, callbackUsername);
-            }
-        });
     }
+    
 
     getPass(username, callback) {
         const sql = "SELECT passwordHash FROM users WHERE username = ?";
@@ -291,7 +349,7 @@ getSessionStore(callback) {
     }
 
     getUserfromID(googleid, callback) {
-        const sql = "SELECT username FROM users WHERE Google_id = ?";
+        const sql = "SELECT users.username FROM users JOIN google_users ON users.userId = google_users.userId WHERE google_users.Google_id = ?";
         const values = [googleid];
 
         this.connection.query(sql, values, (err, result) => {

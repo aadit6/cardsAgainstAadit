@@ -1,3 +1,6 @@
+//TODO: fix when same email
+
+
 const express = require("express");
 const router = express.Router();
 const session = require("express-session");
@@ -15,7 +18,7 @@ router.post('/signin', (req, res) => {
     // Check if the username exists
     db.checkUser(username, null, (errorMessage, userDoesntExist) => {
         if (userDoesntExist) {
-            res.render(dir + "/views/login.ejs", { error: "The username doesn't exist. Please try again.", success: "" }); //is this neccessary => security risk ???
+            res.render(dir + "/views/login.ejs", { error: "Incorrect username or password. Please try again.", success: "" }); //is this neccessary => security risk ???
             return
         } else {
             // Retrieve the stored password hash
@@ -33,7 +36,7 @@ router.post('/signin', (req, res) => {
                         console.log("req.session.user:", req.session.user)
 
                         // Redirect to the menu
-                        res.redirect("/menu");
+                        res.render(dir + "/views/menu.ejs", {username: req.session.user, success:"Successfully logged in!"});
                        
                     } else {
                        res.render(dir + "/views/login.ejs", {error:err, success:""});  
@@ -48,7 +51,7 @@ router.post('/signin', (req, res) => {
 router.post('/signup', (req, res) => { 
     const { email, username, password } = req.body;
 
-    // Validate user input
+    // Validate user input to ensure it meets requirements
     var validateTest = db.validateUser(email, username, password, (err) => {
         if (err) {
             res.render(dir + "/views/register.ejs", { error: err, success: "" });
@@ -59,8 +62,15 @@ router.post('/signup', (req, res) => {
     // Callback function for handling user creation
     var handleAccCreation = (errorMessage, usernameAvailable) => {
         if (!usernameAvailable) {
-            res.render(dir + "/views/register.ejs", { error: errorMessage, success: "" });
+            res.render(dir + "/views/register.ejs", { error: errorMessage, success: "" }); //if that same username already used for diff account
             return;
+        } else {
+            console.log("checking if email not used: ...........")
+            db.checkEmail(email, (err, emailNotTaken) => { //checks if email not already used for different account
+                if(!emailNotTaken) {
+                    return res.render(dir + "/views/register.ejs", {error: err, success:""})
+                }
+            })
         }
 
         // Generate salt
@@ -85,7 +95,7 @@ router.post('/signup', (req, res) => {
                         res.render(dir + "/views/register.ejs", { error: creationError, success: "" });
                         return;
                     }
-                    res.render(dir + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." });
+                    res.render(dir + "/views/login.ejs", { error: "", success: "Successfully created account! You may now login." }); //success
                 };
 
                 // Create a new user

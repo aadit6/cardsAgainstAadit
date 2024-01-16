@@ -1,8 +1,20 @@
 <%- include("partials/header") %>
 
+<div id = "statusUpdate">
+        
+    <% if (success) { %>
+        <div class="alert alert-success d-flex align-items-center" role="alert">
+            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
+            <div>
+              <%- success %>
+            </div>
+        </div>
+        <% } %> 
+        <!-- error/success message if registration was success / failure to login -->
+</div>
+
 <div class="container">
     <div class="welcome-text">
-        <!-- Assuming the variable that contains the username is `Username` -->
         <h1 class="display-3 username">Welcome, <span class="user"><%= username %></span></h1>
     </div>
 
