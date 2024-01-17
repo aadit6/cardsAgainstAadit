@@ -12,9 +12,8 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId, pointsToWin, numOfCards) {
-    console.log("value of numOfCards is: ", numOfCards)
-    console.log("value of pointstowin is:", pointsToWin)
+  constructor(io, roomId, pointsToWin, numOfCards, deckType) {
+    this.deckType = deckType
     this.pointsToWin = Number(pointsToWin)
     this.cardsInHand = Number(numOfCards)
     this.io = io;
@@ -112,8 +111,16 @@ class Game {
 
   addCards(addWhite, addBlack) {
     const { board } = this;
-    const jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
-    // const jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    let jsonContent
+
+    if (this.deckType === "nsfw") {
+
+      jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+
+    } else {
+
+      jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    }
 
     if (addBlack) {
       board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)

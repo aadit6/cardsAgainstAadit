@@ -22,7 +22,6 @@ const corsOptions = {
     credentials: true
 }
 
-
 app.use(cors(corsOptions));
 
 
@@ -112,10 +111,11 @@ const rooms = {};
 
 io.on("connection", (socket) => { 
     const session = socket.request.session;
-    socket.on("joinRoom", (roomId, points, numOfCards) => {
+    socket.on("joinRoom", (roomId, points, numOfCards, deckType) => {
+        console.log("type of deck: ", deckType)
         const user = session.user;
         if(!rooms[roomId]) {            
-            rooms[roomId] = new Game(io, roomId, points, numOfCards);
+            rooms[roomId] = new Game(io, roomId, points, numOfCards, deckType);
             if(user) {
                 db.createRoom(user, roomId, (err) => {
                     if(err){
@@ -152,22 +152,10 @@ io.on("connection", (socket) => {
     })
 
     socket.on("sendMessage", (roomId, message, callback) => {
-        console.log(`Received sendMessage event from user ${message.user} in room ${roomId}`);
         
-        const messageWithId = { ...message, messageId: `${new Date().getTime().toString()}${Math.floor(Math.random() * 100000)}` };
     
-        // Log message details
-        console.log("Message details:", messageWithId);
     
-        // Ensure callback is called only once
         callback("sent");
-    
-        // Log before emitting the message
-        console.log(`Emitting chatMessage event to room ${roomId}`);
-
-        // Log the list of sockets in the room
-        const roomSockets = io.of("/").adapter.rooms.get(roomId);
-        console.log("Sockets in the room:", roomSockets);
     
         io.to(roomId).emit("chatMessage", messageWithId);
     });

@@ -244,7 +244,7 @@ getSessionStore(callback) {
                 console.error("Error checking user existence:", err);
                 callback("Server error: error checking user existence", false);
             } else if (result) {
-                const count = result[0].COUNT;
+                const count = result[0].count;
                 if (count > 0) {
                     // console.log("user already exists") 
                     callback("That username is already taken", false);
@@ -272,11 +272,9 @@ getSessionStore(callback) {
                 const count = result[0].COUNT
                 console.log(result[0].COUNT)
                 if(count > 0) {
-                    console.log("email taken")
                     callback("That email is taken. Try another.", false)
                 }
             } else {
-                console.log("email not alr used")
                 callback(null, true) //means email hasnt already been used
             }
         })
@@ -330,13 +328,23 @@ getSessionStore(callback) {
     getPass(username, callback) {
         const sql = "SELECT passwordHash FROM users WHERE username = ?";
         const values = [username];
+        console.log("abc")
     
         this.connection.query(sql, values, (err, result) => {
             if (err) {
                 console.error("Error checking username:", err);
                 return callback("server error checking username", null);
             }
-            const passHash = result[0].passwordHash;
+            console.log("result :",result)
+            try {
+                const passHash = result[0].passwordHash;
+                callback(null, passHash);
+      
+            } catch (error) {
+                console.error("Error: ", error)
+                return callback("Username or password is invalid.") //since no values entered in database
+                
+            }
             
             // if (passHash === null) { //is this neccessary, could be security risk => do we want to be giving user information about this sort of stuff??? 
             //     return callback("username does not exist", null);  
@@ -344,7 +352,6 @@ getSessionStore(callback) {
             //     // work since you need to login via google for that
             // }
             
-            callback(null, passHash);
         });
     }
 

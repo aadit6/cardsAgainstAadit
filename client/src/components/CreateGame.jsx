@@ -8,7 +8,7 @@ import {SERVER_URL} from './../constants.js';
 const maxAttempts = 20;
 
 
-async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, attempts = 0) { //recursive method
+async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, deckType, attempts = 0) { //recursive method to keep creating room until one thats not alr used
     const generateRandomString = (length) => {
         let randomString = '';
       
@@ -39,7 +39,7 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
         console.log("response data: ",response.data);
 
         if (!response.data.success) { // used "!" as we want room to not already exist
-            navigate(`/game/${random}?pointsToWin=${pointsToWin}&cardsInHand=${cardsInHand}`);
+            navigate(`/game/${random}?pointsToWin=${pointsToWin}&cardsInHand=${cardsInHand}&deck=${deckType}`);
             return; // breaks out of recursion
         } else if (attempts < maxAttempts) {  
             return createRandomRoom(navigate, setErrorMsg, setLoading, attempts + 1); // fixed typo
@@ -59,7 +59,7 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
 
 
 
-const CreateGame = ({pointsToWin, cardsInHand}) => {
+const CreateGame = ({pointsToWin, cardsInHand, deckType}) => {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -67,7 +67,7 @@ const CreateGame = ({pointsToWin, cardsInHand}) => {
   
     const handleCreateGame = async () => {
       try {
-        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand);
+        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, deckType);
       } catch (error) {
         console.error('Error creating game:', error);
       }
