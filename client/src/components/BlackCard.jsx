@@ -51,7 +51,7 @@ const SoundIcon = styled(MdVolumeUp)`
   cursor: pointer;
 `;
 
-const BlackCard = ({ text, pick }) => {
+const BlackCard = ({ text, pick, enableAudio }) => {
 
   const playTTS = async () => {
     const apiUrl = `${ELEVENLABS_URL}/v1/text-to-speech/Yko7PKHZNXotIFUBG7I9`;
@@ -82,10 +82,14 @@ const BlackCard = ({ text, pick }) => {
 
   return(
     <Container>
-    <Card pick={pick}>{text}</Card>
-    <SoundIconContainer onClick={playTTS}>
+    <Card pick={pick} enableAudio={enableAudio}>{text}</Card>
+    
+    {enableAudio && (
+      <SoundIconContainer onClick={playTTS}>
       <SoundIcon />
     </SoundIconContainer>
+    )}
+    
     </Container>
 
 

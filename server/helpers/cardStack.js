@@ -4,8 +4,7 @@ class CardStack { //javascript implementation of a stack
       this.returnArray = returnArray
     }
   
-    shuffle() { //fisher-yates shuffle: complex user-defined algorithm
-      let currentIndex = this.stack.length;
+    shuffle() { //fisher-yates shuffling algorithm
       let temp, randomIndex;
   
       while (currentIndex !== 0) {

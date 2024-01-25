@@ -17,11 +17,10 @@ router.post('/signin', (req, res) => {
 
     // Check if the username exists
     db.checkUser(username, null, (errorMessage, userDoesntExist) => {
-        if (!userDoesntExist) {
+        if (userDoesntExist) {
             res.render(dir + "/views/login.ejs", { error: "Incorrect username or password. Please try again.", success: "" }); 
             return
         } else {
-            console.log("getting pass")
 
             // Retrieve the stored password hash
             db.getPass(username, (getPassError, storedPasswordHash) => {

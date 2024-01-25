@@ -1,5 +1,3 @@
-//TODO: update the cards.json file to include more cards -- ensure same format
-
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -12,9 +10,9 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId, pointsToWin, numOfCards, deckType) {
+  constructor(io, roomId, pointsToWin, numOfCards, deckType) { //constructor method when the class first called
     this.deckType = deckType
-    this.pointsToWin = Number(pointsToWin)
+    this.pointsToWin = Number(pointsToWin) //as originally passed as string through the URL
     this.cardsInHand = Number(numOfCards)
     this.io = io;
     this.db = db;
@@ -31,7 +29,7 @@ class Game {
       statusLog: [],
       turn: 1,
     };
-    this.started = false; //how to use this?? => maybe for a "spectator mode"
+    this.started = false; 
     this.gameOver = false;
     this.decks = [];
     this.gameStarted = false;
@@ -45,7 +43,6 @@ class Game {
     console.log("this.cardsinhand = ", this.cardsInHand)
     
   }
-
   join(socket, session) {
     const { players, board, io } = this;
     
@@ -108,7 +105,6 @@ class Game {
 
   // }
 
-
   addCards(addWhite, addBlack) {
     const { board } = this;
     let jsonContent
@@ -162,7 +158,7 @@ class Game {
       }));
       io.to(this.board.roomId).emit('leaderboard', leaderboard); //emits to specific room the leaderboard is in
       console.log(leaderboard)
-      
+       
     }
 
   }
@@ -183,8 +179,6 @@ class Game {
     });    
   }
 
-
-  
   updateBoard(dontUpdatePicking) { 
     const { io } = this;
     
@@ -301,9 +295,7 @@ class Game {
         this.updateLeaderboard();
         this.updateBoard();
       } 
-
-    }
-    
+    } 
   }
   handleSelect(winningUser, session){ //for when the czar selects one of their cards to be winner 
 
@@ -312,9 +304,6 @@ class Game {
       currentPlayer.score += 1
       this.board.selected = true;
       this.board.picking = false;
-
-
-      
 
       let blackPhrase = this.board.playedBlackCard[0].text;
       let playerWhites = this.board.playedWhites.find(w => w.playerName === winningUser);
@@ -325,10 +314,7 @@ class Game {
           console.log("error increasing wins in database: ", err)
         }
       })
-
-      
-
-      
+   
 
       const fillBlanks = (phrase, cards) => {
         let blankCount = phrase.match(/_____/g) ? phrase.match(/_____/g).length : 0;
@@ -352,7 +338,6 @@ class Game {
         }
       };
       
-
       console.log("playerwhites: ", playerWhites);
       console.log("playerWhites.cards: ", playerWhites.cards);
       let finalPhrase = fillBlanks(blackPhrase, playerWhites.cards);
@@ -368,7 +353,6 @@ class Game {
       this.updateBoard();
 
     }
-
 
   }
   handleAdvance(session) { //for when the czar advances the round to start following round 
@@ -516,7 +500,4 @@ class Game {
 
 
 }
-
-
-
 module.exports = Game;

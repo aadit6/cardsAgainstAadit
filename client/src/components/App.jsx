@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import JoinGame from './JoinGame';
 import Game from './Game.jsx';
 import CreateGameOptions from "./CreateGameOptions.jsx"
+import CreateCustomDeck from './CreateCustomDeck.jsx';
 import axios from 'axios';
 import { SERVER_URL } from '../constants.js';
 
@@ -32,6 +33,7 @@ const App = () => {
         <Route exact path="/" element={<JoinGame/>} />
         <Route path="/game/:roomid/*" element={<Game />} />
         <Route exact path="/creategame" element={<CreateGameOptions/>} />
+        <Route exact path="createdeck" element={<CreateCustomDeck/>} />
       </Routes>
     </Router>
   );

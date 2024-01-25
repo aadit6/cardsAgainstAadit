@@ -47,6 +47,12 @@ async function handleNavigateCreateGame(navigate, setLoading) {
   setLoading(false)
 }
 
+async function handleNavigateCreateDeck(navigate, setLoading) {
+  setLoading(true);
+  navigate("/createDeck")
+  setLoading(false)
+}
+
 const JoinGame = () => {
   const joinGameInputRef = useRef(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -62,7 +68,7 @@ const JoinGame = () => {
 
   return (
     <JoinGameWrapper>
-      <BackButton to={`${SERVER_URL}/menu`}>Back to Menu</BackButton>
+      <BackButton to={`${SERVER_URL}/menu`}>Back</BackButton>
       <JoinGameHeader />
       <JoinGameInstructions />
       <JoinGameForm onSubmit={handleSubmit}>
@@ -88,8 +94,15 @@ const JoinGame = () => {
         </JoinGameForm>
       {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
         <OrText>OR</OrText>
-        <StyledCreateGameButton onClick={() => handleNavigateCreateGame(navigate, setLoading)}> CREATE GAME
-        </StyledCreateGameButton>
+        <StyledCreationButton onClick={() => handleNavigateCreateGame(navigate, setLoading)}> Create Game
+        </StyledCreationButton>
+
+        <OrText>OR</OrText>
+      
+
+        <StyledCreationButton onClick={() => handleNavigateCreateDeck(navigate, setLoading)}> Create Custom Deck
+        </StyledCreationButton>
+
       
     </JoinGameWrapper>
   );
@@ -101,7 +114,7 @@ const JoinGameWrapper = styled.div`
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #000;
+  background-color: #222222;
 `;
 
 const JoinGameForm = styled.form`
@@ -185,7 +198,7 @@ const ErrorMessage = styled.p`
   font-size: 20px;
 `;
 
-const StyledCreateGameButton = styled.button`
+const StyledCreationButton = styled.button`
   width: 70%;
   background: #2cce9f;
   color: #000;
@@ -204,5 +217,6 @@ const StyledCreateGameButton = styled.button`
     outline: 0;
   }
 `;
+
 
 export default JoinGame;

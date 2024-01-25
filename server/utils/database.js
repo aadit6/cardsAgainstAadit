@@ -243,7 +243,8 @@ getSessionStore(callback) {
             if (err) {
                 console.error("Error checking user existence:", err);
                 callback("Server error: error checking user existence", false);
-            } else if (result) {
+            } else {
+                console.log("the value of result is: ", result)
                 const count = result[0].count;
                 if (count > 0) {
                     // console.log("user already exists") 

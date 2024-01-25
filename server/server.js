@@ -4,17 +4,14 @@ const express = require("express");
 const app = express();
 const path = require("path");
 // const fs = require("fs");
-const ejs = require("ejs")
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const {OAuth2Client} = require("google-auth-library");
 const http = require("http");
 const server = http.createServer(app);
-
 const { Server: SocketIo } = require("socket.io");
 
 
-const {createProxyMiddleware} = require("http-proxy-middleware");
 const cors = require("cors");
 
 const corsOptions = {
@@ -153,11 +150,15 @@ io.on("connection", (socket) => {
 
     socket.on("sendMessage", (roomId, message, callback) => {
         
+        const messageWithId = { ...message, messageId: `${new Date().getTime().toString()}${Math.floor(Math.random() * 100000)}` };
+        console.log(`Emitting chatMessage event to room ${roomId}`);
     
     
         callback("sent");
     
         io.to(roomId).emit("chatMessage", messageWithId);
+
+    
     });
 
     

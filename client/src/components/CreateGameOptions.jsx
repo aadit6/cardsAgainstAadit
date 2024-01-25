@@ -41,7 +41,7 @@ const CreateGameOptions = () => {
 
   return (
     <CreateGameWrapper>
-      <BackButton to={`/../`}>Back to Join Game</BackButton>
+      <BackButton to={`/../`}>Back</BackButton>
       <InputField
         label="Points to Win"
         value={pointsToWin}
@@ -78,8 +78,7 @@ const CreateGameOptions = () => {
 };
 
 const CreateGameWrapper = styled.div`
-  background-color: #000;
-  color: #fff;
+  background-color: #222222;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -90,7 +89,7 @@ const CreateGameWrapper = styled.div`
 const BackButton = styled(Link)`
   color: #fff;
   text-decoration: none;
-  font-size: 36px;
+  font-size: 40px;
   position: absolute;
   top: 20px;
   left: 25px;
