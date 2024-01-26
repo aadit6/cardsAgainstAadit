@@ -35,15 +35,19 @@ const CreateCustomDeck = () => {
 
   return (
     <CreateCustomDeckWrapper>
-      <BackButton to={`/../`}>Back</BackButton>
-
-
-
-      {deckName && (
+    <HeaderContainer>
+    <BackButton to={`/../`}>Back</BackButton>
+    {deckName && (
         <DeckNameDisplay>
-          <DeckName>{deckName}</DeckName>
+            <DeckName>{deckName}</DeckName>
         </DeckNameDisplay>
-      )}
+    )}
+    
+        
+  </HeaderContainer>
+
+
+      
 
       <TopSection>
       <SaveButton onClick={handleSave}>Save</SaveButton>
@@ -135,20 +139,27 @@ const BackButton = styled(Link)`
   color: #fff;
   text-decoration: none;
   font-size: 40px;
-  position: absolute;
-  top: 20px;
-  left: 25px;
+  position: relative;
+
+  margin-top: 0px;
   cursor: pointer;
 `;
 
 const DeckNameDisplay = styled.div`
-  margin-top: 0px;
+    margin: 0px;
+    margin-right: 700px;
+
+
 `;
 
 const DeckName = styled.h3`
   color: white;
   font-size: 30px;
+  margin: 0;
 `;
+
+
+
 
 
 const TopSection = styled.div`
@@ -157,10 +168,12 @@ const TopSection = styled.div`
   margin-bottom: 0px;
 `;
 
+
 const Title = styled.h2`
-  color: #2cce9f;
-  font-size: 24px;
-  margin-right: 10px;
+    color: #2cce9f;
+    font-size: 24px;
+    margin-right: 10px;
+    margin-top: 20px;
 `;
 
 
@@ -290,6 +303,14 @@ const ToggleLabel = styled.label`
       border-radius: 50%;
     }
   }
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px; /* You can adjust the margin as needed */
 `;
 
 export default CreateCustomDeck;

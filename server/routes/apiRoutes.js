@@ -50,6 +50,54 @@
             });
         }
     });
+
+
+    //API ROUTES FOR CUSTOM DECK
+
+    const customDecks = {};
+
+    router.post('/api/createCustomDeck', (req, res) => {
+      const { blackCards, whiteCards } = req.body;
+      let deckCode;
+    
+      // Generate a unique code
+      do {
+        deckCode = generateRandomCode();
+      } while (customDecks.hasOwnProperty(deckCode));
+    
+      customDecks[deckCode] = { blackCards, whiteCards };
+      res.json({ success: true, deckCode });
+    });
+    
+    router.get('/api/getCustomDeck/:code', (req, res) => {
+      const deckCode = req.params.code;
+      const deck = customDecks[deckCode];
+      if (deck) {
+        res.json({ success: true, deck });
+      } else {
+        res.json({ success: false, message: 'Deck not found' });
+      }
+    });
+    
+    function generateRandomCode() {
+      let randomString = '';
+    
+      for (let i = 0; i < 10; i++) {
+        const randomCharCode = Math.floor(Math.random() * 62);
+        if (i % 3 === 0) {
+          randomString += String.fromCharCode(randomCharCode % 26 + 65);
+        } else if (i % 3 === 1) {
+          randomString += String.fromCharCode(randomCharCode % 26 + 97);
+        } else {
+          randomString += String.fromCharCode(randomCharCode % 10 + 48);
+        }
+      }
+    
+      return randomString;
+    }
+    
+
+    
     
 
     module.exports = router;
