@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import WhiteCard from './WhiteCard';
 import BlackCard from './BlackCard';
+import axios from 'axios';
+import { SERVER_URL } from '../constants';
 
 const CreateCustomDeck = () => {
 
@@ -14,6 +16,7 @@ const CreateCustomDeck = () => {
   const [newWhiteCard, setNewWhiteCard] = useState('');
   const [deckName, setDeckName] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [deckCode, setDeckCode] = useState('')
 
   
 
@@ -27,10 +30,25 @@ const CreateCustomDeck = () => {
     setNewWhiteCard('');
   };
 
-  const handleSave = () => {
+  async function handleSave(){
     // Implement save functionality here
     // For now, you can console.log to check if it's working
     console.log('Save button clicked');
+
+    try {
+        const response = await axios.post(`${SERVER_URL}/api/createCustomDeck`, { //stores these values server side
+            deckName: deckName,
+            blackCards: blackCards,
+            whiteCards: whiteCards,
+            code: deckCode,
+        })
+        setDeckCode(response.data.deckCode) 
+        console.log("value of deckCode is: ", deckCode)
+
+    } catch(err) {
+        console.error("API request error: ", err)
+
+    }
   };
 
   return (

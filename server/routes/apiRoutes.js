@@ -52,21 +52,28 @@
     });
 
 
-    //API ROUTES FOR CUSTOM DECK
+    //API ROUTES FOR CUSTOM DECKS
 
     const customDecks = {};
 
     router.post('/api/createCustomDeck', (req, res) => {
-      const { blackCards, whiteCards } = req.body;
+      const { blackCards, whiteCards, code } = req.body;
       let deckCode;
-    
-      // Generate a unique code
-      do {
-        deckCode = generateRandomCode();
-      } while (customDecks.hasOwnProperty(deckCode));
-    
+      console.log("blackCards, WhiteCards are: ", blackCards, whiteCards)
+      
+      if(!code) {
+        // Generate a unique code
+        do {
+          deckCode = generateRandomCode();
+        } while (customDecks.hasOwnProperty(deckCode));
+      
+      } else {
+        deckCode = code
+      }
+      
       customDecks[deckCode] = { blackCards, whiteCards };
-      res.json({ success: true, deckCode });
+      console.log("customDecks: ", customDecks)
+      res.json({ success: true, deckCode: deckCode });
     });
     
     router.get('/api/getCustomDeck/:code', (req, res) => {
@@ -92,7 +99,7 @@
           randomString += String.fromCharCode(randomCharCode % 10 + 48);
         }
       }
-    
+      console.log("randomstring is: ", randomString)
       return randomString;
     }
     

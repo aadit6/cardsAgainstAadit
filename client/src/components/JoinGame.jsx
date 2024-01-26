@@ -47,9 +47,9 @@ async function handleNavigateCreateGame(navigate, setLoading) {
   setLoading(false)
 }
 
-async function handleNavigateCreateDeck(navigate, setLoading) {
+async function handleNavigateCustomDecks(navigate, setLoading) {
   setLoading(true);
-  navigate("/createDeck")
+  navigate("/deckOptions")
   setLoading(false)
 }
 
@@ -100,7 +100,7 @@ const JoinGame = () => {
         <OrText>OR</OrText>
       
 
-        <StyledCreationButton onClick={() => handleNavigateCreateDeck(navigate, setLoading)}> Create Custom Deck
+        <StyledCreationButton onClick={() => handleNavigateCustomDecks(navigate, setLoading)}> Custom Decks
         </StyledCreationButton>
 
       
