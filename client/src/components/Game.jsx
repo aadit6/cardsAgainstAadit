@@ -9,8 +9,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SERVER_URL } from '../constants';
 
 import Leaderboard from './Leaderboard';
-import GameTitle from './GameTitle';
-import UserInfo from './UserInfo';
 import InviteFriends from './InviteFriends';
 import Status from './Status';
 import StartButton from './StartButton';
@@ -185,8 +183,10 @@ const Game = () => {
   return (
     <GameWrapper>
       <Header>
-        <GameTitle />
-        <UserInfo currentUser={currentUser} />
+        <Title>Cards Against Aadit</Title>
+        <UserContainer>
+          <UserName>{currentUser}</UserName>
+        </UserContainer>
       </Header>
         <ChatBox
           socket={socket}
@@ -307,6 +307,31 @@ const ContentTitle = styled.h2`
   color: #fff;
   margin-bottom: 10px;
 `;
+
+const UserContainer = styled.div`
+  display: flex;
+  align-items: left;
+  margin-right: 5%
+`;
+
+
+const UserName = styled.span`
+  font-size: 34px; /* Adjust the font size as needed */
+  font-weight: bold; /* Make the username bold */
+  color: white; /* Adjust the color as needed */
+  margin-top: 20%
+
+`;
+
+const Title = styled.h1`
+  font-size: 40px; /* Adjust the font size as needed for prominence */
+  text-align: center; /* Center the title */
+  margin-bottom: 2px; /* Add margin for separation */
+  margin-left: 35%;
+  color: white;
+`;
+
+
 
 
 

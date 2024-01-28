@@ -3,7 +3,6 @@
     const express = require("express");
     const router = express.Router();
     const db = require("../utils/database.js")
-    const session = require("express-session");
 
     // const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
     
@@ -57,11 +56,11 @@
     const customDecks = {};
 
     router.post('/api/createCustomDeck', (req, res) => {
-      const { blackCards, whiteCards, code } = req.body;
+      const { blackCards, whiteCards, code, deckName } = req.body;
       let deckCode;
       console.log("blackCards, WhiteCards are: ", blackCards, whiteCards)
       
-      if(!code) {
+      if(!code) { //as dont want to generate a new deck code for the exact same deck (regardless of whether cards have been added to it / changed)
         // Generate a unique code
         do {
           deckCode = generateRandomCode();
@@ -70,8 +69,10 @@
       } else {
         deckCode = code
       }
+      console.log("session: ", req.session)
+      const deckCreator = req.session.user
       
-      customDecks[deckCode] = { blackCards, whiteCards };
+      customDecks[deckCode] = { deckName, deckCreator, blackCards, whiteCards };
       console.log("customDecks: ", customDecks)
       res.json({ success: true, deckCode: deckCode });
     });
@@ -99,7 +100,6 @@
           randomString += String.fromCharCode(randomCharCode % 10 + 48);
         }
       }
-      console.log("randomstring is: ", randomString)
       return randomString;
     }
     

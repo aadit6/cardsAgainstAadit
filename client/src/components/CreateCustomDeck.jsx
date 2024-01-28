@@ -41,6 +41,8 @@ const CreateCustomDeck = () => {
             blackCards: blackCards,
             whiteCards: whiteCards,
             code: deckCode,
+        }, {
+            withCredentials: true,
         })
         setDeckCode(response.data.deckCode) 
         console.log("value of deckCode is: ", deckCode)
@@ -54,7 +56,7 @@ const CreateCustomDeck = () => {
   return (
     <CreateCustomDeckWrapper>
     <HeaderContainer>
-    <BackButton to={`/../`}>Back</BackButton>
+    <BackButton to={`./..`}>Back</BackButton>
     {deckName && (
         <DeckNameDisplay>
             <DeckName>{deckName}</DeckName>
@@ -76,6 +78,12 @@ const CreateCustomDeck = () => {
           <span className="slider round"></span>
         </ToggleLabel>
       </ToggleWrapper>
+      {deckCode && (
+          <TopSection>
+            <Title>Code</Title>
+            <DeckCode>{deckCode}</DeckCode>
+          </TopSection>
+        )}
       </TopSection>
 
       
@@ -279,6 +287,7 @@ const ToggleLabel = styled.label`
   display: inline-block;
   width: 60px;
   height: 34px;
+  margin-right: 25px;
 
   input {
     opacity: 0;
@@ -329,6 +338,12 @@ const HeaderContainer = styled.div`
   justify-content: space-between;
   width: 100%;
   margin-bottom: 20px; /* You can adjust the margin as needed */
+`;
+
+const DeckCode = styled.h3`
+  color: white;
+  font-size: 30px;
+  margin: 0;
 `;
 
 export default CreateCustomDeck;

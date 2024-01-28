@@ -10,8 +10,8 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId, pointsToWin, numOfCards, deckType) { //constructor method when the class first called
-    this.deckType = deckType
+  constructor(io, roomId, pointsToWin, numOfCards, selectedDecks) { //constructor method when the class first called
+    this.selectedDecks = selectedDecks
     this.pointsToWin = Number(pointsToWin) //as originally passed as string through the URL
     this.cardsInHand = Number(numOfCards)
     this.io = io;
@@ -37,12 +37,14 @@ class Game {
     this.czarQueue = null //value of it is set later when game starts based on amount of players in the room 
 
 
-    this.addCards(true, true); 
+    this.addCards(); 
     this.updateLog("newRoom")
 
     console.log("this.cardsinhand = ", this.cardsInHand)
     
   }
+
+ 
   join(socket, session) {
     const { players, board, io } = this;
     
@@ -105,40 +107,58 @@ class Game {
 
   // }
 
-  addCards(addWhite, addBlack) {
+  addCards() {
     const { board } = this;
-    let jsonContent
+    let jsonContent;
 
-    if (this.deckType === "nsfw") {
+    jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    jsonContent.forEach(a => {
+      console.log("Iteration x:",a)
+      a.white.some(c => {
+        console.log ("c: ", c.pack)
+      })
 
-      jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+    })
 
-    } else {
+    const selectedDeckValues = this.selectedDecks.split('-');
+    const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
 
-      jsonContent = JSON.parse(fs.readFileSync('server/cards.json'));
+    let blackDeckArray = [];
+    let whiteDeckArray = [];
+
+    selectedDeckIds.forEach(selectedPack => {
+        const selectedDecks = jsonContent.filter(deck => 
+            deck.black && deck.black.some(card => card.pack === selectedPack) ||
+            deck.white && deck.white.some(card => card.pack === selectedPack)
+        );
+        console.log("selecteddecks is: ", selectedDecks)
+
+        selectedDecks.forEach(selectedDeck => {
+                blackDeckArray = blackDeckArray.concat(selectedDeck.black.map((blackCard, index) => ({
+                    id: index,
+                    text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
+                    pick: blackCard.pick
+                })));
+            
+                whiteDeckArray = whiteDeckArray.concat(selectedDeck.white.map((whiteCard, index) => ({
+                    id: index,
+                    text: entities.decodeHTML(whiteCard.text),
+                })));
+        });
+    });
+
+    if (whiteDeckArray.length > 0) {
+        this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
     }
 
-    if (addBlack) {
-      board.blackDeck = new CardStack(jsonContent.black.map((blackCard, index) => ({ //used stack so cards already dealt cant be dealt again ("popped" off stack)
-        id: index,
-        text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'), //makes the blank space more prominent
-        pick: blackCard.pick
-      })));
+    if (blackDeckArray.length > 0) {
+        this.board.blackDeck = new CardStack(blackDeckArray).shuffle();
     }
 
-    if (addWhite) {
-      board.whiteDeck = new CardStack(jsonContent.white.map((whiteCard, index) => ({
-        id: index,
-        text: entities.decodeHTML(whiteCard),
-      })));
-    }
+    // Shuffling both decks initially for the entire room.
+    // Later white cards and black cards are drawn from the top of the stack of cards
+}
 
-    this.board.whiteDeck = board.whiteDeck.shuffle() 
-    this.board.blackDeck = board.blackDeck.shuffle()
-    //shuffling both decks initially for the entire room. 
-    //later white cards and black cards are drawn from top of the stack of cards
-
-  }
 
   updateLeaderboard() {
     const { players, io } = this;

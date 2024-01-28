@@ -132,3 +132,6 @@
 # # configuration files 
 # config/
 node_modules
+server/cards_all.json
+server/data.json
+server/cards.json

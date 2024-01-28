@@ -36,7 +36,7 @@ const App = () => {
         <Route path="/game/:roomid/*" element={<Game />} />
         <Route exact path="/creategame" element={<CreateGameOptions/>} />
         <Route exact path="/deckOptions" element={<DeckOptions/>} />
-        <Route exact path="createdeck" element={<CreateCustomDeck/>} />
+        <Route exact path="/deckOptions/createdeck" element={<CreateCustomDeck/>} />
       </Routes>
     </Router>
   );

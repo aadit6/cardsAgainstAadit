@@ -8,7 +8,7 @@ import {SERVER_URL} from './../constants.js';
 const maxAttempts = 20;
 
 
-async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, deckType, attempts = 0) { //recursive method to keep creating room until one thats not alr used
+async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, decksParam, attempts = 0) { //recursive method to keep creating room until one thats not alr used
     const generateRandomString = (length) => {
         let randomString = '';
       
@@ -39,7 +39,7 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
         console.log("response data: ",response.data);
 
         if (!response.data.success) { // used "!" as we want room to not already exist
-            navigate(`/game/${random}?pointsToWin=${pointsToWin}&cardsInHand=${cardsInHand}&deck=${deckType}`);
+            navigate(`/game/${random}?pointsToWin=${pointsToWin}&cardsInHand=${cardsInHand}&deck=${decksParam}`);
             return; // breaks out of recursion
         } else if (attempts < maxAttempts) {  
             return createRandomRoom(navigate, setErrorMsg, setLoading, attempts + 1); // fixed typo
@@ -59,15 +59,18 @@ async function createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, 
 
 
 
-const CreateGame = ({pointsToWin, cardsInHand, deckType}) => {
+const CreateGame = ({pointsToWin, cardsInHand, selectedDecks}) => {
     const [errorMsg, setErrorMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+     // Convert the array to a string joined by a delimiter (e.g., '-')
+     const decksParam = selectedDecks.join('-');
+
   
     const handleCreateGame = async () => {
       try {
-        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, deckType);
+        await createRandomRoom(navigate, setErrorMsg, setLoading, pointsToWin, cardsInHand, decksParam);
       } catch (error) {
         console.error('Error creating game:', error);
       }

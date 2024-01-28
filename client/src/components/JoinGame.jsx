@@ -2,8 +2,6 @@ import React, { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
-import JoinGameHeader from './JoinGameHeader';
-import JoinGameInstructions from './JoinGameInstructions';
 import {SERVER_URL} from '../constants.js';
 
 
@@ -69,8 +67,22 @@ const JoinGame = () => {
   return (
     <JoinGameWrapper>
       <BackButton to={`${SERVER_URL}/menu`}>Back</BackButton>
-      <JoinGameHeader />
-      <JoinGameInstructions />
+      <HeaderContainer>
+      <GameTitle>Cards against Aadit</GameTitle>
+      <GameSubtitle>Join the game!</GameSubtitle>
+    </HeaderContainer>
+    <InstructionsWrapper>
+      <Instruction>
+        1. Enter the room code provided by the game host
+      </Instruction>
+      <Instruction>
+        2. Click the "Join Game" button (Max 6 players in the game)
+      </Instruction>
+      <Instruction>
+        3. Get ready for some HILARIOUS fun!
+      </Instruction>
+    </InstructionsWrapper>
+
       <JoinGameForm onSubmit={handleSubmit}>
         <RowContainer>
           <InputContainer>
@@ -216,6 +228,39 @@ const StyledCreationButton = styled.button`
     opacity: 0.8;
     outline: 0;
   }
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0px; /* Added margin for spacing */
+`;
+
+const GameTitle = styled.h1`
+  font-size: 80px; /* Increased font size */
+  color: #fff;
+  margin-bottom: 10px;
+  color: aqua;
+`;
+
+const GameSubtitle = styled.p`
+  font-size: 30px; /* Increased font size */
+  color: #ccc;
+  text-align: left;
+  color: aqua;
+`;
+
+const InstructionsWrapper = styled.div`
+  text-align: center;
+  margin: 20px;
+`;
+
+const Instruction = styled.p`
+  font-size: 20px;
+  color: #fff;
+  text-align: centre;
+  margin: 10px;
 `;
 
 
