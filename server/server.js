@@ -108,11 +108,11 @@ const rooms = {};
 
 io.on("connection", (socket) => { 
     const session = socket.request.session;
-    socket.on("joinRoom", (roomId, points, numOfCards, decks) => {
-        console.log("decks: ", decks)
+    socket.on("joinRoom", (roomId, points, numOfCards, decks, customDecks) => {
         const user = session.user;
+        console.log("customdecks is: ", customDecks)
         if(!rooms[roomId]) {            
-            rooms[roomId] = new Game(io, roomId, points, numOfCards, decks);
+            rooms[roomId] = new Game(io, roomId, points, numOfCards, decks, customDecks);
             if(user) {
                 db.createRoom(user, roomId, (err) => {
                     if(err){

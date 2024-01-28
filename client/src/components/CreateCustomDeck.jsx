@@ -15,15 +15,17 @@ const CreateCustomDeck = () => {
   const [newBlackCard, setNewBlackCard] = useState('');
   const [newWhiteCard, setNewWhiteCard] = useState('');
   const [deckName, setDeckName] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
   const [deckCode, setDeckCode] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [blackPick, setBlackPick] = useState(1)
 
   
 
   const handleAddBlackCard = () => {
-    setBlackCards([...blackCards, newBlackCard]);
+    setBlackCards([...blackCards, { text: newBlackCard, pick: blackPick }]);
     setNewBlackCard('');
   };
+
 
   const handleAddWhiteCard = () => {
     setWhiteCards([...whiteCards, newWhiteCard]);
@@ -44,10 +46,17 @@ const CreateCustomDeck = () => {
         }, {
             withCredentials: true,
         })
-        setDeckCode(response.data.deckCode) 
-        console.log("value of deckCode is: ", deckCode)
+        if(response.data.success) {
+            setErrorMsg('')
+            setDeckCode(response.data.deckCode) 
+            console.log("value of deckCode is: ", deckCode)
+        } else {
+            setErrorMsg(response.data.message)
+        }
+        
 
     } catch(err) {
+        setErrorMsg("API Request Error")
         console.error("API request error: ", err)
 
     }
@@ -71,13 +80,6 @@ const CreateCustomDeck = () => {
 
       <TopSection>
       <SaveButton onClick={handleSave}>Save</SaveButton>
-      <ToggleWrapper>
-        <Title>Private</Title>
-        <ToggleLabel>
-          <input type="checkbox" checked={isPrivate} onChange={() => setIsPrivate(!isPrivate)} />
-          <span className="slider round"></span>
-        </ToggleLabel>
-      </ToggleWrapper>
       {deckCode && (
           <TopSection>
             <Title>Code</Title>
@@ -85,55 +87,57 @@ const CreateCustomDeck = () => {
           </TopSection>
         )}
       </TopSection>
+      {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
 
       
 
       <TopSection>
         <TopSection>
-            <Title>Deck Name</Title>
-            <Input
+          <Title>Name</Title>
+          <Input
             type="text"
             placeholder="Deck Name"
             value={deckName}
             onChange={(e) => setDeckName(e.target.value)}
-            />
+          />
         </TopSection>
         <TopSection>
-            <Title>Add Black</Title>
-            <Button onClick={handleAddBlackCard} disabled={!newBlackCard.trim()}>
+          <Title>White</Title>
+          <Button onClick={handleAddWhiteCard} disabled={!newWhiteCard.trim()}>
             Add
-            </Button>
-            <Input
-            type="text"
-            placeholder="New Black Card"
-            value={newBlackCard}
-            onChange={(e) => setNewBlackCard(e.target.value)}
-            />
-        </TopSection>
-            <TopSection>
-            <Title>Add White</Title>
-            <Button onClick={handleAddWhiteCard} disabled={!newWhiteCard.trim()}>
-            Add
-            </Button>
-            <Input
+          </Button>
+          <Input
             type="text"
             placeholder="New White Card"
             value={newWhiteCard}
             onChange={(e) => setNewWhiteCard(e.target.value)}
-            />
-            </TopSection>
-      </TopSection>
-      {blackCards[0] && (
-        <Title>Black Cards [{blackCards.length}]</Title>
-      )}
+          />
+        </TopSection>
+        <TopSection>
+          <Title>Black</Title>
+          <Button onClick={handleAddBlackCard} disabled={!newBlackCard.trim()}>
+            Add
+          </Button>
+          <Input
+            type="text"
+            placeholder="New Black Card"
+            value={newBlackCard}
+            onChange={(e) => setNewBlackCard(e.target.value)}
+          />
+            <Title>Pick</Title> {/* New title for pick */}
 
-      <CardList>
-        <CardRow>
-          {blackCards.map((card, index) => (
-            <BlackCard key={index} text={card} pick={1}></BlackCard>
-          ))}
-        </CardRow>
-      </CardList>
+          <PickInput>
+            <Input
+              type="number"
+              value={blackPick}
+              onChange={(e) => setBlackPick(parseInt(e.target.value) || 1)}
+              min={1}
+            />
+          </PickInput>
+        </TopSection>
+        
+      </TopSection>
+      
 
       {whiteCards[0] && (
         <Title>White Cards [{whiteCards.length}]</Title>
@@ -142,6 +146,18 @@ const CreateCustomDeck = () => {
           {whiteCards.map((card, index) => (
             <WhiteCard key={index} text={card} disabled={false} hoverEffect={false} selected={false} selectedPlayer={null} enableAudio={false}></WhiteCard>
           ))}
+        </CardRow>
+      </CardList>
+
+      {blackCards[0] && (
+        <Title>Black Cards [{blackCards.length}]</Title>
+      )}
+
+      <CardList>
+        <CardRow>
+          {blackCards.map((card, index) => (
+              <BlackCard key={index} text={card.text} pick={card.pick}></BlackCard>
+              ))}
         </CardRow>
       </CardList>
 
@@ -198,7 +214,8 @@ const TopSection = styled.div`
 const Title = styled.h2`
     color: #2cce9f;
     font-size: 24px;
-    margin-right: 10px;
+    margin-right: 15px;
+    margin-left: 10px;
     margin-top: 20px;
 `;
 
@@ -276,61 +293,7 @@ const SaveButton = styled.button`
   }
 `;
 
-const ToggleWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 0px;
-`;
 
-const ToggleLabel = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin-right: 25px;
-
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-
-    &:checked + .slider {
-      background-color: #2cce9f;
-    }
-
-    &:focus + .slider {
-      box-shadow: 0 0 1px #2cce9f;
-    }
-
-    &:checked + .slider:before {
-      transform: translateX(26px);
-    }
-  }
-
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 34px;
-
-    &:before {
-      position: absolute;
-      content: '';
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-  }
-`;
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -345,5 +308,21 @@ const DeckCode = styled.h3`
   font-size: 30px;
   margin: 0;
 `;
+
+const ErrorMessage = styled.p`
+  color: red;
+  margin-top: 0px;
+  font-size: 20px;
+`;
+
+const PickInput = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 20px;
+  width: 5%;
+`;
+
+
 
 export default CreateCustomDeck;

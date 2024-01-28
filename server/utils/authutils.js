@@ -66,7 +66,7 @@ class HashingUtil {
                         if (isValid) {
                             callback(null, true);
                         } else {
-                            callback("Incorrect username or password", false);
+                            callback("Incorrect username or password. Please try again.", false);
                         }
                     }
                 }

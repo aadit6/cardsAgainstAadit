@@ -10,10 +10,14 @@ const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
 
 class Game {
-  constructor(io, roomId, pointsToWin, numOfCards, selectedDecks) { //constructor method when the class first called
-    this.selectedDecks = selectedDecks
+  constructor(io, roomId, pointsToWin, numOfCards, selectedDecks, customDecks) { //constructor method when the class first called
     this.pointsToWin = Number(pointsToWin) //as originally passed as string through the URL
     this.cardsInHand = Number(numOfCards)
+    this.selectedDecks = selectedDecks
+    this.customDecks = customDecks
+
+    console.log("cd is : ", customDecks)
+
     this.io = io;
     this.db = db;
     this.players = [];
@@ -112,16 +116,14 @@ class Game {
     let jsonContent;
 
     jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
-    jsonContent.forEach(a => {
-      console.log("Iteration x:",a)
-      a.white.some(c => {
-        console.log ("c: ", c.pack)
-      })
-
-    })
 
     const selectedDeckValues = this.selectedDecks.split('-');
     const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
+    console.log(this.customDecks)
+    if(this.customDecks) {
+      selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
+    }
+    console.log(selectedDeckIds)
 
     let blackDeckArray = [];
     let whiteDeckArray = [];
@@ -146,6 +148,10 @@ class Game {
                 })));
         });
     });
+
+
+
+    
 
     if (whiteDeckArray.length > 0) {
         this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();

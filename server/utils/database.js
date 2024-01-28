@@ -246,8 +246,9 @@ getSessionStore(callback) {
             } else {
                 console.log("the value of result is: ", result)
                 const count = result[0].count;
+                
                 if (count > 0) {
-                    // console.log("user already exists") 
+                    console.log("user already exists") 
                     callback("That username is already taken", false);
                 } else {
                     console.log("user doesnt already exist!");
@@ -347,11 +348,7 @@ getSessionStore(callback) {
                 
             }
             
-            // if (passHash === null) { //is this neccessary, could be security risk => do we want to be giving user information about this sort of stuff??? 
-            //     return callback("username does not exist", null);  
-            //     //this callback occurs when you enter in a username associated with a google account. Would not
-            //     // work since you need to login via google for that
-            // }
+   
             
         });
     }

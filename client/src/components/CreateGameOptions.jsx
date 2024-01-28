@@ -95,6 +95,8 @@ const CreateGameOptions = () => {
   const [selectedDecks, setSelectedDecks] = useState([]);
   const [customDeckCode, setCustomDeckCode] = useState('');
   const [customDeckData, setCustomDeckData] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+
 
   const handleCustomDeckCodeChange = (event) => {
     setCustomDeckCode(event.target.value);
@@ -107,14 +109,17 @@ const CreateGameOptions = () => {
 
       if (success) {
         // Set the custom deck data in state
+        setErrorMsg("");
         setCustomDeckData(deck);
       } else {
         // Handle error case
-        console.error('Deck not found');
+        setErrorMsg("");
+        setErrorMsg('Deck not found');
       }
     } catch (error) {
       // Handle error
       console.error('Error fetching custom deck', error);
+      setErrorMsg('Server Error. Please try again.')
     }
   };
 
@@ -183,6 +188,7 @@ const CreateGameOptions = () => {
         </OptionsForm>
       </ParentComponent>
 
+      {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
       {customDeckData && (
         <CustomDeckInfoWrapper>
           <CustomDeckInfoLabel>Deck Name: {customDeckData.deckName}</CustomDeckInfoLabel>
@@ -292,6 +298,12 @@ const CustomDeckInfoLabel = styled.p`
   text-align: center;
   margin: 0px 0;
   margin-top: 0px;
+`;
+
+const ErrorMessage = styled.p`
+  color: red;
+  margin-top: 0px;
+  font-size: 20px;
 `;
 
 export default CreateGameOptions;

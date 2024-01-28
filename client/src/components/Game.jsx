@@ -35,6 +35,7 @@ const Game = () => {
   const [pointsToWin, setPointsToWin] = useState(null)
   const [cardsInHand, setCardsInHand] = useState(null)
   const [deckType, setDeckType] = useState(null)
+  const [customDeck, setCustomDeck] = useState(null)
   const [currentUser, setCurrentUser] = useState(null);
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -109,15 +110,17 @@ const Game = () => {
       }
     };
   
-    const joinRoom = (roomId, pointsToWin, cardsInHand, deckType) => {
+    const joinRoom = (roomId, pointsToWin, cardsInHand, deckType, customDeck) => {
       
       setPointsToWin(searchParams.get('pointsToWin'));
       setCardsInHand(searchParams.get('cardsInHand'));
       setDeckType(searchParams.get('deck'))
+      setCustomDeck(searchParams.get('customDeck'))
+      
+      console.log("cd is : ", customDeck)
       
       
-      
-      socket.emit('joinRoom', roomId, pointsToWin, cardsInHand, deckType);
+      socket.emit('joinRoom', roomId, pointsToWin, cardsInHand, deckType, customDeck);
   
       // Listen for 'hand' event to receive the dealt hand
       socket.on('hand', (handData) => {
@@ -157,7 +160,7 @@ const Game = () => {
     
 
   
-    joinRoom(getRoomNameFromURL(), pointsToWin, cardsInHand, deckType);
+    joinRoom(getRoomNameFromURL(), pointsToWin, cardsInHand, deckType, customDeck);
     fetchCurrentUser();
   
     socket.on('leaderboard', handleLeaderboardUpdate);
@@ -171,7 +174,7 @@ const Game = () => {
     return () => {
       socket.disconnect();
     };
-  }, [pointsToWin, cardsInHand, deckType, searchParams]); 
+  }, [pointsToWin, cardsInHand, deckType, customDeck, searchParams]); 
   
 
   const currentUserStatusObject = leaderboard.find((p) => p.name === currentUser);
