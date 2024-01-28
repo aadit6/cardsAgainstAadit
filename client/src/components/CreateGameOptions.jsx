@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import CreateGame from './CreateGame';
+import axios from 'axios';
+import { SERVER_URL } from '../constants';
 
 const DECK_OPTIONS = [
   { value: '0', label: 'CAH Base Set' }, 
@@ -86,10 +88,39 @@ const InputField = ({ label, value, onChange, id, type = 'number', min = 1, isCh
 
 
 
+
 const CreateGameOptions = () => {
   const [pointsToWin, setPointsToWin] = useState(5);
   const [cardsInHand, setCardsInHand] = useState(8);
   const [selectedDecks, setSelectedDecks] = useState([]);
+  const [customDeckCode, setCustomDeckCode] = useState('');
+  const [customDeckData, setCustomDeckData] = useState(null);
+
+  const handleCustomDeckCodeChange = (event) => {
+    setCustomDeckCode(event.target.value);
+  };
+
+  const handleAddCustomDeck = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/getCustomDeck/${customDeckCode}`);
+      const { success, deck } = response.data;
+
+      if (success) {
+        // Set the custom deck data in state
+        setCustomDeckData(deck);
+      } else {
+        // Handle error case
+        console.error('Deck not found');
+      }
+    } catch (error) {
+      // Handle error
+      console.error('Error fetching custom deck', error);
+    }
+  };
+
+
+
+
 
   const handleChange = (event, setStateFunction) => {
     const { type, checked, value, id } = event.target;
@@ -144,8 +175,27 @@ const CreateGameOptions = () => {
         options={DECK_OPTIONS}
       />
       {/* Add more InputField components for additional options */}
+      <ParentComponent>
+        <OptionsForm>
+          <label htmlFor="customDeckCode">Custom Deck Code:</label>
+          <input type="text" id="customDeckCode" value={customDeckCode} onChange={handleCustomDeckCodeChange} />
+          <Button onClick={handleAddCustomDeck}>Add</Button>
+        </OptionsForm>
+      </ParentComponent>
+
+      {customDeckData && (
+        <CustomDeckInfoWrapper>
+          <CustomDeckInfoLabel>Deck Name: {customDeckData.deckName}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>Deck Creator: {customDeckData.deckCreator}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>No. Of White Cards: {customDeckData.whiteCards.length}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>No. Of Black Cards: {customDeckData.blackCards.length}</CustomDeckInfoLabel>
+
+          {/* Add more information as needed */}
+        </CustomDeckInfoWrapper>
+      )}
       
-      <CreateGame pointsToWin={pointsToWin} cardsInHand={cardsInHand} selectedDecks={selectedDecks} />
+      
+      <CreateGame pointsToWin={pointsToWin} cardsInHand={cardsInHand} selectedDecks={selectedDecks} customDeck={customDeckCode}/>
     </CreateGameWrapper>
   );
 };
@@ -170,7 +220,7 @@ const BackButton = styled(Link)`
 `;
 
 const OptionsForm = styled.div`
-  margin-bottom: 30px;
+  margin-bottom: 15px;
   label {
     color: #fff;
     font-size: 25px;
@@ -184,7 +234,7 @@ const OptionsForm = styled.div`
 `;
 
 const ParentComponent = styled.div`
-  margin-bottom: 30px;
+  margin-bottom: 0px;
 `;
 
 const OptionsFormCheck = styled.div`
@@ -216,6 +266,32 @@ const CheckboxLabel = styled.label`
   input {
     margin-right: 4px;
   }
+`;
+
+const Button = styled.button`
+  background-color: #4caf50; /* Green background */
+  color: white; /* White text color */
+  border: none; /* Remove border */
+  padding: 10px 20px; /* Some padding */
+  font-size: 16px; /* Set font size */
+  cursor: pointer; /* Add a pointer cursor on hover */
+  margin-left: 10px; /* Add some space on the left */
+`;
+
+const CustomDeckInfoWrapper = styled.div`
+  background-color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 20%;
+  margin-bottom: 20px;
+  color: #fff;
+`;
+
+const CustomDeckInfoLabel = styled.p`
+  font-size: 20px;
+  text-align: center;
+  margin: 0px 0;
+  margin-top: 0px;
 `;
 
 export default CreateGameOptions;
