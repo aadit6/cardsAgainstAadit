@@ -20764,5 +20764,22 @@
       }
     ],
     "official": false
+  },
+  {
+    "name": "joijoi",
+    "white": [
+      {
+        "text": "joi",
+        "pack": "Ug9Ph6Rq4Q"
+      }
+    ],
+    "black": [
+      {
+        "text": "jio",
+        "pick": 1,
+        "pack": "Ug9Ph6Rq4Q"
+      }
+    ],
+    "official": false
   }
 ]

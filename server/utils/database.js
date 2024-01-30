@@ -175,15 +175,46 @@ getSessionStore(callback) {
                 console.log("rooms table created successfully")
             }
         })
-
         this.connection.query(leaderboardPopulateSql, (err, result) => {});
 
- 
-    
+        const decksSql = ` 
+        CREATE TABLE IF NOT EXISTS Decks (
+            DeckCode VARCHAR(20) NOT NULL PRIMARY KEY,
+            CreatorID INT,
+            DeckName VARCHAR(255) NOT NULL,
+            FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
+        );
+        `
+        this.connection.query(decksSql, (err) => {
+            if(!err) {
+                console.log("decks table created successfully")
+            } else {
+                console.log("sql error: ", err)
+            }
+        })
+
+        const cardsSql = `
+        CREATE TABLE IF NOT EXISTS Cards (
+            CardID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            Text VARCHAR(255) NOT NULL,
+            Pack VARCHAR(20) NOT NULL,
+            Type ENUM('Black', 'White') NOT NULL,
+            Pick INT,
+            FOREIGN KEY (Pack) REFERENCES Decks(DeckCode)
+        );
+        `
+
+        
+        
+        this.connection.query(cardsSql, (err) => {
+            if(!err) {
+                console.log("cards table created successfully")
+            } else {
+                console.log("sql error: ", err)
+            }
+        })
     }
     
-
-
 // login-registration based functions
 
     validateUser(email, username, password, callback) { ///MAYBE: move this to authutils since doesnt require any database operations
@@ -504,10 +535,46 @@ getSessionStore(callback) {
         }
         });
     }
-  
 
-    
-    
+
+    //card and deck related functions
+
+    addDeck(deckCode, creatorID, deckName, callback) {
+        let sql, values
+
+        sql = `INSERT INTO Decks (DeckCode, CreatorID, DeckName) VALUES (?, ?, ?)`
+        values = [deckCode, creatorID, deckName]
+
+        this.connection.query(sql, values, (err) => {
+            if(err) {
+                callback(err, null)
+            } else {
+                callback(null, true) //if values successfully inserted
+            }
+        })
+
+    }
+
+    addCard(pack, text, type, pick, callback) {
+        let sql, values
+
+        sql = `INSERT INTO cards (Text, Pack, Type, Pick) VALUES (?, ?, ?, ?)`
+        values = [text, pack, type, pick]
+
+        this.connection.query(sql, values, (err) => {
+            if(err) {
+                callback(err, null)
+            } else {
+                callback(null, true)
+            }
+        })
+    }
+
+
+
+
+
+
 }
 
 module.exports = new Database();

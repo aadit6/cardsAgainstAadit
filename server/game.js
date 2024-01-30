@@ -111,59 +111,128 @@ class Game {
 
   // }
 
-  addCards() {
-    const { board } = this;
-    let jsonContent;
+  // addCards() {
+  //   const { board } = this;
+  //   let jsonContent;
 
-    jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
+  //   jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
-    const selectedDeckValues = this.selectedDecks.split('-');
-    const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
-    console.log(this.customDecks)
-    if(this.customDecks) {
-      selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
-    }
-    console.log(selectedDeckIds)
+  //   console.log("jsoncontent: ", jsonContent)
 
-    let blackDeckArray = [];
-    let whiteDeckArray = [];
+    // const selectedDeckValues = this.selectedDecks.split('-');
+    // const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
+    // console.log(this.customDecks)
+    // if(this.customDecks) {
+    //   selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
+    // }
+    // console.log(selectedDeckIds)
 
-    selectedDeckIds.forEach(selectedPack => {
-        const selectedDecks = jsonContent.filter(deck => 
-            deck.black && deck.black.some(card => card.pack === selectedPack) ||
-            deck.white && deck.white.some(card => card.pack === selectedPack)
-        );
-        console.log("selecteddecks is: ", selectedDecks)
+    // let blackDeckArray = [];
+    // let whiteDeckArray = [];
 
-        selectedDecks.forEach(selectedDeck => {
-                blackDeckArray = blackDeckArray.concat(selectedDeck.black.map((blackCard, index) => ({
-                    id: index,
-                    text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
-                    pick: blackCard.pick
-                })));
+  //   selectedDeckIds.forEach(selectedPack => {
+  //       const selectedDecks = jsonContent.filter(deck => 
+  //           deck.black && deck.black.some(card => card.pack === selectedPack) ||
+  //           deck.white && deck.white.some(card => card.pack === selectedPack)
+  //       );
+  //       console.log("selecteddecks is: ", selectedDecks)
+
+  //       selectedDecks.forEach(selectedDeck => {
+  //               blackDeckArray = blackDeckArray.concat(selectedDeck.black.map((blackCard, index) => ({
+  //                   id: index,
+  //                   text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
+  //                   pick: blackCard.pick
+  //               })));
             
-                whiteDeckArray = whiteDeckArray.concat(selectedDeck.white.map((whiteCard, index) => ({
-                    id: index,
-                    text: entities.decodeHTML(whiteCard.text),
-                })));
-        });
-    });
+  //               whiteDeckArray = whiteDeckArray.concat(selectedDeck.white.map((whiteCard, index) => ({
+  //                   id: index,
+  //                   text: entities.decodeHTML(whiteCard.text),
+  //               })));
+  //       });
+  //   });
+  //   if (whiteDeckArray.length > 0) {
+  //       this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
+  //   }
 
+  //   if (blackDeckArray.length > 0) {
+  //       this.board.blackDeck = new CardStack(blackDeckArray).shuffle();
+  //   }
 
+  //   // Shuffling both decks initially for the entire room.
+  //   // Later white cards and black cards are drawn from the top of the stack of cards
+  // }
 
+  addCards(){
+    const {board} = this
+    let jsonContent, deckCode
     
+    jsonContent = JSON.parse(fs.readFileSync("server/cards.json"))
+    jsonContent.forEach(deck=> {
+      
+      if ((deck.white && deck.white.length > 0) || (deck.black && deck.black > 0)) {
+        deckCode = deck.white[0].pack || deck.black[0].pack; // Assigning the "pack" value of the first white/black card to deckCode
+      } else {
+        console.log("no cards found")
+        return
+      }
 
-    if (whiteDeckArray.length > 0) {
-        this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
-    }
+      db.addDeck(deckCode, null, deck.name, (err) => {
+        console.log("name of deck: ", deck.name)
+        if(err) {
+          console.log("Error inserting values into database: ", err)
+        } else {
+          console.log("deck successfully inserted into database")
+        }
 
-    if (blackDeckArray.length > 0) {
-        this.board.blackDeck = new CardStack(blackDeckArray).shuffle();
-    }
 
-    // Shuffling both decks initially for the entire room.
-    // Later white cards and black cards are drawn from the top of the stack of cards
-}
+      })
+
+      deck.white.forEach(w => {
+        db.addCard(w.pack, w.text, "White", null, (err) => {
+          if (err) {
+            console.log("Error inserting card to db: ", err)
+          } else {
+            console.log("Card succesfully inserted into database")
+          }
+        })
+      })
+      deck.black.forEach(b => {
+        db.addCard(b.pack, b.text, "Black", b.pick, (err) => {
+          if(err) {
+            console.log("Error inserting card to db: ", err)
+          } else {
+            console.log("Card succesfully inserted into database")
+          }
+        })
+      })
+
+      const selectedDeckValues = this.selectedDecks.split('-');
+      const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
+      console.log(this.customDecks)
+      if(this.customDecks) {
+        selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
+      }
+  
+      let blackDeckArray = [];
+      let whiteDeckArray = [];
+
+      selectedDeckIds.forEach(selectedPack => {
+        // db.retrieveCard()
+        return
+
+      })
+
+
+
+
+
+
+
+    })
+
+
+  }
+
 
 
   updateLeaderboard() {
