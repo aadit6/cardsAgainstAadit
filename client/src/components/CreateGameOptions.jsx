@@ -104,7 +104,7 @@ const CreateGameOptions = () => {
 
   const handleAddCustomDeck = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}/api/getCustomDeck/${customDeckCode}`);
+      const response = await axios.get(`${SERVER_URL}/api/getDeckInfo/${customDeckCode}`);
       const { success, deck } = response.data;
 
       if (success) {
@@ -191,10 +191,8 @@ const CreateGameOptions = () => {
       {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
       {customDeckData && (
         <CustomDeckInfoWrapper>
-          <CustomDeckInfoLabel>Deck Name: {customDeckData.deckName}</CustomDeckInfoLabel>
-          <CustomDeckInfoLabel>Deck Creator: {customDeckData.deckCreator}</CustomDeckInfoLabel>
-          <CustomDeckInfoLabel>No. Of White Cards: {customDeckData.whiteCards.length}</CustomDeckInfoLabel>
-          <CustomDeckInfoLabel>No. Of Black Cards: {customDeckData.blackCards.length}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>Deck Name: {customDeckData[0]}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>Deck Creator: {customDeckData[1]}</CustomDeckInfoLabel>
 
           {/* Add more information as needed */}
         </CustomDeckInfoWrapper>

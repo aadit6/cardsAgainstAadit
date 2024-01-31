@@ -179,8 +179,9 @@ getSessionStore(callback) {
 
         const decksSql = ` 
         CREATE TABLE IF NOT EXISTS Decks (
-            DeckCode VARCHAR(20) NOT NULL PRIMARY KEY,
+            DeckID INT AUTO_INCREMENT PRIMARY KEY,
             CreatorID INT,
+            DeckCode VARCHAR(20) NOT NULL UNIQUE,
             DeckName VARCHAR(255) NOT NULL,
             FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
         );
@@ -197,10 +198,10 @@ getSessionStore(callback) {
         CREATE TABLE IF NOT EXISTS Cards (
             CardID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
             Text VARCHAR(255) NOT NULL,
-            Pack VARCHAR(20) NOT NULL,
+            DeckID INT,
             Type ENUM('Black', 'White') NOT NULL,
             Pick INT,
-            FOREIGN KEY (Pack) REFERENCES Decks(DeckCode)
+            FOREIGN KEY (DeckID) REFERENCES Decks(DeckID)
         );
         `
 
@@ -538,60 +539,80 @@ getSessionStore(callback) {
 
     //card and deck related functions
 
-    addDeck(deckCode, creatorID, deckName, callback) {
-        let sql, values
+    addDeck(deckCode, creator, deckName, callback) { //fully working
+        let sql, sql2, values, creatorID
+        sql2 = `INSERT INTO Decks (CreatorID, DeckCode, DeckName) VALUES (?, ?, ?)`
+        
+        if(creator) {
+            sql = `SELECT UserID FROM Users WHERE Username = ?`
+            values = [creator]
 
-        sql = `INSERT INTO Decks (DeckCode, CreatorID, DeckName) VALUES (?, ?, ?)`
-        values = [deckCode, creatorID, deckName]
-
-        this.connection.query(sql, values, (err) => {
-            if(err) {
-                callback(err, null)
-            } else {
-                callback(null, true) //if values successfully inserted
-            }
-        })
-
+            this.connection.query(sql, values, (err, result) => {
+                if(!err) {
+                    creatorID = result[0].UserID
+                    values = [creatorID, deckCode, deckName]
+                    this.connection.query(sql2, values, (err) => {
+                        if(err) {
+                            callback(err, null)
+                        } else {
+                            callback(null, true) 
+                        }
+                    })
+                }
+            })
+        } else { //for json decks where no creator
+            values = [null, deckCode, deckName]
+            this.connection.query(sql2, values, (err) => {
+                if(err) {
+                    callback(err, null)
+                } else {
+                    
+                    callback(null, true) 
+                }
+            })
+        }
     }
 
     addCard(pack, text, type, pick, callback) {
         let sql, values
 
-        sql = `INSERT INTO cards (Text, Pack, Type, Pick) VALUES (?, ?, ?, ?)`
-        values = [text, pack, type, pick]
+        sql = `SELECT DeckID FROM Decks WHERE DeckCode = ?`
+        values = [pack]
 
-        this.connection.query(sql, values, (err) => {
+        this.connection.query(sql, values, (err, result) => {
             if(err) {
-                callback(err, null)
+                callback(err, mull)
             } else {
-                callback(null, true)
+                const deckId = result[0].DeckID
+                sql = `INSERT INTO cards (Text, DeckID, Type, Pick) VALUES (?, ?, ?, ?)`
+                values = [text, deckId, type, pick]
+                this.connection.query(sql, values, (err) => {
+                    if(err) {
+                        callback(err, null)
+                    } else {
+                        callback(null, true)
+                    }
+                })
             }
         })
     }
 
-    retrieveCard(pack, callback) { 
-        let sql, values, whiteArray, blackArray
-        sql = `SELECT * FROM Cards WHERE Pack = ?`
-        values = [pack]
+    retrieveCard(pack, callback) {
+        let sql = `SELECT Cards.Text, Cards.Pick FROM Cards JOIN Decks ON Cards.DeckID = Decks.DeckID WHERE Decks.DeckCode = ?;`;
+        let values = [pack];
+      
         this.connection.query(sql, values, (err, result) => {
-            if (err) {
-                callback (err, null, null)
-            } else {
-
-                whiteArray = result.filter(row => row.Type === 'White').map(row => ({
-                    text: row.Text,
-                  }));
-                  
-                blackArray = result.filter(row => row.Type === 'Black').map(row => ({
-                    text: row.Text,
-                    pick: row.Pick || null,
-                  }));
-        
-                callback(null, whiteArray, blackArray)
-            }
-        })
-
-    } 
+          if (err) {
+            callback(err, null, null);
+          } else {
+            let whiteArray = result.filter(row => row.Pick === null).map(row => ({ text: row.Text }));
+            let blackArray = result.filter(row => row.Pick !== null).map(row => ({ text: row.Text, pick: row.Pick }));
+      
+            callback(null, whiteArray, blackArray);
+          }
+        });
+      }
+      
 
     checkDeckName(name, callback) {
         let sql, values, count
@@ -609,10 +630,34 @@ getSessionStore(callback) {
                 } else {
                     callback(null, false)
                 }
-
-
             }
         })
+    }
+
+    retrieveDeckInfo(deckCode, callback) {
+        let sql, values
+
+        sql = `SELECT Decks.DeckName, Users.Username FROM Decks JOIN Users ON Decks.CreatorID = Users.UserID WHERE Decks.DeckCode = ?;`
+        values = [deckCode]
+
+        this.connection.query(sql, values, (err, result) => {
+            console.log("result is: ", result.length)
+            if (err) {
+                callback(err, null, null)
+            } else if (result.length > 0)  {
+                console.log("result is: ", result)
+                let valuesArray = []
+                valuesArray.push(result[0].DeckName)
+                valuesArray.push(result[0].Username)
+
+                console.log("valuesArray is: ", valuesArray)
+                callback(null, valuesArray, true)
+            } else if (result.length === 0) {
+                callback(null, null, false)
+            }
+        })
+
+
     }
 
 

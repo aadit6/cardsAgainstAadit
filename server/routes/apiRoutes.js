@@ -4,7 +4,7 @@
     const router = express.Router();
     const db = require("../utils/database.js");
     const fs = require("fs");
-const { white } = require("color-name");
+    const { white } = require("color-name");
 
     // const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
     
@@ -87,38 +87,42 @@ const { white } = require("color-name");
           deckCode = code
         }
         const deckCreator = req.session.user
+        console.log("dc is: ", deckCreator)
         
-        db.addDeck(deckCode, deckCreator, deckName, (err) => { //wont work because of deckCreator
+        db.addDeck(deckCode, deckCreator, deckName, (err) => { 
           if(err) {
             console.log("error inserting deck into database")
+          } else {
+            whiteCards.forEach(w => {
+              db.addCard(deckCode, w, "White", null, (err) => {
+              })
+            })
+    
+            blackCards.forEach(b => {
+              db.addCard(deckCode, b.text, "Black", b.pick , (err) => {
+              })
+            })
           }
         })
-
-        whiteCards.forEach(w => {
-          db.addCard(deckCode, w, "White", null, (err) => {
-
-          })
-        })
-
-        blackCards.forEach(b => {
-          db.addCard(deckCode, b.text, "Black", b.pick , (err) => {
-
-          })
-        })
         res.json({ success: true, deckCode: deckCode });
-   
-      }
-      
+      } 
     });
     
-    router.get('/api/getCustomDeck/:code', (req, res) => {
+    router.get('/api/getDeckInfo/:code', (req, res) => {
       const deckCode = req.params.code;
-      const deck = customDecks[deckCode];
-      if (deck) {
-        res.json({ success: true, deck });
-      } else {
-        res.json({ success: false, message: 'Deck not found' });
-      }
+
+      db.retrieveDeckInfo(deckCode, (err, deck, deckExists) => {
+        console.log("value of deckexists is: ", deckExists)
+        if(err) {
+          console.log("error: ", err)
+        } else if (deckExists) {
+          res.json({ success: true, deck });
+
+        } else if (!deckExists) {
+          console.log("deck doesnt exist")
+          res.json({ success: false, message: 'Deck not found' });
+        }
+      }) 
     });
 
     router.post('/api/editCustomDeck', (req, res) => { //have a :code ???
@@ -133,7 +137,7 @@ const { white } = require("color-name");
 
     router.get('/api/getPublicDecks', (req, res) => {
 
-      
+
 
     })
 
