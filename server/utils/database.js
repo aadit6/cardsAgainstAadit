@@ -294,7 +294,7 @@ getSessionStore(callback) {
         let sql;
         let values;
 
-        sql = `SELECT COUNT(*) AS COUNT FROM users WHERE Email = ?`;
+        sql = `SELECT COUNT(*) AS count FROM users WHERE Email = ?`;
         values = [email]
 
         this.connection.query(sql, values, (err, result) => {
@@ -302,8 +302,7 @@ getSessionStore(callback) {
                 console.error("Error: ", err)
                 callback("Server Error: error checking user existence", false)
             } else if (result) {
-                const count = result[0].COUNT
-                console.log(result[0].COUNT)
+                const count = result[0].count
                 if(count > 0) {
                     callback("That email is taken. Try another.", false)
                 }
@@ -566,6 +565,52 @@ getSessionStore(callback) {
                 callback(err, null)
             } else {
                 callback(null, true)
+            }
+        })
+    }
+
+    retrieveCard(pack, callback) { 
+        let sql, values, whiteArray, blackArray
+        sql = `SELECT * FROM Cards WHERE Pack = ?`
+        values = [pack]
+        this.connection.query(sql, values, (err, result) => {
+            if (err) {
+                callback (err, null, null)
+            } else {
+
+                whiteArray = result.filter(row => row.Type === 'White').map(row => ({
+                    text: row.Text,
+                  }));
+                  
+                blackArray = result.filter(row => row.Type === 'Black').map(row => ({
+                    text: row.Text,
+                    pick: row.Pick || null,
+                  }));
+        
+                callback(null, whiteArray, blackArray)
+            }
+        })
+
+    } 
+
+    checkDeckName(name, callback) {
+        let sql, values, count
+
+        sql = `SELECT COUNT(*) AS count FROM Decks where DeckName = ? `
+        values = [name]
+
+        this.connection.query(sql, values, (err, result) => {
+            if(err) {
+                callback(err, null)
+            } else {
+                count = result[0].count
+                if(count > 0) {
+                    callback("deck name already exists", true)
+                } else {
+                    callback(null, false)
+                }
+
+
             }
         })
     }

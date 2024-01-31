@@ -8,6 +8,7 @@ const entities = require("entities");
 const CircularQueue = require("./helpers/circularQueue.js"); 
 const CardStack = require("./helpers/cardStack.js");
 const db = require("./utils/database.js");
+const { black } = require("color-name");
 
 class Game {
   constructor(io, roomId, pointsToWin, numOfCards, selectedDecks, customDecks) { //constructor method when the class first called
@@ -41,10 +42,13 @@ class Game {
     this.czarQueue = null //value of it is set later when game starts based on amount of players in the room 
 
 
-    this.addCards(); 
+    this.addCards().then(() => {
+      console.log("cards added successfully")
+    }).catch(error => {
+      console.error("Error in addCards:", error);
+    });
+    
     this.updateLog("newRoom")
-
-    console.log("this.cardsinhand = ", this.cardsInHand)
     
   }
 
@@ -111,127 +115,87 @@ class Game {
 
   // }
 
-  // addCards() {
-  //   const { board } = this;
-  //   let jsonContent;
+  
 
-  //   jsonContent = JSON.parse(fs.readFileSync('server/cards_all.json'));
 
-  //   console.log("jsoncontent: ", jsonContent)
+  async addCards() {
+    const { board } = this;
+    let jsonContent, deckCode;
 
-    // const selectedDeckValues = this.selectedDecks.split('-');
-    // const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
-    // console.log(this.customDecks)
-    // if(this.customDecks) {
-    //   selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
-    // }
-    // console.log(selectedDeckIds)
+    const selectedDeckValues = this.selectedDecks.split('-');
+    console.log(this.customDecks);
+    if (this.customDecks) {
+        selectedDeckValues.push(this.customDecks);
+    }
 
-    // let blackDeckArray = [];
-    // let whiteDeckArray = [];
+    let blackDeckArray = [];
+    let whiteDeckArray = [];
 
-  //   selectedDeckIds.forEach(selectedPack => {
-  //       const selectedDecks = jsonContent.filter(deck => 
-  //           deck.black && deck.black.some(card => card.pack === selectedPack) ||
-  //           deck.white && deck.white.some(card => card.pack === selectedPack)
-  //       );
-  //       console.log("selecteddecks is: ", selectedDecks)
+    jsonContent = JSON.parse(fs.readFileSync("server/cards.json"));
 
-  //       selectedDecks.forEach(selectedDeck => {
-  //               blackDeckArray = blackDeckArray.concat(selectedDeck.black.map((blackCard, index) => ({
-  //                   id: index,
-  //                   text: entities.decodeHTML(blackCard.text).replace(/_+/g, '_____'),
-  //                   pick: blackCard.pick
-  //               })));
-            
-  //               whiteDeckArray = whiteDeckArray.concat(selectedDeck.white.map((whiteCard, index) => ({
-  //                   id: index,
-  //                   text: entities.decodeHTML(whiteCard.text),
-  //               })));
-  //       });
-  //   });
-  //   if (whiteDeckArray.length > 0) {
-  //       this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
-  //   }
-
-  //   if (blackDeckArray.length > 0) {
-  //       this.board.blackDeck = new CardStack(blackDeckArray).shuffle();
-  //   }
-
-  //   // Shuffling both decks initially for the entire room.
-  //   // Later white cards and black cards are drawn from the top of the stack of cards
-  // }
-
-  addCards(){
-    const {board} = this
-    let jsonContent, deckCode
-    
-    jsonContent = JSON.parse(fs.readFileSync("server/cards.json"))
-    jsonContent.forEach(deck=> {
-      
-      if ((deck.white && deck.white.length > 0) || (deck.black && deck.black > 0)) {
-        deckCode = deck.white[0].pack || deck.black[0].pack; // Assigning the "pack" value of the first white/black card to deckCode
-      } else {
-        console.log("no cards found")
-        return
-      }
-
-      db.addDeck(deckCode, null, deck.name, (err) => {
-        console.log("name of deck: ", deck.name)
-        if(err) {
-          console.log("Error inserting values into database: ", err)
+    for (const deck of jsonContent) {
+        if ((deck.white && deck.white.length > 0) || (deck.black && deck.black > 0)) {
+            deckCode = deck.white[0]?.pack || deck.black[0]?.pack; // Assigning the "pack" value of the first white/black card to deckCode
         } else {
-          console.log("deck successfully inserted into database")
+            console.log("no cards found");
+            return;
         }
 
+        db.addDeck(deckCode, null, deck.name, (err) => {});
 
-      })
+        for (const w of deck.white) {
+            db.addCard(w.pack, w.text, "White", null, (err) => {});
+        }
 
-      deck.white.forEach(w => {
-        db.addCard(w.pack, w.text, "White", null, (err) => {
-          if (err) {
-            console.log("Error inserting card to db: ", err)
-          } else {
-            console.log("Card succesfully inserted into database")
-          }
-        })
-      })
-      deck.black.forEach(b => {
-        db.addCard(b.pack, b.text, "Black", b.pick, (err) => {
-          if(err) {
-            console.log("Error inserting card to db: ", err)
-          } else {
-            console.log("Card succesfully inserted into database")
-          }
-        })
-      })
+        for (const b of deck.black) {
+            db.addCard(b.pack, b.text, "Black", b.pick, (err) => {});
+        }
+    }
 
-      const selectedDeckValues = this.selectedDecks.split('-');
-      const selectedDeckIds = selectedDeckValues.map(str => parseInt(str, 10)) //converts strings in array above to integers
-      console.log(this.customDecks)
-      if(this.customDecks) {
-        selectedDeckIds.push(this.customDecks) //pushes the deck code onto the deckIds array if custom deck used. Will be array of multiple types
-      }
-  
-      let blackDeckArray = [];
-      let whiteDeckArray = [];
+    // Use async/await to wait for all asynchronous calls inside the loop
+    for (const selectedPack of selectedDeckValues) {
+        try {
+            const [whiteCards, blackCards] = await new Promise((resolve, reject) => {
+                db.retrieveCard(selectedPack, (err, whiteCards, blackCards) => {
+                    if (err) {
+                        console.log(err);
+                        reject(err);
+                    } else {
+                        resolve([whiteCards, blackCards]);
+                    }
+                });
+            });
 
-      selectedDeckIds.forEach(selectedPack => {
-        // db.retrieveCard()
-        return
+            whiteDeckArray = whiteDeckArray.concat(whiteCards);
+            blackDeckArray = blackDeckArray.concat(blackCards);
 
-      })
+            console.log("wda is: ", whiteDeckArray);
+            console.log("bda is: ", blackDeckArray);
+        } catch (error) {
+            console.error("Error retrieving cards:", error);
+        }
+    }
 
+    if (whiteDeckArray.length > 0) {
+        this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
+        console.log("t.b.wd: ", this.board.whiteDeck);
+    } else {
+        console.log("whitedeckarray.length === 0");
+    }
 
+    if (blackDeckArray.length > 0) {
+        this.board.blackDeck = new CardStack(blackDeckArray).shuffle();
+    }
 
-
-
-
-
-    })
-
+    // Shuffling both decks initially for the entire room.
+     // Later white cards and black cards are drawn from the top of the stack of cards
 
   }
+
+
+  
+  
+
 
 
 

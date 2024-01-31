@@ -3,7 +3,8 @@
     const express = require("express");
     const router = express.Router();
     const db = require("../utils/database.js");
-    const fs = require("fs")
+    const fs = require("fs");
+const { white } = require("color-name");
 
     // const dir = `C:\\Users\\aaditnagpal\\Documents\\A-Level Computer Science\\NEA\\pokerGameNEA\\server`;
     
@@ -58,10 +59,19 @@
 
     router.post('/api/createCustomDeck', (req, res) => {
       const { blackCards, whiteCards, code, deckName } = req.body;
-      let deckCode;
-      console.log("blackCards, WhiteCards are: ", blackCards, whiteCards)
+      console.log("white cardsd: ", whiteCards)
+      console.log("black cards: ", blackCards)
+      let deckCode, isDeckNameUsed
 
-      const isDeckNameUsed = Object.values(customDecks).some(deck => deck.deckName === deckName);
+      db.checkDeckName(deckName, (err, nameUsed) => {
+        if(nameUsed) {
+          isDeckNameUsed = true
+        } else if (err) {
+          console.log("db error: ", err)
+        }
+
+      })
+
       if(isDeckNameUsed && !code) {
         res.json({success: false, message: "Deck name already used"})
      
@@ -76,40 +86,28 @@
         } else {
           deckCode = code
         }
-        console.log("session: ", req.session)
         const deckCreator = req.session.user
         
-        customDecks[deckCode] = { deckName, deckCreator, blackCards, whiteCards };
-        console.log(customDecks[deckCode])
+        db.addDeck(deckCode, deckCreator, deckName, (err) => { //wont work because of deckCreator
+          if(err) {
+            console.log("error inserting deck into database")
+          }
+        })
 
+        whiteCards.forEach(w => {
+          db.addCard(deckCode, w, "White", null, (err) => {
+
+          })
+        })
+
+        blackCards.forEach(b => {
+          db.addCard(deckCode, b.text, "Black", b.pick , (err) => {
+
+          })
+        })
         res.json({ success: true, deckCode: deckCode });
-
-        try {
-          const filePath = 'server/cards_all.json'; // Replace with the actual path to your cards_all.json file
-      
-          // Read the existing content of the file
-          const existingContent = fs.readFileSync(filePath, 'utf-8');
-          const existingDecks = JSON.parse(existingContent);
-      
-          // Create a new deck object with the required format
-          const newDeck = {
-            name: deckName,
-            white: whiteCards.map(card => ({ text: card, pack: deckCode })),
-            black: blackCards.map(card => ({ text: card.text, pick: card.pick, pack: deckCode })),
-            official: false, // Assuming custom decks are not official by default
-          };
-      
-          // Update the existing decks array with the new deck
-          existingDecks.push(newDeck);
-      
-          // Write the updated content back to the file
-          fs.writeFileSync(filePath, JSON.stringify(existingDecks, null, 2), 'utf-8');
-            
-        } catch (error) {
-          console.error('Error updating cards_all.json:', error);
-        }
+   
       }
-      
       
     });
     
@@ -122,6 +120,24 @@
         res.json({ success: false, message: 'Deck not found' });
       }
     });
+
+    router.post('/api/editCustomDeck', (req, res) => { //have a :code ???
+
+
+
+    })
+
+    router.post('/api/deleteCustomDeck' , (req, res) => { // have a :code ???
+
+    }) 
+
+    router.get('/api/getPublicDecks', (req, res) => {
+
+      
+
+    })
+
+
     
     function generateRandomCode() {
       let randomString = '';
