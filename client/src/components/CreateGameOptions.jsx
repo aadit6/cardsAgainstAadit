@@ -55,7 +55,7 @@ const DECK_OPTIONS = [
   // Add more decks as needed
 ];
 
-const InputField = ({ label, value, onChange, id, type = 'number', min = 1, isCheckbox = false, options }) => (
+const InputField = ({ label, value, onChange, id, type = 'number', min = 1, max = 20, isCheckbox = false, options }) => (
   <ParentComponent>
     {isCheckbox ? (
       <OptionsFormCheck>
@@ -80,7 +80,7 @@ const InputField = ({ label, value, onChange, id, type = 'number', min = 1, isCh
     ) : (
       <OptionsForm>
         <label htmlFor={id}>{label}:</label>
-        <input type={type} id={id} value={value} onChange={(event) => onChange(event)} min={min} />
+        <input type={type} id={id} value={value} onChange={(event) => onChange(event)} min={min} max={max} />
       </OptionsForm>
     )}
   </ParentComponent>
@@ -163,6 +163,7 @@ const CreateGameOptions = () => {
         onChange={(event) => handleChange(event, setPointsToWin)}
         id="pointsToWin"
         min={1}
+        max={20}
       />
       <InputField
         label="Cards in Hand"
@@ -170,6 +171,7 @@ const CreateGameOptions = () => {
         onChange={(event) => handleChange(event, setCardsInHand)}
         id="cardsInHand"
         min={4}
+        max={20}
       />
       <InputField
         label="Decks"
@@ -191,8 +193,8 @@ const CreateGameOptions = () => {
       {errorMsg && <ErrorMessage>{errorMsg}</ErrorMessage>}
       {customDeckData && (
         <CustomDeckInfoWrapper>
-          <CustomDeckInfoLabel>Deck Name: {customDeckData[0]}</CustomDeckInfoLabel>
-          <CustomDeckInfoLabel>Deck Creator: {customDeckData[1]}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>Deck Name: {customDeckData.deckName}</CustomDeckInfoLabel>
+          <CustomDeckInfoLabel>Deck Creator: {customDeckData.deckCreator}</CustomDeckInfoLabel>
 
           {/* Add more information as needed */}
         </CustomDeckInfoWrapper>

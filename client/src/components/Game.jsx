@@ -224,7 +224,7 @@ const Game = () => {
                   <ContentContainer>
                     <ContentTitle>Board</ContentTitle>
                     <Board>
-                      <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} />
+                      <BlackCard text={board.playedBlackCard[0].text} pick={board.playedBlackCard[0].pick} enableAudio={true} />
                       {board.playedWhites.map((playedWhite, index) => (
                         <WhiteCard
                           key={index}
@@ -233,6 +233,7 @@ const Game = () => {
                           hoverEffect={board.picking && currentUser === board.czar && !board.selected}
                           selected={board.selected && playedWhite.winner}
                           selectedPlayer={board.selected ? playedWhite.playerName : null}
+                          enableAudio={true}
                         />
                       ))}
                     </Board>
@@ -247,6 +248,7 @@ const Game = () => {
                           onClick={() => handlePlayCard(index, getRoomNameFromURL())}
                           disabled={currentUserStatus === "played"}
                           hoverEffect={true}
+                          enableAudio={true}
                         />
                       ))}
                     </Hand>

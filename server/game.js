@@ -115,8 +115,6 @@ class Game {
 
   // }
 
-  
-
 
   async addCards() {
     const { board } = this;
@@ -141,7 +139,7 @@ class Game {
             return;
         }
 
-        db.addDeck(deckCode, null, deck.name, (err) => {});
+        db.addDeck(deckCode, null, deck.name, false, (err) => {});
 
         for (const w of deck.white) {
             db.addCard(w.pack, w.text, "White", null, (err) => {});
@@ -169,8 +167,6 @@ class Game {
             whiteDeckArray = whiteDeckArray.concat(whiteCards);
             blackDeckArray = blackDeckArray.concat(blackCards);
 
-            console.log("wda is: ", whiteDeckArray);
-            console.log("bda is: ", blackDeckArray);
         } catch (error) {
             console.error("Error retrieving cards:", error);
         }
@@ -178,7 +174,6 @@ class Game {
 
     if (whiteDeckArray.length > 0) {
         this.board.whiteDeck = new CardStack(whiteDeckArray).shuffle();
-        console.log("t.b.wd: ", this.board.whiteDeck);
     } else {
         console.log("whitedeckarray.length === 0");
     }
@@ -191,13 +186,6 @@ class Game {
      // Later white cards and black cards are drawn from the top of the stack of cards
 
   }
-
-
-  
-  
-
-
-
 
   updateLeaderboard() {
     const { players, io } = this;

@@ -7,11 +7,12 @@ import CreateCustomDeck from './CreateCustomDeck.jsx';
 import DeckOptions from './DeckOptions.jsx';
 import axios from 'axios';
 import { SERVER_URL } from '../constants.js';
+import ViewCustomDecks from './ViewCustomDecks.jsx';
 
 
 const App = () => {
 
-  useEffect(() => { //fix up all this shit (a lot is unneccesary)
+  useEffect(() => {
     const fetchAuthStatus = async () => {
       try {
         const response = await axios.get(`${SERVER_URL}/api/getCurrentUser`, { withCredentials: true });
@@ -37,6 +38,7 @@ const App = () => {
         <Route exact path="/creategame" element={<CreateGameOptions/>} />
         <Route exact path="/deckOptions" element={<DeckOptions/>} />
         <Route exact path="/deckOptions/createdeck" element={<CreateCustomDeck/>} />
+        <Route exact path="/deckOptions/publicDecks" element={<ViewCustomDecks/>} />
       </Routes>
     </Router>
   );

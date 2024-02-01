@@ -76,10 +76,10 @@ const JoinGame = () => {
         1. Enter the room code provided by the game host
       </Instruction>
       <Instruction>
-        2. Click the "Join Game" button (Max 6 players in the game)
+        2. You will be able to join if there are under 6 players in the room
       </Instruction>
       <Instruction>
-        3. Get ready for some HILARIOUS fun!
+        3. Click the "Join Game" button
       </Instruction>
     </InstructionsWrapper>
 

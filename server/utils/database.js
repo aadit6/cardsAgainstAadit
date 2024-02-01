@@ -183,6 +183,7 @@ getSessionStore(callback) {
             CreatorID INT,
             DeckCode VARCHAR(20) NOT NULL UNIQUE,
             DeckName VARCHAR(255) NOT NULL,
+            isCustom BOOL NOT NULL,
             FOREIGN KEY (CreatorID) REFERENCES Users(UserID)
         );
         `
@@ -539,9 +540,9 @@ getSessionStore(callback) {
 
     //card and deck related functions
 
-    addDeck(deckCode, creator, deckName, callback) { //fully working
+    addDeck(deckCode, creator, deckName, isCustom, callback) { //fully working
         let sql, sql2, values, creatorID
-        sql2 = `INSERT INTO Decks (CreatorID, DeckCode, DeckName) VALUES (?, ?, ?)`
+        sql2 = `INSERT INTO Decks (CreatorID, DeckCode, DeckName, isCustom) VALUES (?, ?, ?, ?)`
         
         if(creator) {
             sql = `SELECT UserID FROM Users WHERE Username = ?`
@@ -550,7 +551,7 @@ getSessionStore(callback) {
             this.connection.query(sql, values, (err, result) => {
                 if(!err) {
                     creatorID = result[0].UserID
-                    values = [creatorID, deckCode, deckName]
+                    values = [creatorID, deckCode, deckName, isCustom]
                     this.connection.query(sql2, values, (err) => {
                         if(err) {
                             callback(err, null)
@@ -561,7 +562,7 @@ getSessionStore(callback) {
                 }
             })
         } else { //for json decks where no creator
-            values = [null, deckCode, deckName]
+            values = [null, deckCode, deckName, isCustom]
             this.connection.query(sql2, values, (err) => {
                 if(err) {
                     callback(err, null)
@@ -635,29 +636,45 @@ getSessionStore(callback) {
     }
 
     retrieveDeckInfo(deckCode, callback) {
-        let sql, values
-
-        sql = `SELECT Decks.DeckName, Users.Username FROM Decks JOIN Users ON Decks.CreatorID = Users.UserID WHERE Decks.DeckCode = ?;`
-        values = [deckCode]
-
+        let sql, values;
+    
+        sql = `SELECT Decks.DeckName, Users.Username FROM Decks JOIN Users ON Decks.CreatorID = Users.UserID WHERE Decks.DeckCode = ?;`;
+        values = [deckCode];
+    
         this.connection.query(sql, values, (err, result) => {
-            console.log("result is: ", result.length)
+            console.log("result is: ", result.length);
             if (err) {
-                callback(err, null, null)
+                callback(err, null, null);
             } else if (result.length > 0)  {
-                console.log("result is: ", result)
-                let valuesArray = []
-                valuesArray.push(result[0].DeckName)
-                valuesArray.push(result[0].Username)
-
-                console.log("valuesArray is: ", valuesArray)
-                callback(null, valuesArray, true)
+                console.log("result is: ", result);
+                const deckInfo = {
+                    deckCode: deckCode,
+                    deckName: result[0].DeckName,
+                    deckCreator: result[0].Username
+                };
+    
+                console.log("deckInfo is: ", deckInfo);
+                callback(null, deckInfo, true);
             } else if (result.length === 0) {
-                callback(null, null, false)
+                callback(null, null, false);
+            }
+        });
+    }
+    
+
+    getCustomCodes(callback) { //only for custom decks
+        let sql = `SELECT DeckCode FROM Decks WHERE isCustom = true`
+        this.connection.query(sql, (err, result) => {
+            if(err) {
+                callback(err, null)
+            } else {
+                let deckCodes = []
+                result.forEach(row => {
+                    deckCodes.push(row.DeckCode)
+                })
+                callback(null, deckCodes)
             }
         })
-
-
     }
 
 
