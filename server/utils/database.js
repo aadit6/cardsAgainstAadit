@@ -172,7 +172,7 @@ getSessionStore(callback) {
             if(err){
                 console.error("error creating room table", err);
             } else {
-                console.log("rooms table created successfully")
+                console.log("leaderboard table created successfully")
             }
         })
         this.connection.query(leaderboardPopulateSql, (err, result) => {});

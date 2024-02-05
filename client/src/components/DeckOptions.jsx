@@ -9,14 +9,10 @@ async function handleNavigateCreateGame(navigate) {
 }
 
 async function handleNavigatePublicDecks(navigate) {
-  // Implement later
   navigate("/deckOptions/publicDecks");
 }
 
-async function handleNavigateUserDecks(navigate) {
-  // Implement later
-  navigate("/deckOptions/userDecks");
-}
+
 
 const DeckOptions = () => {
   const navigate = useNavigate();
@@ -36,11 +32,6 @@ const DeckOptions = () => {
         <OptionButton onClick={() => handleNavigatePublicDecks(navigate)}>View Public Decks</OptionButton>
       </OptionCard>
 
-      <OptionCard>
-        <OptionTitle>View Your Decks</OptionTitle>
-        <OptionDescription>Manage and view decks you've created.</OptionDescription>
-        <OptionButton onClick={() => handleNavigateUserDecks(navigate)}>View Your Decks</OptionButton>
-      </OptionCard>
     </DeckOptionsWrapper>
   );
 };
@@ -62,7 +53,7 @@ const OptionCard = styled.div`
   text-align: center;
   color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px; /* Add some bottom margin for spacing */
+  margin-bottom: 30px; /* Add some bottom margin for spacing */
   transition: transform 0.2s;
 
   &:hover {
@@ -71,7 +62,7 @@ const OptionCard = styled.div`
 `;
 
 const OptionCardTop = styled(OptionCard)`
-  margin-top: 40px; /* Adjust the top margin for the top card */
+  margin-top: 130px; /* Adjust the top margin for the top card */
 `;
 
 const OptionTitle = styled.h3`

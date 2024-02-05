@@ -14,6 +14,7 @@ const ViewCustomDecks = () => {
   const [blackDeck, setBlackDeck] = useState([])
   const [successMsg, setSuccessMsg] = useState("")
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  
 
   
 
@@ -92,7 +93,9 @@ const ViewCustomDecks = () => {
         <DeckCard key={index}>
           <DeckInfo>
             <DeckName>{deck.deckName}</DeckName>
-            <DeckCode>{deck.deckCode}</DeckCode>
+            <DeckDetail>Deck Creator: {deck.deckCreator}</DeckDetail>
+            <DeckDetail>Deck Code: {deck.deckCode}</DeckDetail>
+
           </DeckInfo>
           <DeckButtons>
             <CopyButton onClick={() => copyToClipboard(deck.deckCode)}>Copy Deck Code</CopyButton>
@@ -106,8 +109,6 @@ const ViewCustomDecks = () => {
 
 const Popup = ({ onClose, whiteCards, blackCards  }) => {
     // Logic to fetch white and black cards for the selected deckCode
-    
-  
     return (
       <PopupWrapper>
         <PopupContent>
@@ -193,7 +194,7 @@ const DeckCard = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: #333;
-  padding: 20px;
+  padding: 10px;
   margin: 10px 0;
   border-radius: 8px;
   width: 80%;
@@ -210,7 +211,7 @@ const DeckName = styled.h3`
   margin-bottom: 10px;
 `;
 
-const DeckCode = styled.p`
+const DeckDetail = styled.p`
   color: #2cce9f;
   font-size: 18px;
   margin: 0;
