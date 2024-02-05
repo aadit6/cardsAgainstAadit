@@ -33,9 +33,6 @@ const CreateCustomDeck = () => {
   };
 
   async function handleSave(){
-    // Implement save functionality here
-    // For now, you can console.log to check if it's working
-    console.log('Save button clicked');
 
     try {
         const response = await axios.post(`${SERVER_URL}/api/createCustomDeck`, { //stores these values server side

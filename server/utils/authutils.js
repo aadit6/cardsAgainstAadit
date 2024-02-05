@@ -76,6 +76,47 @@ class HashingUtil {
         }
 
     }
+
+    validateUser(email, username, password, callback) { ///MAYBE: move this to authutils since doesnt require any database operations
+
+        // for debugging
+        console.log('Email:', email);
+        console.log('Username:', username);
+        console.log('Password:', password);
+
+        var errors = [];
+
+        if (!email || !password || !username || email.trim() === '' || password.trim() === '' || username.trim() === '') {
+            errors.push("You must not leave any fields blank");
+        }
+
+        // password validation
+        if (password.length < 10 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[!\"£$%&*#@?]/.test(password)) {
+            errors.push("The formatting of the password is incorrect. Ensure all the password complexity rules have been followed");
+        }
+
+        // email validation
+        if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
+            errors.push("Your email address is invalid");
+        }
+
+        // username validation
+       // username validation
+        if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+            errors.push("Your username must not contain any special characters");
+        }
+
+
+        // Check if there are any validation errors
+        if (errors.length > 0) {
+            callback(errors.join(". "));
+            return false;
+        }
+
+        // If there are no errors, callback with 'none'
+        callback("");
+        return true;
+    }
     
 }
 

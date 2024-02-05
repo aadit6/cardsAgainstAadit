@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import crownImage from './../crown.png'; // Update the path based on your actual file structure
+import crownImage from './../crown.png';
 
 const Leaderboard = ({ leaderboard, currentUser, czar }) => {
   return (

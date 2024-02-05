@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const session = require("express-session");
 const db = require("../utils/database.js")
-const hashAuth = require("../utils/authutils.js");
+const auth = require("../utils/authutils.js");
 const dir = `C:\\Users\\aadit\\Documents\\A-Levels\\CS\\NEA\\pokerGameNEA\\server`;
 
 
@@ -13,7 +13,7 @@ router.post('/settingsupdate', (req, res) => {
         res.render(dir + "/views/settings.ejs", {error:"One of the username or password must be changed", success:"", username:req.session.user})
         return;
     } else {     //validates either user/password/both depending on which values in form are filled
-        db.validateUser("placeholder@placeholder.com", newUsername, newPassword, (err) => {
+        auth.validateUser("placeholder@placeholder.com", newUsername, newPassword, (err) => {
             if(err) {
                 res.render(dir + "/views/settings.ejs", {error:err, success:"", username:req.session.user})
                 return;
@@ -25,7 +25,7 @@ router.post('/settingsupdate', (req, res) => {
             res.render(dir + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
             return;
         } else {
-            hashAuth.comparePassword(oldPassword, passHash, (err, isValid) => {
+            auth.comparePassword(oldPassword, passHash, (err, isValid) => {
                 if(err) {
                     res.render(dir + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
                 } else if (!isValid) {
@@ -34,12 +34,12 @@ router.post('/settingsupdate', (req, res) => {
             })
         }
         if(newPassword != oldPassword) {
-            hashAuth.generateSalt(64, (err, salt) => {
+            auth.generateSalt(64, (err, salt) => {
                 if(err) {
                     res.render(dir + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
                     return;
                 } else {
-                    hashAuth.hashPassword(newPassword, salt, 10000, (err, passwordHash) => {
+                    auth.hashPassword(newPassword, salt, 10000, (err, passwordHash) => {
                         if(err) {
                             res.render(dir + "/views/settings.ejs", {error:err, success:"", username:req.session.user});
                             return;
